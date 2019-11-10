@@ -7,7 +7,7 @@ public final class Tache extends Thread {
 	
 	private final long size;
 	private final String URL;
-	
+	private final Tache father;
 	public String getURL() {
 		//doit faire une copie du string?
 		return this.URL;
@@ -17,10 +17,23 @@ public final class Tache extends Thread {
 		return this.size;
 	}
 	
+	public long getProfondeur() {
+		if(father==null) return 0;
+		return father.getProfondeur()+1;
+	}
+	
 	public Tache(String URL) {
 		this.URL=URL;
 		//TO DO calcul taille
 		this.size=0;
+		this.father=null;
+	}
+	
+	private Tache(String URL, Tache father) {
+		this.URL=URL;
+		//TO DO calcul taille
+		this.size=0;
+		this.father=father;
 	}
 	
 	//TO DO lance le télécharchement
@@ -41,6 +54,8 @@ public final class Tache extends Thread {
 	public Set<Tache> NextProfondeur(Set<Tache> without) {
 		return null;
 	}
+	
+	
 	
 	
 }

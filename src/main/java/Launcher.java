@@ -15,7 +15,7 @@ public final class Launcher {
 	private static long MAX = 100;
 	
 	private Stream<Tache> commandes;
-
+	
 	private boolean limit = true;
 
 	//TO DO trouver un nom et l'initialiser
@@ -77,7 +77,7 @@ public final class Launcher {
 
 	/*
 	 * permet de s'arreter quand la condition du predicat devient fausse sur
-	 * l'accumulateur
+	 * l'accumulateur -> necessite l'ordre /:
 	 */
 	public <T> void addPredicateWithAccumulator(T start, BiFunction<T, Tache, T> faccu, Predicate<T> p) {
 
@@ -100,21 +100,20 @@ public final class Launcher {
 		commandes = commandes.limit(limit);
 	}
 
-	// TO DO : ajoute une limite de taille pour l'ensemble du telechargement
 	//(avec addPredicateWithAccumulator)
 	public void limitSize(long size) {
-
+		double deb=0;
+		this.addPredicateWithAccumulator(deb, (x,y) -> x+y.getSize(), (x)->x<size);
 	}
 
-	// TO DO : ajoute une limite de profondeur pour l'ensemble du telechargement
 	// (avec addPredicateWithAccumulator)
 	public void limitProfondeur(long profondeur) {
-
+		double deb=0;
+		this.addPredicateWithAccumulator(deb, (x,y) -> x+y.getProfondeur(), (x)->x<profondeur);
 	}
 
-	// TO DO : applique une opération sur les Taches au moment du téléchargement
+	// TO DO : applique une opération sur les Taches sur les résultats
 	public void apply(Consumer<Tache> consumer) {
-
 	}
 
 }
