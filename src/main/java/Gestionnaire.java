@@ -1,12 +1,14 @@
+import java.util.HashSet;
 import java.util.Set;
 
 /*
  * Gere l'ensemble des téléchargements
+ * Il contient une liste de téléchargements en attente
  */
 public class Gestionnaire {
 	//Liste des telechargements en attente 
-    //TO DO :initialiser
-	private /*final*/ Set<Launcher> wait;
+    //Attention : peut-etre pas synchrone
+	private /*final*/ Set<Launcher> wait = new HashSet<>();
 	
 	//Le launcher en cours de changement
 	private Launcher current;
@@ -21,24 +23,26 @@ public class Gestionnaire {
 	
 	//lance le launcher current
 	public void launch() {
-		wait.remove(current);
-		current.launch();
+		if(current!=null) {
+			wait.remove(current);
+			current.launch();
+		}
 	}
 	
-	//TO DO ajoute un Launch et le met en current
-	public void addLaunch(String URL) {
-		
+	public void addLauncher(String URL) {
+		Launcher l = new Launcher(URL);
+		wait.add(l);
+		current = l;
 	}
 	
-	
-	//TO DO met current le launcher associer au nom
-	public void changeCurrentLauch(String nom) {
-		
+	public void changeCurrentLauncher(String nom) {
+		Launcher l=wait.stream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
+		if(l!=null) current = l;
 	}
 	
-	//TO DO renvoie la liste des noms des launchers
+	//liste des noms des launchers
 	public String[] listOfName() {
-		return null;
+		return (String[]) wait.stream().map((l)->l.getNom()).toArray();
 	}
 	
 }

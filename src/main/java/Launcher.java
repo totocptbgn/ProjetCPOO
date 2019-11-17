@@ -12,22 +12,23 @@ import java.util.stream.*;
  */
 public final class Launcher {
 	// limite de nombre/taille de fichier (peut etre changeable)
-	private static long MAX = 100;
-	
+	private static long MAX = 1;
+
 	private Stream<Tache> commandes;
-	
+
 	private boolean limit = true;
 
-	//TO DO trouver un nom et l'initialiser
-	private /*final*/ String nom;
-		
+	// TO DO trouver un nom et l'initialiser
+	//permettra à l'utilisateur de choisir ce launcher
+	private /* final */ String nom;
+
 	// TO DO message de prévention si enleve limit
 	public void setLimit(boolean limit) {
 		this.limit = limit;
 	}
-	
+
 	public String getNom() {
-		//copie?
+		// copie?
 		return nom;
 	}
 
@@ -44,7 +45,10 @@ public final class Launcher {
 
 			@Override
 			public Tache get() {
+				if (file.isEmpty())
+					return null;
 				Tache t = file.poll();
+
 				file.addAll(t.NextProfondeur());
 				return t;
 			}
@@ -57,15 +61,23 @@ public final class Launcher {
 			commandes = commandes.limit(MAX);
 		}
 	}
-	
+
 	// lance l'ensemble du telechargement (et l'ordre?)
 	public void launch() {
-		commandes.forEach(x -> x.run());
+		commandes.forEach(x -> {
+			if (x != null)
+				x.start();
+		});
 	}
 
 	// TO DO : arrete le telechargement
 	public void stop() {
-		
+
+	}
+	
+	// TO DO : met en pause le telechargement
+	public void pause() {
+
 	}
 
 	/*
@@ -100,20 +112,19 @@ public final class Launcher {
 		commandes = commandes.limit(limit);
 	}
 
-	//(avec addPredicateWithAccumulator)
 	public void limitSize(long size) {
-		double deb=0;
-		this.addPredicateWithAccumulator(deb, (x,y) -> x+y.getSize(), (x)->x<size);
+		double deb = 0;
+		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), (x) -> x < size);
 	}
 
-	// (avec addPredicateWithAccumulator)
 	public void limitProfondeur(long profondeur) {
-		double deb=0;
-		this.addPredicateWithAccumulator(deb, (x,y) -> x+y.getProfondeur(), (x)->x<profondeur);
+		double deb = 0;
+		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getProfondeur(), (x) -> x < profondeur);
 	}
 
-	// TO DO : applique une opération sur les Taches sur les résultats
+	// TO DO : applique une opération sur les résultats obtenu après telechargement
 	public void apply(Consumer<Tache> consumer) {
+
 	}
 
 }

@@ -18,36 +18,4 @@ public class Library {
     public boolean someLibraryMethod() {
         return true;
     }
-    public static void get(String uri) throws Exception {
-        
-    	HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-              .uri(URI.create(uri))
-              .build();
-
-        HttpResponse<Path> response =
-              client.send(request, BodyHandlers.ofFile(Paths.get("body.html")));
-
-        System.out.println("Response in file:" + response.body());
-        HttpResponse<Path> response2 =
-                client.send(request, BodyHandlers.ofFile(Paths.get("body.css")));
-    }
-    public static void main(String[] args) throws Exception {
-    	get("https://openjdk.java.net/groups/net/httpclient/recipes.html");
-    	//avoir une page
-        Document doc = Jsoup.connect("http://en.wikipedia.org/").get();
-        //System.out.println(doc);
-        //doc : https://jsoup.org/apidocs/org/jsoup/select/Elements.html
-        Elements newsHeadlines = doc.getAllElements();//doc.select("#mp-itn b a"); -> avoir element en particulier
-        
-        for (Element headline : newsHeadlines) {
-        	if(/*headline.absUrl("href").contains("en.wikipedia")*/headline.attr("href").contains(".css"))
-        		System.out.println(headline.attr("href"));
-        	/*	
-        	log("%s\n\t%s", headline.attr("title") //avoir le titre de la balise
-            		, headline.absUrl("href") //avoir les liens des elements
-            		);
-            		*/
-        }
-    }
 }
