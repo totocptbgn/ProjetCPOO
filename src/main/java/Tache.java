@@ -17,9 +17,10 @@ final class Tache extends Thread {
 	private static final HttpClient client = HttpClient.newHttpClient();
 	private final long size;
 	private final String URL;
+	/*
 	private final Tache father;
+	*/
 	public String getURL() {
-		//doit faire une copie du string?
 		return this.URL;
 	}
 	
@@ -27,16 +28,18 @@ final class Tache extends Thread {
 		return this.size;
 	}
 	
+	/*
 	public long getProfondeur() {
 		if(father==null) return 0;
 		return father.getProfondeur()+1;
 	}
+	*/
 	
 	public Tache(String URL) {
 		this.URL=URL;
 		//TO DO calcul taille
 		this.size=0;
-		this.father=null;
+		//this.father=null;
 	}
 	
 	//pour test pas vraiment opti
@@ -58,7 +61,7 @@ final class Tache extends Thread {
 		this.URL=URL;
 		//TO DO calcul taille
 		this.size=0;
-		this.father=father;
+		//this.father=father;
 	}
 	
 	/*
