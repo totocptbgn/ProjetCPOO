@@ -1,68 +1,134 @@
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.sun.tools.javac.util.Pair;
 
 /*
  * Gere l'ensemble des téléchargements
  * Il contient une liste de téléchargements en attente
  */
 public class Gestionnaire {
-	//Liste des telechargements en attente 
-    //Attention : peut-etre pas synchrone
-	private /*final*/ Set<Launcher> wait = new HashSet<>();
+	//Liste des telechargements en attente (non synchrone)
+	private final Deque<Launcher> newQueue = new ArrayDeque<>();
+	private final Deque<Launcher> waitQueue = new ArrayDeque<>();
+	private final Deque<Launcher> launchQueue = new ArrayDeque<>();
+	private final Deque<Launcher> endQueue = new ArrayDeque<>();
 	
-	//Le launcher en cours de changement
-	private Launcher current;
+	/*
+	 * dernier launcher non lancé
+	 */
+	public Launcher getCurrentNew() {
+		return newQueue.peek();
+	}
 	
+	/*
+	 * dernier launcher en attente
+	 */
+	public Launcher getCurrentWait() {
+		return waitQueue.peek();
+	}
+	
+	/*
+	 * dernier launcher lancé
+	 */
 	public Launcher getCurrentLaunch() {
-		return current;
+		return launchQueue.peek();
 	}
 	
 	public Gestionnaire() {
 		
 	}
 	
-	//lance le launcher current
-	public void launch() {
-		if(current!=null) {
-			wait.remove(current);
-			current.start();
+	//lance le launcher au dessus de la pile
+	public boolean launch() {
+		if(getCurrentNew()!=null) {
+			Launcher currentNew = newQueue.pop();
+			currentNew.start();
+			launchQueue.push(currentNew);
+			return true;
 		}
+		return false;
 	}
 	
 	/*
 	 * lance le telechargement, 
+	 * @param String launcher nom du telechargement
 	 * @return : si celui ci n'existe pas renvoie faux
 	 */
 	public boolean launch(String launcher) {
-		Launcher toUse=null;
-		for(Launcher l:wait) {
-			if(l.getName().equals(launcher)) {
-				toUse=l;
-			}
-		}
-		if(toUse==null) {
+		if (!changeNewCurrentLauncher(launcher,newQueue)) {
 			return false;
 		}
-		wait.remove(toUse);
-		toUse.start();
+		this.launch();
 		return true;
 		
 	}
 	
 	public void addLauncher(String URL) {
 		Launcher l = new LauncherTelechargement(URL);
-		wait.add(l);
-		current = l;
+		newQueue.push(l);
 	}
 	
-	public void changeCurrentLauncher(String nom) {
-		Launcher l=wait.stream().reduce(null, (a,e) -> e.getName().equals(nom)?e:null);
-		if(l!=null) current = l;
+	public void delete() {
+		Launcher l = launchQueue.pop();
+		l.delete();
+		endQueue.add(l);
 	}
 	
-	//liste des noms des launchers
-	public String[] listOfName() {
-		return (String[]) wait.stream().map((l)->l.getName()).toArray();
+	public boolean changeNewCurrentLauncher(String nom,Deque<Launcher> queue) {
+		Launcher l=queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
+		if(l!=null) {
+			queue.remove(l);
+			queue.push(l);
+			return true;
+		}
+		return false;
 	}
+	
+	//liste des noms et etats des launchers non lancé
+	public List<Pair<String, Launcher.state>> listNew() {
+		return (List<Pair<String, Launcher.state>>) newQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+	}
+	
+	//liste des noms et etats des launchers en pause
+	public List<Pair<String, Launcher.state>> listWait() {
+		return (List<Pair<String, Launcher.state>>) waitQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+	}
+	
+	//liste des noms et etats des launchers en pause
+	public List<Pair<String, Launcher.state>> listLaunch() {
+		return (List<Pair<String, Launcher.state>>) launchQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+	}
+	
+	//liste des noms et etats des launchers terminés/arétés
+		public List<Pair<String, Launcher.state>> listEnd() {
+			return (List<Pair<String, Launcher.state>>) endQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+		}
+	
+	//liste des noms et etats des launchers
+	public List<Pair<String, Launcher.state>> list() {
+		List<Pair<String, Launcher.state>> l = listLaunch();
+		l.addAll(listWait());
+		l.addAll(listNew());
+		return l;
+	}
+	
+	//liste des noms et etats des launchers
+		public List<Pair<String, Launcher.state>> listOfAll() {
+			List<Pair<String, Launcher.state>> l = listLaunch();
+			l.addAll(listWait());
+			l.addAll(listNew());
+			l.addAll(listEnd());
+			return l;
+		}
+	
+	
+	
 	
 }

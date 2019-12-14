@@ -1,10 +1,13 @@
 
 public interface Launcher<T extends Thread> {
-	String getName();
-	void stop();
+	String getNom();
+	void pause();
+	void restart();
 	void delete();
 	void start();
+	void run();
+	state getEtat();
 	static enum state {
-		STOP,LAUNCH,WAIT,NEW;
+		STOP,LAUNCH,WAIT,NEW,FAIL,SUCCESS;
 	}
 }
