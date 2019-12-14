@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -12,11 +11,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-/*
- * Telechargement d'une page
+/**
+ * Téléchargement d'une page
  */
+
 final class Tache extends Thread implements Callable<Void> {
-	// mettre un httpClient par thread?
+	// Mettre un httpClient par thread?
 	private static final HttpClient client = HttpClient.newHttpClient();
 	private final long size;
 	private final String URL;
@@ -48,7 +48,6 @@ final class Tache extends Thread implements Callable<Void> {
 	private CompletableFuture<Path> get() {
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 		return client.sendAsync(request, BodyHandlers.ofFile(Paths.get(this.getPage()))).thenApply(HttpResponse::body);
-	
 	}
 
 	// tache avec parent
@@ -72,11 +71,7 @@ final class Tache extends Thread implements Callable<Void> {
 		
 		try {
 			System.out.print(cf.get()+"\n");
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
+		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
 	}
@@ -100,5 +95,4 @@ final class Tache extends Thread implements Callable<Void> {
 		this.start();
 		return null;
 	}
-
 }

@@ -14,28 +14,28 @@ import com.sun.tools.javac.util.Pair;
  * Il contient une liste de téléchargements en attente
  */
 public class Gestionnaire {
-	//Liste des telechargements en attente (non synchrone)
-	private final Deque<Launcher> newQueue = new ArrayDeque<>();
-	private final Deque<Launcher> waitQueue = new ArrayDeque<>();
-	private final Deque<Launcher> launchQueue = new ArrayDeque<>();
-	private final Deque<Launcher> endQueue = new ArrayDeque<>();
+	// Liste des telechargements
+	private final Deque<Launcher> newQueue = new ArrayDeque<>();    // La file d'attente des téléchagements instanciés
+	private final Deque<Launcher> waitQueue = new ArrayDeque<>();   // La file d'attente des téléchagements en pause
+	private final Deque<Launcher> launchQueue = new ArrayDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
+	private final Deque<Launcher> endQueue = new ArrayDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	
-	/*
-	 * dernier launcher non lancé
+	/**
+	 * Dernier launcher non lancé
 	 */
 	public Launcher getCurrentNew() {
 		return newQueue.peek();
 	}
 	
-	/*
-	 * dernier launcher en attente
+	/**
+	 * Dernier launcher en attente
 	 */
 	public Launcher getCurrentWait() {
 		return waitQueue.peek();
 	}
 	
-	/*
-	 * dernier launcher lancé
+	/**
+	 * Dernier launcher lancé
 	 */
 	public Launcher getCurrentLaunch() {
 		return launchQueue.peek();
@@ -45,9 +45,9 @@ public class Gestionnaire {
 		
 	}
 	
-	//lance le launcher au dessus de la pile
+	// Lance le launcher au dessus de la pile
 	public boolean launch() {
-		if(getCurrentNew()!=null) {
+		if (getCurrentNew() != null) {
 			Launcher currentNew = newQueue.pop();
 			currentNew.start();
 			launchQueue.push(currentNew);
@@ -56,8 +56,8 @@ public class Gestionnaire {
 		return false;
 	}
 	
-	/*
-	 * lance le telechargement, 
+	/**
+	 * Lance le telechargement,
 	 * @param String launcher nom du telechargement
 	 * @return : si celui ci n'existe pas renvoie faux
 	 */
@@ -83,7 +83,7 @@ public class Gestionnaire {
 	
 	public boolean changeNewCurrentLauncher(String nom,Deque<Launcher> queue) {
 		Launcher l=queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
-		if(l!=null) {
+		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
 			return true;
@@ -91,7 +91,7 @@ public class Gestionnaire {
 		return false;
 	}
 	
-	//liste des noms et etats des launchers non lancé
+	// Liste des noms et etats des launchers non lancé
 	public List<Pair<String, Launcher.state>> listNew() {
 		return (List<Pair<String, Launcher.state>>) newQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
 	}

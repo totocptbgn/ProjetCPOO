@@ -10,20 +10,24 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.*;
 
-/*
- * Gere un ensemble de téléchargement créé à partir d'un URL (URL et ses enfants)
+/**
+ * Gère un ensemble de téléchargement créé à partir d'un URL (URL et ses enfants)
  * Chaque Launcher sera représenté par un nom
  */
+
 public final class LauncherTelechargement extends Thread implements Launcher<Tache> {
-	// limite de nombre de fichier
+	// Limite de nombre de fichier
 	private static long MAX = 1;
 	
 	private Stream<Tache> commandes;
 	private List<Tache> elements;
 	private boolean limit = true;
-	
-	private ExecutorService es= Executors.newCachedThreadPool();;
-	//permettra à l'utilisateur de choisir ce launcher
+	private state etat = state.NEW;
+
+
+	private ExecutorService es = Executors.newCachedThreadPool();
+
+	// Permettra à l'utilisateur de choisir ce launcher
 	private final String nom;
 
 	// TO DO changer commandes
@@ -40,18 +44,16 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 	}
 
 	/*
-	 * Creer le launcher
+	 * Créer le launcher
 	 * @param String URL : URL de base
 	 */
 	
-	private state etat = state.NEW;
 	public LauncherTelechargement(String URL) {
-		// Donne les prochains elements à traiter
-		// faire à l'exterieur de la classe?
-		Supplier<Tache> sup = new Supplier<Tache>() {
-			// Non synchrone -> trouver mieux
-			Queue<Tache> file = new LinkedList<Tache>();
-			// pas tres beau -> surement mieux
+		// Donne les prochains éléments à traiter
+		// Faire à l'exterieur de la classe
+		Supplier<Tache> sup = new Supplier<>() {
+			Queue<Tache> file = new LinkedList<>(); // Non synchrone...
+
 			{
 				file.add(new Tache(URL));
 			}
@@ -65,7 +67,6 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 				file.addAll(t.NextProfondeur());
 				return t;
 			}
-
 		};
 		
 		nom = URL.split("/")[2];
@@ -82,26 +83,24 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 	 *  (et l'ordre?)(non-Javadoc)
 	 */
 	public void run() {
-		this.etat=etat.LAUNCH;
-		
+		this.etat = state.WORK;
 		try {
-			if(es.isShutdown()) {
+			if (es.isShutdown()) {
 				throw new InterruptedException();
 			}
 			elements = commandes.collect(Collectors.toList());
 			List<Future<Void>> inExecution = es.invokeAll(elements);
 			while(!es.isShutdown()) {
-				if (elements.stream().allMatch(t -> t.isInterrupted())) {
+				if (elements.stream().allMatch(Thread::isInterrupted)) {
 					throw new InterruptedException();
 				}
-				if (inExecution.stream().allMatch(f -> f.isDone())) {
+				if (inExecution.stream().allMatch(Future::isDone)) {
 					es.shutdown();
 				}
 			}
-			this.etat=etat.SUCCESS;
+			this.etat= state.SUCCESS;
 		} catch (InterruptedException e) {
-			this.etat=etat.FAIL;
-			// TODO Auto-generated catch block
+			this.etat= state.FAIL;
 			e.printStackTrace();
 		}
 	}
@@ -109,26 +108,23 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 	// TO DO : arrete le telechargement pour de bon
 	public void delete() {
 		es.shutdownNow();
-		if(elements!=null) {
-			for(Tache t:elements) {
+		if (elements != null) {
+			for (Tache t:elements) {
 				t.interrupt();
 			}
 		}
-		
 	}
 	
 	// TO DO : met en pause le telechargement
 	public void pause() {
-		if(elements!=null) {
+		if (elements != null) {
 			try {
-			
-				for(Tache t:elements) {
+				for (Tache t:elements) {
 					t.wait();
 				}
 			}
 			catch (InterruptedException e) {
-				this.etat=etat.FAIL;
-				// TODO Auto-generated catch block
+				this.etat = state.FAIL;
 				e.printStackTrace();
 			}
 		}
@@ -142,6 +138,7 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 	 * @param Predicate<Tache> p : La condition sur les taches
 	 * permet de prendre les elements acceptant la condition
 	 */
+
 	private void addPredicate(Predicate<Tache> p) {
 		commandes = commandes.filter(p);
 	}
@@ -153,9 +150,10 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 	 * permet de s'arreter quand la condition du predicat devient fausse sur
 	 * l'accumulateur -> necessite l'ordre /:
 	 */
+
 	private <T> void addPredicateWithAccumulator(T start, BiFunction<T, Tache, T> faccu, Predicate<T> p) {
 
-		Predicate<Tache> pwithaccu = new Predicate<Tache>() {
+		Predicate<Tache> pwithaccu = new Predicate<>() {
 			T accumulator = start;
 
 			@Override
@@ -169,15 +167,15 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 		commandes = commandes.takeWhile(pwithaccu);
 	}
 
-	// ajoute une limite au nombre de fichier
+	// Ajoute une limite au nombre de fichier
 	public void limit(long limit) {
 		commandes = commandes.limit(limit);
 	}
 	
-	/* limite la taille de téléchargement du site */
+	/* Limite la taille de téléchargement du site */
 	public void limitSize(long size) {
 		double deb = 0;
-		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), (x) -> x < size);
+		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), x -> x < size);
 	}
 
 	/* Limite la profondeur des pages du téléchargement du site */
