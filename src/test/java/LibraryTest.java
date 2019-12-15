@@ -65,11 +65,25 @@ public class LibraryTest {
     		System.out.println(p.fst+"-"+p.snd+"\n");
     	}
     	g.launch();
-        //g.delete();
+    	long time = System.currentTimeMillis();
+    	//while(System.currentTimeMillis()-time<1000);
     	for(Pair<String, Launcher.state> p: g.listOfAll()) {
     		System.out.println(p.fst+"-"+p.snd+"\n");
     	}
-    	 
+    	System.out.print("Do pause : "+g.pause()+"\n");
+    	time = System.currentTimeMillis();
+    	
+    	//while(System.currentTimeMillis()-time<2000);
+    	for(Pair<String, Launcher.state> p: g.listOfAll()) {
+    		System.out.println(p.fst+"-"+p.snd+"\n");
+    	}
+    	System.out.print("Do restart : "+g.restart()+"\n");
+    	time = System.currentTimeMillis();
+    	
+    	while(System.currentTimeMillis()-time<5000);
+    	for(Pair<String, Launcher.state> p: g.listOfAll()) {
+    		System.out.println(p.fst+"-"+p.snd+"\n");
+    	}
     	 
     }
 }

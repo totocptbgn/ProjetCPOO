@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -15,7 +16,7 @@ import java.util.concurrent.ExecutionException;
  * Téléchargement d'une page
  */
 
-final class Tache extends Thread implements Callable<Void> {
+final class Tache extends Thread implements Callable<Tache> {
 	// Mettre un httpClient par thread?
 	private static final HttpClient client = HttpClient.newHttpClient();
 	private final long size;
@@ -44,10 +45,18 @@ final class Tache extends Thread implements Callable<Void> {
 		// this.father=null;
 	}
 
-	// version asynchronique
-	private CompletableFuture<Path> get() {
+	//met la page dans un fichier
+	private void get() {
+		
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
-		return client.sendAsync(request, BodyHandlers.ofFile(Paths.get(this.getPage()))).thenApply(HttpResponse::body);
+		try {
+			//non Asynch pour pouvoir l'aréter
+			client.send(request, BodyHandlers.ofFile(Paths.get(this.getPage()))).body();
+			System.out.print("done\n");
+		} catch (IOException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			System.out.print("stopped\n");
+		}
 	}
 
 	// tache avec parent
@@ -65,15 +74,10 @@ final class Tache extends Thread implements Callable<Void> {
 		return "body" + ".html";
 	}
 
-	// test pour l'instant
 	public void run() {
-		CompletableFuture<Path> cf = this.get();
 		
-		try {
-			System.out.print(cf.get()+"\n");
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
+		this.get();
+		
 	}
 
 	/*
@@ -91,8 +95,8 @@ final class Tache extends Thread implements Callable<Void> {
 	}
 
 	@Override
-	public Void call() throws Exception {
-		this.start();
-		return null;
+	public Tache call() {
+		this.run();
+		return this;
 	}
 }

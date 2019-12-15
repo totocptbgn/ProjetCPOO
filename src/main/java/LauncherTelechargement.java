@@ -1,9 +1,14 @@
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -15,12 +20,13 @@ import java.util.stream.*;
  * Chaque Launcher sera représenté par un nom
  */
 
-public final class LauncherTelechargement extends Thread implements Launcher<Tache> {
+public final class LauncherTelechargement implements Launcher<Tache> {
 	// Limite de nombre de fichier
 	private static long MAX = 1;
 	
 	private Stream<Tache> commandes;
-	private List<Tache> elements;
+	private Set<Tache> elements;
+	private List<Future<Tache>> inExecution;
 	private boolean limit = true;
 	private state etat = state.NEW;
 
@@ -51,7 +57,7 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 	public LauncherTelechargement(String URL) {
 		// Donne les prochains éléments à traiter
 		// Faire à l'exterieur de la classe
-		Supplier<Tache> sup = new Supplier<>() {
+		Supplier<Tache> sup = new Supplier<Tache>() {
 			Queue<Tache> file = new LinkedList<>(); // Non synchrone...
 
 			{
@@ -78,63 +84,111 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 		}
 	}
 
+	/**
+	 * Lance le téléchargement
+	 * 
+	 */
+	@Override
+	public synchronized CompletableFuture<Boolean> start() {
+		return CompletableFuture.supplyAsync(this::run);
+	}
+	
 	/*
 	 *  lance l'ensemble du telechargement 
-	 *  (et l'ordre?)(non-Javadoc)
 	 */
-	public void run() {
+	public synchronized Boolean run() {
+		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
+			return false;
+		}
+		
 		this.etat = state.WORK;
 		try {
-			if (es.isShutdown()) {
-				throw new InterruptedException();
-			}
-			elements = commandes.collect(Collectors.toList());
-			List<Future<Void>> inExecution = es.invokeAll(elements);
+			//elements a télécharger
+			if(elements==null)
+				elements = Collections.synchronizedSet(commandes.collect(Collectors.toSet()));
+			//lance les téléchargements
+			inExecution = es.invokeAll(elements);
+			//télécharge jusqu'a arret
 			while(!es.isShutdown()) {
-				if (elements.stream().allMatch(Thread::isInterrupted)) {
+				//futur tous fini et non arété de force -> fini normalement
+				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled())) {
+					es.shutdown();
+					this.etat= state.SUCCESS;
+					return true;
+				}
+				//thread tous interrompu -> fini sur erreur
+				if (inExecution.stream().allMatch(f -> f.isCancelled())) {
 					throw new InterruptedException();
 				}
-				if (inExecution.stream().allMatch(Future::isDone)) {
-					es.shutdown();
-				}
+				//on laisse la moins aux autres actions un petit moment
+				this.wait(1000);
 			}
-			this.etat= state.SUCCESS;
+			
+			
 		} catch (InterruptedException e) {
-			this.etat= state.FAIL;
 			e.printStackTrace();
 		}
+		return false;
+		
 	}
 
-	// TO DO : arrete le telechargement pour de bon
-	public void delete() {
-		es.shutdownNow();
-		if (elements != null) {
-			for (Tache t:elements) {
-				t.interrupt();
+	public synchronized void delete() {
+		try {
+			//si fini -> ne fait rien
+			if(es.awaitTermination(0, TimeUnit.SECONDS)) {
+				return;
 			}
+		} catch (InterruptedException e) {
+			//ne devrait jamais arriver
+			e.printStackTrace();
 		}
+		//on n'utilise plus le gestionnaire de téléchargement
+		es.shutdownNow();
+		//on change l'état
+		this.etat = Launcher.state.FAIL;
+		
 	}
 	
 	// TO DO : met en pause le telechargement
-	public void pause() {
-		if (elements != null) {
-			try {
-				for (Tache t:elements) {
-					t.wait();
-				}
+	public synchronized void pause() {
+		try {
+			//si fini -> ne fait rien
+			if(es.awaitTermination(0, TimeUnit.SECONDS)) {
+				System.out.print("endedbefore");
+				return;
 			}
-			catch (InterruptedException e) {
-				this.etat = state.FAIL;
-				e.printStackTrace();
-			}
+		} catch (InterruptedException e) {
+			//ne devrait jamais arriver
+			e.printStackTrace();
 		}
+		
+		//interrons les taches
+		for (Tache t:elements) {
+			t.interrupt(); //interrupt?
+		}
+		for (Future<Tache> f:inExecution) {
+			f.cancel(false); //interrupt?
+		}
+		this.etat = Launcher.state.WAIT;
 	}
 	
-	public void restart() {
-		es.notifyAll();
+	public synchronized CompletableFuture<Boolean> restart() {
+		for (Future<Tache> f:inExecution) {
+			
+			if(f.isDone() && !f.isCancelled()) {
+				try {
+					//on enlève les taches qui ont eu le temps de finir
+					elements.remove(f.get());
+				} catch (InterruptedException | ExecutionException e) {
+					
+				} 
+			}
+		}
+		this.etat = Launcher.state.STOP;
+		return CompletableFuture.supplyAsync(this::run);
 	}
 
-	/*
+	/**
 	 * @param Predicate<Tache> p : La condition sur les taches
 	 * permet de prendre les elements acceptant la condition
 	 */
@@ -143,7 +197,7 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 		commandes = commandes.filter(p);
 	}
 
-	/*
+	/**
 	 * @param T start : valeur de base de l'accumulateur
 	 * @param BiFunction<T, Tache, T> faccu : fonction transformant l'accumulateur en fonction d'un élément tache
 	 * @param Predicate<T> p : vérifie si la condition de l'accumulateur est encore vrai
@@ -153,7 +207,7 @@ public final class LauncherTelechargement extends Thread implements Launcher<Tac
 
 	private <T> void addPredicateWithAccumulator(T start, BiFunction<T, Tache, T> faccu, Predicate<T> p) {
 
-		Predicate<Tache> pwithaccu = new Predicate<>() {
+		Predicate<Tache> pwithaccu = new Predicate<Tache>() {
 			T accumulator = start;
 
 			@Override

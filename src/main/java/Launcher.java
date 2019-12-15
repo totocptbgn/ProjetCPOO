@@ -1,13 +1,15 @@
+import java.util.concurrent.CompletableFuture;
+
 public interface Launcher<T extends Thread> {
 	public String getNom();
 	public state getEtat();
 
 	public void pause(); 	// WORK -> WAIT
-	public void restart(); 	// WAIT -> WORK
+	public CompletableFuture<Boolean> restart(); 	// WAIT -> WORK
 	public void delete(); 	// * -> FAIL
-	public void start(); 	// NEW -> WORK
+	public CompletableFuture<Boolean> start(); 	// NEW -> WORK
 
 	public static enum state {
-		STOP, WORK, WAIT, NEW, FAIL, SUCCESS;
+		STOP/*etape entre WAIT et WORK : WAIT -> STOP -> WORK*/, WORK/*En cours de téléchargement*/, WAIT/*en pause*/, NEW/*Creé sans avoir été lancé*/, FAIL/*Echec du téléchargement*/, SUCCESS/*Telechargement fini*/;
 	}
 }
