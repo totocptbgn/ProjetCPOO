@@ -65,7 +65,7 @@ public class Gestionnaire {
 			}
 			Launcher currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-			currentNew.start().thenAccept(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); }});			
+			currentNew.start().thenAcceptAsync(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); }});			
 			return true;
 		}
 		return false;
@@ -123,13 +123,11 @@ public class Gestionnaire {
 	}
 	
 	public boolean restart() {
-		if (getCurrentWait() != null) {
-			if(this.getCurrentWait().getEtat() != Launcher.state.WAIT) {
-				return false;
-			}
+		if (this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
 			Launcher l = waitQueue.pop();
 			launchQueue.push(l);
-			l.restart().thenAccept((e) -> { if(launchQueue.remove(l)) endQueue.add(l); });
+			l.restart().thenAcceptAsync((e) -> { if(launchQueue.remove(l)) endQueue.add(l); });
+			return true;
 		}
 		return false;
 	}

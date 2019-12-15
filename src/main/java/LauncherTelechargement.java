@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -26,12 +29,12 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	
 	private Stream<Tache> commandes;
 	private Set<Tache> elements;
-	private List<Future<Tache>> inExecution;
+	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
 	private boolean limit = true;
 	private state etat = state.NEW;
 
 
-	private ExecutorService es = Executors.newCachedThreadPool();
+	private ForkJoinPool es;
 
 	// Permettra à l'utilisateur de choisir ce launcher
 	private final String nom;
@@ -45,7 +48,16 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 		return nom;
 	}
 	
-	public state getEtat() {
+	public synchronized state getEtat() {
+		if(this.etat==Launcher.state.WORK) {
+			this.notifyAll();
+			try {
+				this.wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return etat;
 	}
 
@@ -97,36 +109,54 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	 *  lance l'ensemble du telechargement 
 	 */
 	public synchronized Boolean run() {
+		//System.out.println(Thread.currentThread().getName());
 		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
 			return false;
 		}
 		
 		this.etat = state.WORK;
 		try {
+			//creer la pool
+			es = new ForkJoinPool();
 			//elements a télécharger
 			if(elements==null)
-				elements = Collections.synchronizedSet(commandes.collect(Collectors.toSet()));
+				elements = Collections.synchronizedSet(commandes.collect(Collectors.toSet()));			
+
+			inExecution.clear();
 			//lance les téléchargements
-			inExecution = es.invokeAll(elements);
+			for(Tache t:elements) {
+				inExecution.add(es.submit(t, t));
+			}
+		
 			//télécharge jusqu'a arret
 			while(!es.isShutdown()) {
+				
+				//on laisse la moins aux autres actions
+				//System.out.println("waitbegin");
+				this.wait();
+				//System.out.println("waitend");
 				//futur tous fini et non arété de force -> fini normalement
+				//System.out.println(inExecution.get(0).isCancelled());
 				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled())) {
 					es.shutdown();
 					this.etat= state.SUCCESS;
+					
 					return true;
 				}
 				//thread tous interrompu -> fini sur erreur
 				if (inExecution.stream().allMatch(f -> f.isCancelled())) {
 					throw new InterruptedException();
 				}
-				//on laisse la moins aux autres actions un petit moment
-				this.wait(1000);
+				
+				this.notifyAll();
 			}
 			
 			
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+		}
+		finally {
+			this.notifyAll();
 		}
 		return false;
 		
@@ -135,13 +165,14 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	public synchronized void delete() {
 		try {
 			//si fini -> ne fait rien
-			if(es.awaitTermination(0, TimeUnit.SECONDS)) {
+			if(es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
 				return;
 			}
 		} catch (InterruptedException e) {
 			//ne devrait jamais arriver
 			e.printStackTrace();
 		}
+
 		//on n'utilise plus le gestionnaire de téléchargement
 		es.shutdownNow();
 		//on change l'état
@@ -151,28 +182,29 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	
 	// TO DO : met en pause le telechargement
 	public synchronized void pause() {
+		//System.out.println(Thread.currentThread().getName());
 		try {
 			//si fini -> ne fait rien
-			if(es.awaitTermination(0, TimeUnit.SECONDS)) {
-				System.out.print("endedbefore");
+			if(es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
+				System.out.print("endedbefore\n");
 				return;
 			}
 		} catch (InterruptedException e) {
 			//ne devrait jamais arriver
 			e.printStackTrace();
 		}
-		
 		//interrons les taches
-		for (Tache t:elements) {
-			t.interrupt(); //interrupt?
+		for (ForkJoinTask<Tache> f:inExecution) {
+			System.out.println(f.cancel(true));
 		}
-		for (Future<Tache> f:inExecution) {
-			f.cancel(false); //interrupt?
-		}
+		
+		//on n'utilise plus le gestionnaire de téléchargement pour l'instant
+		es.shutdownNow();
 		this.etat = Launcher.state.WAIT;
 	}
 	
 	public synchronized CompletableFuture<Boolean> restart() {
+
 		for (Future<Tache> f:inExecution) {
 			
 			if(f.isDone() && !f.isCancelled()) {
@@ -185,6 +217,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 			}
 		}
 		this.etat = Launcher.state.STOP;
+
 		return CompletableFuture.supplyAsync(this::run);
 	}
 

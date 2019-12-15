@@ -1,6 +1,6 @@
 import java.util.concurrent.CompletableFuture;
 
-public interface Launcher<T extends Thread> {
+public interface Launcher<T> {
 	public String getNom();
 	public state getEtat();
 

@@ -38,6 +38,7 @@ public class LibraryTest {
               .thenApply(HttpResponse::body);
     }
     public static void main(String[] args) throws Exception {
+    	System.out.println(Thread.currentThread().getName());
     	/*
     	CompletableFuture<Path> cf = get("https://openjdk.java.net/groups/net/httpclient/recipes.html");
 
@@ -70,14 +71,14 @@ public class LibraryTest {
     	for(Pair<String, Launcher.state> p: g.listOfAll()) {
     		System.out.println(p.fst+"-"+p.snd+"\n");
     	}
-    	System.out.print("Do pause : "+g.pause()+"\n");
+    	System.out.print("Do delete : "+g.delete()+"\n");
     	time = System.currentTimeMillis();
     	
     	//while(System.currentTimeMillis()-time<2000);
     	for(Pair<String, Launcher.state> p: g.listOfAll()) {
     		System.out.println(p.fst+"-"+p.snd+"\n");
     	}
-    	System.out.print("Do restart : "+g.restart()+"\n");
+    	//System.out.print("Do restart : "+g.restart()+"\n");
     	time = System.currentTimeMillis();
     	
     	while(System.currentTimeMillis()-time<5000);

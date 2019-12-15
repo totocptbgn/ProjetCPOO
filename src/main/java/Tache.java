@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
  * Téléchargement d'une page
  */
 
-final class Tache extends Thread implements Callable<Tache> {
+final class Tache extends Thread {
 	// Mettre un httpClient par thread?
 	private static final HttpClient client = HttpClient.newHttpClient();
 	private final long size;
@@ -46,12 +46,16 @@ final class Tache extends Thread implements Callable<Tache> {
 	}
 
 	//met la page dans un fichier
-	private void get() {
-		
+	private synchronized void get() {
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 		try {
-			//non Asynch pour pouvoir l'aréter
+			//pour les tests
+			Thread.sleep(1000);
+			//non Asynch pour pouvoir l'areter
+			
+			
 			client.send(request, BodyHandlers.ofFile(Paths.get(this.getPage()))).body();
+			
 			System.out.print("done\n");
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -74,7 +78,7 @@ final class Tache extends Thread implements Callable<Tache> {
 		return "body" + ".html";
 	}
 
-	public void run() {
+	public void run()  {
 		
 		this.get();
 		
@@ -92,11 +96,5 @@ final class Tache extends Thread implements Callable<Tache> {
 	 */
 	public Set<Tache> NextProfondeur(Set<Tache> without) {
 		return new HashSet<Tache>();
-	}
-
-	@Override
-	public Tache call() {
-		this.run();
-		return this;
 	}
 }
