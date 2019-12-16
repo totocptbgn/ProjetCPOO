@@ -144,7 +144,6 @@ public class Gestionnaire {
 		Launcher l = new LauncherTelechargement(URL);
 		newQueue.push(l);
 	}
-	
 
 	
 	// Liste des noms et etats des launchers non lancé
@@ -183,8 +182,4 @@ public class Gestionnaire {
 			l.addAll(listEnd());
 			return l;
 		}
-	
-	
-	
-	
 }

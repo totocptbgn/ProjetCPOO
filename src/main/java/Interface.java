@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Scanner;
 
 /**
@@ -7,78 +8,56 @@ import java.util.Scanner;
 
 public class Interface {
 
-	public static String getProgressBar(int progress) {
-		if (progress < 0 || progress > 100) throw new IllegalArgumentException();
-
-		StringBuilder str = new StringBuilder();
-		switch (progress) {
-			case 0:
-				str.append(" 0%   ");
-				break;
-			case 100:
-				str.append(" 100% ");
-				break;
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-			case 8:
-			case 9:
-				str.append(" ").append(progress).append("%   ");
-				break;
-			default:
-				str.append(" ").append(progress).append("%  ");
-		}
-		str.append("| ");
-
-		int size = progress;
-		for (int i = 0; i < size; i++) {
-			str.append("#");
-		}
-		for (int i = 0; i < 100 - size; i++) {
-			str.append(" ");
-		}
-		str.append(" |");
-		if (progress == 100) str.append(" [" + ColoredOutput.set(Color.GREEN, "Done") + "]\n");
-		return str.toString();
-	}
+	private static boolean running = true;
 
 	public static void main (String [] args) throws InterruptedException, IOException {
+		Gestionnaire g = new Gestionnaire();
+		Scanner sc = new Scanner(System.in);
+		ColoredOutput.init();
 
-		System.out.println("> Download of \"irif.fr/~bignon\" :");
-		for (int i = 0; i <= 100; i++) {
-			System.out.print("\r" + getProgressBar(i));
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		while (running) {
+			System.out.print("> ");
+			String cmd = sc.nextLine();
+			newCommand(cmd);
 		}
-
-		System.out.println("> Download of \"irif.fr/~thauvin\" :");
-		for (int i = 0; i <= 100; i++) {
-			System.out.print("\r" + getProgressBar(i));
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-
-
 	}
 
 	/**
+	 * Recoit une commande sous forme de String et la traite.
+	 */
+
+	private static void newCommand(String cmd) {
+		if (cmd.equals("exit")) {
+			exit();
+			return;
+		}
+		System.out.println(ColoredOutput.set(Color.BLUE, "  " + cmd));
+	}
+
+	private static void exit() {
+		running = false;
+		System.out.println("Exit.");
+	}
+
+	/**
+	 *  Use an init() to be sure that the ouput is set to WHITE by default.
 	 *  Use set() to transform a string to a colored string for the terminal.
 	 */
 
 	static class ColoredOutput {
+		public static Color basic = Color.WHITE;
+
 		public static String set(Color color, String s) {
-			return (char) 27 + "[" + color.code + "m" + s + (char) 27 + "[97m";
+			return (char) 27 + "[" + color.code + "m" + s + (char) 27 + "[" + basic.code + "m";
+		}
+
+		public static void init(PrintStream output, Color defaultColor) {
+			basic = defaultColor;
+			output.print((char) 27 + "[" + basic.code + "m");
+		}
+
+		public static void init() {
+			init(System.out, Color.WHITE);
 		}
 	}
 
@@ -88,8 +67,9 @@ public class Interface {
 	 *  https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
 	 */
 
-	public enum Color {
+	public static enum Color {
 
+		WHITE(97),
 		RED(31),
 		GREEN(32),
 		YELLOW(33),
