@@ -71,14 +71,14 @@ public class LibraryTest {
     	for(Pair<String, Launcher.state> p: g.listOfAll()) {
     		System.out.println(p.fst+"-"+p.snd+"\n");
     	}
-    	System.out.print("Do delete : "+g.delete()+"\n");
+    	System.out.print("Do pause : "+g.pause()+"\n");
     	time = System.currentTimeMillis();
     	
     	//while(System.currentTimeMillis()-time<2000);
     	for(Pair<String, Launcher.state> p: g.listOfAll()) {
     		System.out.println(p.fst+"-"+p.snd+"\n");
     	}
-    	//System.out.print("Do restart : "+g.restart()+"\n");
+    	System.out.print("Do restart : "+g.restart()+"\n");
     	time = System.currentTimeMillis();
     	
     	while(System.currentTimeMillis()-time<5000);

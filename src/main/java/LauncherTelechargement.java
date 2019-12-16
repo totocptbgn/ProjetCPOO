@@ -1,3 +1,4 @@
+import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -50,12 +51,12 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	
 	public synchronized state getEtat() {
 		if(this.etat==Launcher.state.WORK) {
-			this.notifyAll();
+			//verifie si modification de l'info
+			this.notify();
 			try {
 				this.wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//impossible
 			}
 		}
 		return etat;
@@ -148,7 +149,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 					throw new InterruptedException();
 				}
 				
-				this.notifyAll();
+				this.notify();
 			}
 			
 			
@@ -156,7 +157,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 			//e.printStackTrace();
 		}
 		finally {
-			this.notifyAll();
+			this.notify();
 		}
 		return false;
 		
@@ -177,6 +178,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 		es.shutdownNow();
 		//on change l'état
 		this.etat = Launcher.state.FAIL;
+		this.notify();
 		
 	}
 	
@@ -201,6 +203,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 		//on n'utilise plus le gestionnaire de téléchargement pour l'instant
 		es.shutdownNow();
 		this.etat = Launcher.state.WAIT;
+		this.notify();
 	}
 	
 	public synchronized CompletableFuture<Boolean> restart() {
