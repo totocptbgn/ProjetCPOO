@@ -1,4 +1,4 @@
-import java.rmi.UnexpectedException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -7,8 +7,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.Future;
@@ -24,7 +22,7 @@ import java.util.stream.*;
  * Chaque Launcher sera représenté par un nom
  */
 
-public final class LauncherTelechargement implements Launcher<Tache> {
+public final class LauncherTelechargement implements Launcher {
 	// Limite de nombre de fichier
 	private static long MAX = 1;
 	
@@ -41,7 +39,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	private final String nom;
 
 	// TO DO changer commandes
-	public void setLimit(boolean limit) {
+	protected void setLimit(boolean limit) {
 		this.limit = limit;
 	}
 
@@ -56,7 +54,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 			try {
 				this.wait();
 			} catch (InterruptedException e) {
-				//impossible
+				//arret de l'application avant la fin -> rien à faire
 			}
 		}
 		return etat;
@@ -67,7 +65,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	 * @param String URL : URL de base
 	 */
 	
-	public LauncherTelechargement(String URL) {
+	LauncherTelechargement(String URL) throws IOException {
 		// Donne les prochains éléments à traiter
 		// Faire à l'exterieur de la classe
 		Supplier<Tache> sup = new Supplier<Tache>() {
@@ -101,7 +99,6 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	 * Lance le téléchargement
 	 * 
 	 */
-	@Override
 	public synchronized CompletableFuture<Boolean> start() {
 		return CompletableFuture.supplyAsync(this::run);
 	}
@@ -109,8 +106,8 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 	/*
 	 *  lance l'ensemble du telechargement 
 	 */
-	public synchronized Boolean run() {
-		//System.out.println(Thread.currentThread().getName());
+	private synchronized Boolean run() {
+		//etat non prevu
 		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
 			return false;
 		}
@@ -123,7 +120,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 			if(elements==null)
 				elements = Collections.synchronizedSet(commandes.collect(Collectors.toSet()));			
 
-			inExecution.clear();
+			inExecution.clear(); //vide les taches en téléchargement
 			//lance les téléchargements
 			for(Tache t:elements) {
 				inExecution.add(es.submit(t, t));
@@ -132,12 +129,9 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 			//télécharge jusqu'a arret
 			while(!es.isShutdown()) {
 				
-				//on laisse la moins aux autres actions
-				//System.out.println("waitbegin");
+				//on laisse la mains aux autres actions
 				this.wait();
-				//System.out.println("waitend");
 				//futur tous fini et non arété de force -> fini normalement
-				//System.out.println(inExecution.get(0).isCancelled());
 				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled())) {
 					es.shutdown();
 					this.etat= state.SUCCESS;
@@ -157,21 +151,22 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 			//e.printStackTrace();
 		}
 		finally {
+			//notifie que la verification est terminé
 			this.notify();
 		}
 		return false;
 		
 	}
 
-	public synchronized void delete() {
+	public synchronized boolean delete() {
 		try {
 			//si fini -> ne fait rien
 			if(es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
-				return;
+				return false;
 			}
 		} catch (InterruptedException e) {
-			//ne devrait jamais arriver
-			e.printStackTrace();
+			//fin non voulu de l'application
+			return false;
 		}
 
 		//on n'utilise plus le gestionnaire de téléchargement
@@ -179,31 +174,32 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 		//on change l'état
 		this.etat = Launcher.state.FAIL;
 		this.notify();
+		return true;
 		
 	}
 	
-	// TO DO : met en pause le telechargement
-	public synchronized void pause() {
-		//System.out.println(Thread.currentThread().getName());
+	//met en pause le telechargement
+	public synchronized boolean pause() {
+	
 		try {
 			//si fini -> ne fait rien
 			if(es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
-				System.out.print("endedbefore\n");
-				return;
+				return false;
 			}
 		} catch (InterruptedException e) {
-			//ne devrait jamais arriver
-			e.printStackTrace();
+			//arret inattendu
+			return false;
 		}
 		//interrons les taches
 		for (ForkJoinTask<Tache> f:inExecution) {
-			System.out.println(f.cancel(true));
+			f.cancel(true);
 		}
 		
 		//on n'utilise plus le gestionnaire de téléchargement pour l'instant
 		es.shutdownNow();
 		this.etat = Launcher.state.WAIT;
 		this.notify();
+		return true;
 	}
 	
 	public synchronized CompletableFuture<Boolean> restart() {
@@ -215,7 +211,7 @@ public final class LauncherTelechargement implements Launcher<Tache> {
 					//on enlève les taches qui ont eu le temps de finir
 					elements.remove(f.get());
 				} catch (InterruptedException | ExecutionException e) {
-					
+					//erreur ne devrait pas arrivé (et au pire on fait les autres taches
 				} 
 			}
 		}

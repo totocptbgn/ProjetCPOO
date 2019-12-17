@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,14 +35,15 @@ final class Tache extends Thread {
 	 * father.getProfondeur()+1; }
 	 */
 
-	public Tache(String URL) {
+	public Tache(String URL) throws MalformedURLException, IOException {
 		this.URL = URL;
-		// TO DO calcul taille
-		this.size = 0;
+		HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
+		this.size = conn.getContentLengthLong();
+		conn.disconnect();
 		// this.father=null;
 	}
 
-	// Met la page dans un fichier
+	//met la page dans un fichier
 	private synchronized void get() {
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 		try {
@@ -59,10 +62,11 @@ final class Tache extends Thread {
 	}
 
 	// tache avec parent
-	private Tache(String URL, Tache father) {
+	private Tache(String URL, Tache father) throws MalformedURLException, IOException {
 		this.URL = URL;
-		// TO DO calcul taille
-		this.size = 0;
+		HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
+		this.size = conn.getContentLengthLong();
+		conn.disconnect();
 		// this.father=father;
 	}
 

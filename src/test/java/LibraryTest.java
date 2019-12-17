@@ -3,8 +3,6 @@
  */
 import org.junit.Test;
 
-import com.sun.tools.javac.util.Pair;
-
 import static org.junit.Assert.*;
 
 import java.net.URI;
@@ -14,13 +12,8 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CompletableFuture;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class LibraryTest {
     @Test public void testSomeLibraryMethod() {
@@ -62,28 +55,28 @@ public class LibraryTest {
       */
         Gestionnaire g=new Gestionnaire();
     	g.addLauncher("https://www.irif.fr/~sighirea//cours/reseauxM/java.url.html");
-    	for(Pair<String, Launcher.state> p: g.list()) {
-    		System.out.println(p.fst+"-"+p.snd+"\n");
+    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
+    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
     	}
     	g.launch();
     	long time = System.currentTimeMillis();
     	//while(System.currentTimeMillis()-time<1000);
-    	for(Pair<String, Launcher.state> p: g.listOfAll()) {
-    		System.out.println(p.fst+"-"+p.snd+"\n");
+    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
+    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
     	}
     	System.out.print("Do pause : "+g.pause()+"\n");
     	time = System.currentTimeMillis();
     	
     	//while(System.currentTimeMillis()-time<2000);
-    	for(Pair<String, Launcher.state> p: g.listOfAll()) {
-    		System.out.println(p.fst+"-"+p.snd+"\n");
+    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
+    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
     	}
     	System.out.print("Do restart : "+g.restart()+"\n");
     	time = System.currentTimeMillis();
     	
     	while(System.currentTimeMillis()-time<5000);
-    	for(Pair<String, Launcher.state> p: g.listOfAll()) {
-    		System.out.println(p.fst+"-"+p.snd+"\n");
+    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
+    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
     	}
     	 
     }
