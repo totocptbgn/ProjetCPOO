@@ -8,47 +8,41 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
-
 import com.sun.tools.javac.util.Pair;
 
 /*
- * Gere l'ensemble des téléchargements
+ * Gère l'ensemble des téléchargements
  * Il contient une liste de téléchargements en attente
  */
+
 public class Gestionnaire {
-	// Liste des telechargements (a synchro)
+
 	private final Deque<Launcher> newQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements instanciés
 	private final Deque<Launcher> waitQueue = new ConcurrentLinkedDeque<>();   // La file d'attente des téléchagements en pause
 	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
-	
-	/**
-	 * Dernier launcher non lancé
-	 */
+
+	// Dernier launcher non lancé
 	public Launcher getCurrentNew() {
 		return newQueue.peek();
 	}
-	
-	/**
-	 * Dernier launcher en attente
-	 */
+
+	// Dernier launcher en attente
 	public Launcher getCurrentWait() {
 		return waitQueue.peek();
 	}
 	
-	/**
-	 * Dernier launcher lancé
-	 */
+	// Dernier launcher lancé
 	public Launcher getCurrentLaunch() {
 		return launchQueue.peek();
 	}
 	
 	public Gestionnaire() {
-		
+
 	}
 	
-	public boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
-		Launcher l=queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
+	public boolean changeCurrentLauncher(String nom, Deque<Launcher> queue) {
+		Launcher l = queue.parallelStream().reduce(null, (a, e) -> e.getNom().equals(nom)?e:null);
 		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
@@ -76,12 +70,12 @@ public class Gestionnaire {
 	 * @param String launcher nom du telechargement
 	 * @return : si celui ci n'existe pas renvoie faux
 	 */
+
 	public boolean launch(String launcher) {
-		if (!changeCurrentLauncher(launcher,newQueue)) {
+		if (!changeCurrentLauncher(launcher, newQueue)) {
 			return false;
 		}
 		return this.launch();
-		
 	}
 	
 	public boolean delete() {
@@ -95,11 +89,10 @@ public class Gestionnaire {
 	}
 	
 	public boolean delete(String launcher) {
-		if (!changeCurrentLauncher(launcher,launchQueue)) {
+		if (!changeCurrentLauncher(launcher, launchQueue)) {
 			return false;
 		}
 		return this.delete();
-		
 	}
 	
 	public boolean pause() {
@@ -116,7 +109,7 @@ public class Gestionnaire {
 	}
 	
 	public boolean pause(String launcher) {
-		if (!changeCurrentLauncher(launcher,launchQueue)) {
+		if (!changeCurrentLauncher(launcher, launchQueue)) {
 			return false;
 		}
 		return this.pause();
@@ -133,40 +126,46 @@ public class Gestionnaire {
 	}
 	
 	public boolean restart(String launcher) {
-		if (!changeCurrentLauncher(launcher,waitQueue)) {
+		if (!changeCurrentLauncher(launcher, waitQueue)) {
 			return false;
 		}
 		return this.restart();
 	}
-	
-	
+
 	public void addLauncher(String URL) {
 		Launcher l = new LauncherTelechargement(URL);
 		newQueue.push(l);
 	}
-
 	
-	// Liste des noms et etats des launchers non lancé
+	// Liste des noms et états des launchers non lancé
 	public List<Pair<String, Launcher.state>> listNew() {
-		return (List<Pair<String, Launcher.state>>) newQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+		return (List<Pair<String, Launcher.state>>) newQueue.parallelStream().map(
+				(l) -> new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList()
+		);
 	}
 	
-	//liste des noms et etats des launchers en pause
+	// Liste des noms et états des launchers en pause
 	public List<Pair<String, Launcher.state>> listWait() {
-		return (List<Pair<String, Launcher.state>>) waitQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+		return (List<Pair<String, Launcher.state>>) waitQueue.parallelStream().map(
+				(l) -> new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList()
+		);
 	}
 	
-	//liste des noms et etats des launchers en pause
+	// Liste des noms et états des launchers en pause
 	public List<Pair<String, Launcher.state>> listLaunch() {
-		return (List<Pair<String, Launcher.state>>) launchQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
+		return (List<Pair<String, Launcher.state>>) launchQueue.parallelStream().map(
+				(l) -> new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList()
+		);
 	}
 	
-	//liste des noms et etats des launchers terminés/arétés
-		public List<Pair<String, Launcher.state>> listEnd() {
-			return (List<Pair<String, Launcher.state>>) endQueue.parallelStream().map((l)->new Pair<>(l.getNom(),l.getEtat())).collect(Collectors.toList());
-		}
+	// Liste des noms et états des launchers terminés/arétés
+	public List<Pair<String, Launcher.state>> listEnd() {
+		return (List<Pair<String, Launcher.state>>) endQueue.parallelStream().map(
+				(l) -> new Pair<>(l.getNom(), l.getEtat())).collect(Collectors.toList()
+		);
+	}
 	
-	//liste des noms et etats des launchers
+	// Liste des noms et états des launchers
 	public List<Pair<String, Launcher.state>> list() {
 		List<Pair<String, Launcher.state>> l = listLaunch();
 		l.addAll(listWait());
@@ -174,12 +173,12 @@ public class Gestionnaire {
 		return l;
 	}
 	
-	//liste des noms et etats des launchers
-		public List<Pair<String, Launcher.state>> listOfAll() {
-			List<Pair<String, Launcher.state>> l = listLaunch();
-			l.addAll(listWait());
-			l.addAll(listNew());
-			l.addAll(listEnd());
-			return l;
-		}
+	// Liste des noms et états des launchers
+	public List<Pair<String, Launcher.state>> listOfAll() {
+		List<Pair<String, Launcher.state>> l = listLaunch();
+		l.addAll(listWait());
+		l.addAll(listNew());
+		l.addAll(listEnd());
+		return l;
+	}
 }

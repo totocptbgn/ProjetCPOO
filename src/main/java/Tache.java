@@ -2,15 +2,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Téléchargement d'une page
@@ -45,7 +40,7 @@ final class Tache extends Thread {
 		// this.father=null;
 	}
 
-	//met la page dans un fichier
+	// Met la page dans un fichier
 	private synchronized void get() {
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 		try {

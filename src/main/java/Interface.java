@@ -4,6 +4,16 @@ import java.util.Scanner;
 
 /**
  * Classe gérant l'interface du gestionnaire
+ *
+ * Liste des commandes à faire :
+ *
+ *   launch [name]
+ *   add [link]
+ *   delete [name]
+ *   pause [name]
+ *   list [type] | all
+ *   help
+ *
  */
 
 public class Interface {
@@ -14,6 +24,7 @@ public class Interface {
 		Gestionnaire g = new Gestionnaire();
 		Scanner sc = new Scanner(System.in);
 		ColoredOutput.init();
+		printIntro();
 
 		while (running) {
 			System.out.print("> ");
@@ -37,6 +48,33 @@ public class Interface {
 	private static void exit() {
 		running = false;
 		System.out.println("Exit.");
+	}
+
+	private static void printIntro() {
+		System.out.print(
+			" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
+			" |                                                                                                     |\n" +
+			" |                                                                                                     |\n" +
+			" |             ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗                   |\n" +
+			" |             ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗                  |\n" +
+			" |             ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║                  |\n" +
+			" |             ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║                  |\n" +
+			" |             ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝                  |\n" +
+			" |             ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝                   |\n" +
+			" |                                                                                                     |\n" +
+			" |                   ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗                     |\n" +
+			" |                   ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗                    |\n" +
+			" |                   ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝                    |\n" +
+			" |                   ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗                    |\n" +
+			" |                   ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║                    |\n" +
+			" |                   ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝                    |\n" +
+			" |                                                                                                     |\n" +
+			" |                                                            * Dao Thauvin & Thomas Copt-Bignon       |\n" +
+			" |                                                            * version 1.0.0                          |\n" +
+			" |                                                            * CPOO | Final project | year 2019-2020  |\n" +
+			" |                                                                                                     |\n" +
+			" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n"
+		);
 	}
 
 	/**
