@@ -139,36 +139,36 @@ public class Gestionnaire {
 
 	
 	// Liste des noms et etats des launchers non lancé
-	public Set<AbstractMap.SimpleEntry<String, Launcher.state>> listNew() {
-		return newQueue.parallelStream().map((l)->new AbstractMap.SimpleEntry<>(l.getNom(),l.getEtat())).collect(Collectors.toSet());
+	public Set<Launcher> listNew() {
+		return newQueue.stream().collect(Collectors.toSet());
 	}
 	
 	//liste des noms et etats des launchers en pause
-	public Set<AbstractMap.SimpleEntry<String, Launcher.state>> listWait() {
-		return waitQueue.parallelStream().map((l)->new AbstractMap.SimpleEntry<>(l.getNom(),l.getEtat())).collect(Collectors.toSet());
+	public Set<Launcher> listWait() {
+		return waitQueue.stream().collect(Collectors.toSet());
 	}
 	
 	//liste des noms et etats des launchers en pause
-	public Set<AbstractMap.SimpleEntry<String, Launcher.state>> listLaunch() {
-		return launchQueue.parallelStream().map((l)->new AbstractMap.SimpleEntry<>(l.getNom(),l.getEtat())).collect(Collectors.toSet());
+	public Set<Launcher> listLaunch() {
+		return launchQueue.stream().collect(Collectors.toSet());
 	}
 	
 	//liste des noms et etats des launchers terminés/arétés
-	public Set<AbstractMap.SimpleEntry<String, Launcher.state>> listEnd() {
-		return endQueue.parallelStream().map((l)->new AbstractMap.SimpleEntry<>(l.getNom(),l.getEtat())).collect(Collectors.toSet());
+	public Set<Launcher> listEnd() {
+		return endQueue.stream().collect(Collectors.toSet());
 	}
 	
 	//liste des noms et etats des launchers
-	public Set<AbstractMap.SimpleEntry<String, Launcher.state>> list() {
-		Set<AbstractMap.SimpleEntry<String, Launcher.state>> l = listLaunch();
+	public Set<Launcher> list() {
+		Set<Launcher> l = listLaunch();
 		l.addAll(listWait());
 		l.addAll(listNew());
 		return l;
 	}
 	
 	//liste des noms et etats des launchers
-		public Set<AbstractMap.SimpleEntry<String, Launcher.state>> listOfAll() {
-			Set<AbstractMap.SimpleEntry<String, Launcher.state>> l = listLaunch();
+		public Set<Launcher> listOfAll() {
+			Set<Launcher> l = listLaunch();
 			l.addAll(listWait());
 			l.addAll(listNew());
 			l.addAll(listEnd());

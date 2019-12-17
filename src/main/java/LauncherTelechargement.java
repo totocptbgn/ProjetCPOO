@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -26,12 +27,12 @@ public final class LauncherTelechargement implements Launcher {
 	// Limite de nombre de fichier
 	private static long MAX = 1;
 	
-	private Stream<Tache> commandes;
-	private Set<Tache> elements;
-	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
 	private boolean limit = true;
 	private state etat = state.NEW;
-
+	private Stream<Tache> commandes;
+	private Set<Tache> elements;
+	private Set<Tache> elementsdone = new HashSet<Tache>();
+	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
 
 	private ForkJoinPool es;
 
@@ -89,7 +90,7 @@ public final class LauncherTelechargement implements Launcher {
 		nom = URL.split("/")[2];
 
 		commandes = Stream.generate(sup);
-
+		
 		if (limit) {
 			commandes = commandes.limit(MAX);
 		}
@@ -111,15 +112,13 @@ public final class LauncherTelechargement implements Launcher {
 		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
 			return false;
 		}
-		
-		this.etat = state.WORK;
 		try {
 			//creer la pool
 			es = new ForkJoinPool();
 			//elements a télécharger
-			if(elements==null)
+			if(elements==null || this.etat == Launcher.state.NEW)
 				elements = Collections.synchronizedSet(commandes.collect(Collectors.toSet()));			
-
+			this.etat = state.WORK;
 			inExecution.clear(); //vide les taches en téléchargement
 			//lance les téléchargements
 			for(Tache t:elements) {
@@ -208,8 +207,11 @@ public final class LauncherTelechargement implements Launcher {
 			
 			if(f.isDone() && !f.isCancelled()) {
 				try {
+					Tache t = f.get();
 					//on enlève les taches qui ont eu le temps de finir
-					elements.remove(f.get());
+					elements.remove(t);
+					//on garde les éléments dans une liste
+					elementsdone.add(t);
 				} catch (InterruptedException | ExecutionException e) {
 					//erreur ne devrait pas arrivé (et au pire on fait les autres taches
 				} 
@@ -275,6 +277,50 @@ public final class LauncherTelechargement implements Launcher {
 	// TO DO : applique une opération sur les résultats obtenu après telechargement
 	private void apply(Consumer<Tache> consumer) {
 
+	}
+
+	/**
+	 * Pas encore au point
+	 */
+	public synchronized long getTotalSize() {
+		//ouille, limite les changements de taille /;
+		if(this.etat == Launcher.state.NEW) {
+			elements = Collections.synchronizedSet(commandes.collect(Collectors.toSet()));
+			commandes = elements.stream();
+		}
+		long res = 0;
+		for(Tache t:elements) {
+			res+=t.getSize();
+		}
+		for(Tache t:elementsdone) {
+			res+=t.getSize();
+		}
+		return res;
+	}
+	
+	/**
+	 * Pas encore au point
+	 */
+	public synchronized long getSizeLeft() {
+		if(this.etat == Launcher.state.FAIL || this.etat == Launcher.state.SUCCESS)
+			return 0;
+		if(this.etat == Launcher.state.NEW) {
+			return this.getTotalSize();
+		}
+		long res = 0;
+		for(ForkJoinTask<Tache> t:inExecution) {
+			if(!t.isDone() || t.isCancelled())
+				try {
+					res+=t.get().getSize();
+				} catch (InterruptedException | ExecutionException e) {
+					//si erreur inattendu -> ne devrai pas arriver
+				}
+		}
+		for(Tache t:elementsdone) {
+			res+=t.getSize();
+		}
+		return res;
+		
 	}
 
 }

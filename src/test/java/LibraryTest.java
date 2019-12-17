@@ -55,28 +55,28 @@ public class LibraryTest {
       */
         Gestionnaire g=new Gestionnaire();
     	g.addLauncher("https://www.irif.fr/~sighirea//cours/reseauxM/java.url.html");
-    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
-    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
+    	for(Launcher l: g.list()) {
+    		System.out.println(l.getNom()+/*" "+l.getSizeLeft()+*/" "+l.getEtat()+"\n");
     	}
     	g.launch();
     	long time = System.currentTimeMillis();
     	//while(System.currentTimeMillis()-time<1000);
-    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
-    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
+    	for(Launcher l: g.list()) {
+    		System.out.println(l.getNom()+/*" "+l.getSizeLeft()+*/" "+l.getEtat()+"\n");
     	}
     	System.out.print("Do pause : "+g.pause()+"\n");
     	time = System.currentTimeMillis();
     	
     	//while(System.currentTimeMillis()-time<2000);
-    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
-    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
+    	for(Launcher l: g.list()) {
+    		System.out.println(l.getNom()+/*" "+l.getSizeLeft()+*/" "+l.getEtat()+"\n");
     	}
     	System.out.print("Do restart : "+g.restart()+"\n");
     	time = System.currentTimeMillis();
     	
     	while(System.currentTimeMillis()-time<5000);
-    	for(SimpleEntry<String, Launcher.state> p: g.list()) {
-    		System.out.println(p.getKey()+"-"+p.getValue()+"\n");
+    	for(Launcher l: g.list()) {
+    		System.out.println(l.getNom()+/*" "+l.getSizeLeft()+*/" "+l.getEtat()+"\n");
     	}
     	 
     }

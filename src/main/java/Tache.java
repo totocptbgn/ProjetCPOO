@@ -53,7 +53,6 @@ final class Tache extends Thread {
 			
 			
 			client.send(request, BodyHandlers.ofFile(Paths.get(this.getPage()))).body();
-			
 			System.out.print("done\n");
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
