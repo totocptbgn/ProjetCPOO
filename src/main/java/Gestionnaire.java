@@ -1,9 +1,11 @@
+package downloadmanager;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Deque;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
@@ -133,6 +135,11 @@ public class Gestionnaire {
 	
 	public void addLauncher(String URL) throws IOException {
 		Launcher l = new LauncherTelechargement(URL);
+		newQueue.push(l);
+	}
+	
+	public void addLauncher(String URL,Supplier<String> s) throws IOException {
+		Launcher l = new LauncherTelechargement(URL,s);
 		newQueue.push(l);
 	}
 	

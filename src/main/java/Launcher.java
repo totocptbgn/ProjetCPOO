@@ -1,3 +1,4 @@
+package downloadmanager;
 import java.util.concurrent.CompletableFuture;
 
 public interface Launcher {
