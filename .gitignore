@@ -12,3 +12,4 @@ gradlew.bat
 .settings/org.eclipse.jdt.core.prefs
 settings.gradle
 build/
+body.html

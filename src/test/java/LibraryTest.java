@@ -16,37 +16,38 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.CompletableFuture;
 
 public class LibraryTest {
-    @Test public void testSomeLibraryMethod() {
-        Library classUnderTest = new Library();
-        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
-    }
+	@Test public void testSomeLibraryMethod() {
+		Library classUnderTest = new Library();
+		assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
+	}
 
-    public static CompletableFuture<Path> get(String uri) {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-              .uri(URI.create(uri))
-              .build();
+	public static CompletableFuture<Path> get(String uri) {
+		HttpClient client = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create(uri))
+				.build();
 
-        return client.sendAsync(request, BodyHandlers.ofFile(Paths.get("body.txt")))
-              .thenApply(HttpResponse::body);
-    }
-    public static void main(String[] args) throws Exception {
-    	System.out.println(Thread.currentThread().getName());
+		return client.sendAsync(request, BodyHandlers.ofFile(Paths.get("body.txt")))
+				.thenApply(HttpResponse::body);
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println(Thread.currentThread().getName());
     	/*
     	CompletableFuture<Path> cf = get("https://openjdk.java.net/groups/net/httpclient/recipes.html");
 
     	System.out.print(cf.get());
-    	
+
     	//avoir une page
         Document doc = Jsoup.connect("http://en.wikipedia.org/").get();
         //System.out.println(doc);
         //doc : https://jsoup.org/apidocs/org/jsoup/select/Elements.html
         Elements newsHeadlines = doc.getAllElements();//doc.select("#mp-itn b a"); -> avoir element en particulier
-        
+
         for (Element headline : newsHeadlines) {
         	if(/*headline.absUrl("href").contains("en.wikipedia")*\/headline.attr("href").contains(".css"))
         		System.out.println(headline.attr("href"));
-        	/*	
+        	/*
         	log("%s\n\t%s", headline.attr("title") //avoir le titre de la balise
             		, headline.absUrl("href") //avoir les liens des elements
             		);
@@ -66,18 +67,18 @@ public class LibraryTest {
     	}
     	System.out.print("Do pause : "+g.pause()+"\n");
     	time = System.currentTimeMillis();
-    	
+
     	//while(System.currentTimeMillis()-time<2000);
     	for(Launcher l: g.list()) {
     		System.out.println(l.getNom()+" "+l.getSizeLeft()+" "+l.getEtat()+"\n");
     	}
     	System.out.print("Do restart : "+g.restart()+"\n");
     	time = System.currentTimeMillis();
-    	
+
     	while(System.currentTimeMillis()-time<5000);
     	for(Launcher l: g.list()) {
     		System.out.println(l.getNom()+" "+l.getSizeLeft()+" "+l.getEtat()+"\n");
     	}
-    	 
+
     }
 }
