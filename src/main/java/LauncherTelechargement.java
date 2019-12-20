@@ -69,7 +69,7 @@ public final class LauncherTelechargement implements Launcher {
 	
 	LauncherTelechargement(String URL,Supplier<String> s) {
 		id++;
-		nom = URL.split("/")[2]+" "+id;
+		nom = id+"_"+URL.split("/")[2];
 		this.myid=id;
 		repository = new File("sites/"+nom);
 		if(!repository.isDirectory())
@@ -88,7 +88,7 @@ public final class LauncherTelechargement implements Launcher {
 	
 	LauncherTelechargement(String URL) throws IOException {
 		id++;
-		nom = URL.split("/")[2]+id;
+		nom = id+"_"+URL.split("/")[2];
 		this.myid=id;
 		repository = new File("sites/"+nom);
 		if(!repository.isDirectory())

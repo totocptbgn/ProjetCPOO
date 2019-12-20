@@ -46,6 +46,15 @@ public class Gestionnaire {
 	public Gestionnaire() {
 		if(!f.isDirectory()) f.mkdir();
 	}
+	
+	public String nameOf(int id ,Deque<Launcher> d) {
+		for(Launcher l:d) {
+			if(l.getId() == id) {
+				return l.getNom();
+			}
+		}
+		return null;
+	}
 
 	public boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
 		Launcher l = queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
@@ -79,6 +88,16 @@ public class Gestionnaire {
 		return this.launch();
 
 	}
+	
+	public CompletableFuture<Map<Path,String>> launch(int id) {
+		String launcher = nameOf(id ,newQueue);
+		if(launcher==null) return false;
+		if (!changeCurrentLauncher(launcher,newQueue)) {
+			return not_possible;
+		}
+		return this.launch();
+
+	}
 
 	public boolean delete() {
 		if (getCurrentLaunch() != null) {
@@ -97,7 +116,18 @@ public class Gestionnaire {
 		return this.delete();
 
 	}
+	
+	public boolean delete(int id) {
+		String launcher = nameOf(id ,launchQueue);
+		if(launcher==null) return false;
+		if (!changeCurrentLauncher(launcher,launchQueue)) {
+			return false;
+		}
+		return this.delete();
 
+	}
+
+	
 	public boolean pause() {
 		if (getCurrentLaunch() != null && this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
 			Launcher l = launchQueue.pop();
@@ -114,6 +144,16 @@ public class Gestionnaire {
 		}
 		return this.pause();
 	}
+	
+	public boolean pause(int id) {
+		String launcher = nameOf(id ,launchQueue);
+		if(launcher==null) return false;
+		if (!changeCurrentLauncher(launcher,launchQueue)) {
+			return false;
+		}
+		return this.pause();
+	}
+
 
 	public CompletableFuture<Map<Path,String>> restart() {
 		if (this.getCurrentWait()!= null && this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
@@ -126,6 +166,15 @@ public class Gestionnaire {
 	}
 
 	public CompletableFuture<Map<Path,String>> restart(String launcher) {
+		if (!changeCurrentLauncher(launcher,waitQueue)) {
+			return not_possible;
+		}
+		return this.restart();
+	}
+	
+	public CompletableFuture<Map<Path,String>> restart(int id) {
+		String launcher = nameOf(id ,waitQueue);
+		if(launcher==null) return not_possible;
 		if (!changeCurrentLauncher(launcher,waitQueue)) {
 			return not_possible;
 		}
