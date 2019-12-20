@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.Deque;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -19,7 +20,7 @@ public class Gestionnaire {
 	private final Deque<Launcher> waitQueue = new ConcurrentLinkedDeque<>();   // La file d'attente des téléchagements en pause
 	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
-	private final static CompletableFuture<Set<Path>> not_possible = CompletableFuture.completedFuture(null);
+	private final static CompletableFuture<Map<Path,String>> not_possible = CompletableFuture.completedFuture(null);
 
 	/**
 	 * Dernier launcher non lancé
@@ -57,12 +58,10 @@ public class Gestionnaire {
 	}
 
 	// Lance le launcher au dessus de la pile
-	public CompletableFuture<Set<Path>> launch() {
+	public CompletableFuture<Map<Path,String>> launch() {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			Launcher currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-
-
 			return currentNew.start().thenApplyAsync(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
 		}
 		return not_possible;
@@ -73,7 +72,7 @@ public class Gestionnaire {
 	 * @param String launcher nom du telechargement
 	 * @return : si celui ci n'existe pas renvoie faux
 	 */
-	public CompletableFuture<Set<Path>> launch(String launcher) {
+	public CompletableFuture<Map<Path,String>> launch(String launcher) {
 		if (!changeCurrentLauncher(launcher,newQueue)) {
 			return not_possible;
 		}
@@ -116,7 +115,7 @@ public class Gestionnaire {
 		return this.pause();
 	}
 
-	public CompletableFuture<Set<Path>> restart() {
+	public CompletableFuture<Map<Path,String>> restart() {
 		if (this.getCurrentWait()!= null && this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
 			Launcher l = waitQueue.pop();
 			launchQueue.push(l);
@@ -126,7 +125,7 @@ public class Gestionnaire {
 		return not_possible;
 	}
 
-	public CompletableFuture<Set<Path>> restart(String launcher) {
+	public CompletableFuture<Map<Path,String>> restart(String launcher) {
 		if (!changeCurrentLauncher(launcher,waitQueue)) {
 			return not_possible;
 		}
@@ -182,5 +181,6 @@ public class Gestionnaire {
 		l.addAll(listEnd());
 		return l;
 	}
+
 
 }

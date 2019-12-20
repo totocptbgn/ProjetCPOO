@@ -13,7 +13,7 @@ import java.util.Scanner;
  *   pause [name]
  *   list [type] | all
  *   help
- *
+ *   (option -v pour verbal)
  */
 
 public class Interface {

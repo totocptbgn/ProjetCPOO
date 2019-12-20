@@ -1,12 +1,17 @@
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +37,7 @@ public final class LauncherTelechargement implements Launcher {
 	private Set<Tache> elements;
 	private Set<Tache> elementsdone = new HashSet<Tache>();
 	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
-	private Set<Path> files = Collections.synchronizedSet(new HashSet<>());
+	private Map<Path,String> files = Collections.synchronizedMap(new HashMap<>());
 	
 	private ForkJoinPool es;
 
@@ -86,14 +91,14 @@ public final class LauncherTelechargement implements Launcher {
 	 * Lance le téléchargement
 	 * 
 	 */
-	public synchronized CompletableFuture<Set<Path>> start() {
+	public synchronized CompletableFuture<Map<Path,String>> start() {
 		return CompletableFuture.supplyAsync(this::run);
 	}
 	
 	/*
 	 *  lance l'ensemble du telechargement 
 	 */
-	private synchronized Set<Path> run() {
+	private synchronized Map<Path,String> run() {
 		//etat non prevu
 		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
 			return null;
@@ -121,7 +126,7 @@ public final class LauncherTelechargement implements Launcher {
 					
 					for(ForkJoinTask<Tache> t:inExecution) {
 						try {
-							files.add(Paths.get(t.get().getPage()));
+							files.put(Paths.get(t.get().getPage()),t.get().getURL());
 						} catch (ExecutionException e) {
 							//should not happen
 						}
@@ -192,7 +197,7 @@ public final class LauncherTelechargement implements Launcher {
 		return true;
 	}
 	
-	public synchronized CompletableFuture<Set<Path>> restart() {
+	public synchronized CompletableFuture<Map<Path,String>> restart() {
 
 		for (Future<Tache> f:inExecution) {
 			
@@ -203,7 +208,7 @@ public final class LauncherTelechargement implements Launcher {
 					elements.remove(t);
 					//on garde les éléments dans une liste
 					elementsdone.add(t);
-					files.add(Paths.get(t.getPage()));
+					files.put(Paths.get(t.getPage()),t.getURL());
 				} catch (InterruptedException | ExecutionException e) {
 					//erreur ne devrait pas arrivé (et au pire on fait les autres taches
 				} 
@@ -251,6 +256,15 @@ public final class LauncherTelechargement implements Launcher {
 		}
 		return res;
 		
+	}
+	
+	public Map<Path,String> getPages() {
+		File f = new File(".");
+		Map<Path,String> m = new HashMap<Path,String>();
+		for(Tache element:elements) {
+			m.put(Path.of(URI.create(f.getPath()+element.getPage())), element.getURL());
+		}	
+		return m;
 	}
 
 }
