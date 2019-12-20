@@ -91,7 +91,7 @@ public class Gestionnaire {
 	
 	public CompletableFuture<Map<Path,String>> launch(int id) {
 		String launcher = nameOf(id ,newQueue);
-		if(launcher==null) return false;
+		if(launcher==null) return not_possible;
 		if (!changeCurrentLauncher(launcher,newQueue)) {
 			return not_possible;
 		}
