@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -18,7 +19,7 @@ final class TacheTelechargement extends Thread implements Tache {
 	private static final HttpClient client = HttpClient.newHttpClient();
 	private final long size;
 	private final String URL;
-
+	private final File repository;
 	public String getURL() {
 		return this.URL;
 	}
@@ -27,8 +28,9 @@ final class TacheTelechargement extends Thread implements Tache {
 		return this.size;
 	}
 
-	public TacheTelechargement(String URL) throws MalformedURLException, IOException {
+	public TacheTelechargement(String URL,File f) throws MalformedURLException, IOException {
 		this.URL = URL;
+		repository = f;
 		HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
 		this.size = conn.getContentLengthLong();
 		conn.disconnect();
@@ -42,7 +44,7 @@ final class TacheTelechargement extends Thread implements Tache {
 			// pour les tests
 			// Thread.sleep(3000);
 			// non Asynch pour pouvoir l'areter
-			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(this.getPage())));
+			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
 			// System.out.print("done\n");
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block

@@ -1,6 +1,6 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.AbstractMap;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +21,7 @@ public class Gestionnaire {
 	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	private final static CompletableFuture<Map<Path,String>> not_possible = CompletableFuture.completedFuture(null);
-
+	private final File f = new File("sites");
 	/**
 	 * Dernier launcher non lancé
 	 */
@@ -44,7 +44,7 @@ public class Gestionnaire {
 	}
 
 	public Gestionnaire() {
-
+		if(!f.isDirectory()) f.mkdir();
 	}
 
 	public boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {

@@ -1,7 +1,6 @@
 
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface Launcher {
@@ -14,7 +13,7 @@ public interface Launcher {
 	public long getSizeLeft();
 	public long getTotalSize();
 	public Map<Path,String> getPages();
-
+	public int getId();
 	public static enum state {
 		STOP,		// Etape entre WAIT et WORK : WAIT -> STOP -> WORK
 		WORK,		// En cours de téléchargement

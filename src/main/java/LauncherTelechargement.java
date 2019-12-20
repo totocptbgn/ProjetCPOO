@@ -32,13 +32,14 @@ import java.util.stream.*;
  */
 
 public final class LauncherTelechargement implements Launcher {
-	
+	private static int id = 0;
+	private int myid;
 	private state etat = state.NEW;
 	private Set<Tache> elements;
 	private Set<Tache> elementsdone = new HashSet<Tache>();
 	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
 	private Map<Path,String> files = Collections.synchronizedMap(new HashMap<>());
-	
+	private File repository;
 	private ForkJoinPool es;
 
 	// Permettra à l'utilisateur de choisir ce launcher
@@ -67,11 +68,15 @@ public final class LauncherTelechargement implements Launcher {
 	 */
 	
 	LauncherTelechargement(String URL,Supplier<String> s) {
-		nom = URL.split("/")[2];
-
+		id++;
+		nom = URL.split("/")[2]+" "+id;
+		this.myid=id;
+		repository = new File("sites/"+nom);
+		if(!repository.isDirectory())
+			repository.mkdir();
 		elements = Stream.generate(s).map(t -> {
 			try {
-				return new TacheTelechargement(t);
+				return new TacheTelechargement(t,repository);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -82,9 +87,13 @@ public final class LauncherTelechargement implements Launcher {
 	}
 	
 	LauncherTelechargement(String URL) throws IOException {
-		nom = URL.split("/")[2];
-
-		elements = Stream.of(new TacheTelechargement(URL)).collect(Collectors.toSet());
+		id++;
+		nom = URL.split("/")[2]+id;
+		this.myid=id;
+		repository = new File("sites/"+nom);
+		if(!repository.isDirectory())
+			repository.mkdir();
+		elements = Stream.of(new TacheTelechargement(URL,repository)).collect(Collectors.toSet());
 	}
 
 	/**
@@ -259,12 +268,16 @@ public final class LauncherTelechargement implements Launcher {
 	}
 	
 	public Map<Path,String> getPages() {
-		File f = new File(".");
 		Map<Path,String> m = new HashMap<Path,String>();
 		for(Tache element:elements) {
-			m.put(Path.of(URI.create(f.getPath()+element.getPage())), element.getURL());
+			m.put(Path.of(repository.getAbsolutePath()+"/"+element.getPage()), element.getURL());
 		}	
 		return m;
+	}
+
+	@Override
+	public int getId() {
+		return myid;
 	}
 
 }
