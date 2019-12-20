@@ -22,6 +22,7 @@ public class Gestionnaire {
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	private final static CompletableFuture<Map<Path,String>> not_possible = CompletableFuture.completedFuture(null);
 	private final File f = new File("sites");
+	
 	/**
 	 * Dernier launcher non lancé
 	 */
@@ -91,11 +92,7 @@ public class Gestionnaire {
 	
 	public CompletableFuture<Map<Path,String>> launch(int id) {
 		String launcher = nameOf(id ,newQueue);
-		if(launcher==null) return not_possible;
-		if (!changeCurrentLauncher(launcher,newQueue)) {
-			return not_possible;
-		}
-		return this.launch();
+		return this.launch(launcher);
 
 	}
 
@@ -119,11 +116,7 @@ public class Gestionnaire {
 	
 	public boolean delete(int id) {
 		String launcher = nameOf(id ,launchQueue);
-		if(launcher==null) return false;
-		if (!changeCurrentLauncher(launcher,launchQueue)) {
-			return false;
-		}
-		return this.delete();
+		return this.delete(launcher);
 
 	}
 
@@ -147,11 +140,7 @@ public class Gestionnaire {
 	
 	public boolean pause(int id) {
 		String launcher = nameOf(id ,launchQueue);
-		if(launcher==null) return false;
-		if (!changeCurrentLauncher(launcher,launchQueue)) {
-			return false;
-		}
-		return this.pause();
+		return this.pause(launcher);
 	}
 
 
@@ -174,11 +163,7 @@ public class Gestionnaire {
 	
 	public CompletableFuture<Map<Path,String>> restart(int id) {
 		String launcher = nameOf(id ,waitQueue);
-		if(launcher==null) return not_possible;
-		if (!changeCurrentLauncher(launcher,waitQueue)) {
-			return not_possible;
-		}
-		return this.restart();
+		return this.restart(launcher);
 	}
 
 
@@ -187,7 +172,7 @@ public class Gestionnaire {
 		newQueue.push(l);
 	}
 
-	public void addLauncher(String URL,Supplier<String> s) throws IOException {
+	public void addLauncher(String URL,Set<String> s) throws IOException {
 		Launcher l = new LauncherTelechargement(URL,s);
 		newQueue.push(l);
 	}

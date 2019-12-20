@@ -67,22 +67,21 @@ public final class LauncherTelechargement implements Launcher {
 	 * @param String URL : URL de base
 	 */
 	
-	LauncherTelechargement(String URL,Supplier<String> s) {
+	LauncherTelechargement(String URL,Set<String> s) {
 		id++;
 		nom = id+"_"+URL.split("/")[2];
 		this.myid=id;
 		repository = new File("sites/"+nom);
 		if(!repository.isDirectory())
 			repository.mkdir();
-		elements = Stream.generate(s).map(t -> {
+		elements = s.stream().map(e -> {
 			try {
-				return new TacheTelechargement(t,repository);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return new TacheTelechargement(e,repository);
+			} catch (IOException e1) {
+				//System.err.println(e1.getMessage());
 				return null;
+				//error should not occur
 			}
-			
 		}).collect(Collectors.toSet());
 	}
 	
@@ -132,15 +131,15 @@ public final class LauncherTelechargement implements Launcher {
 				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled())) {
 					es.shutdown();
 					this.etat= state.SUCCESS;
-					
 					for(ForkJoinTask<Tache> t:inExecution) {
 						try {
 							files.put(Paths.get(t.get().getPage()),t.get().getURL());
 						} catch (ExecutionException e) {
 							//should not happen
 						}
-						return files;
+						
 					}
+					return files;
 				}
 				//thread tous interrompu -> fini sur erreur
 				if (inExecution.stream().allMatch(f -> f.isCancelled())) {

@@ -1,7 +1,11 @@
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -80,7 +84,7 @@ public class Aspirateur {
 			}
 			
 		};
-		a.commandes = Stream.generate(supply);
+		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
 		if(a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
@@ -109,7 +113,7 @@ public class Aspirateur {
 			}
 			
 		};
-		a.commandes = Stream.generate(supply);
+		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
 		if(a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
@@ -139,7 +143,7 @@ public class Aspirateur {
 			}
 			
 		};
-		a.commandes = Stream.generate(supply);
+		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
 		if(a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
@@ -206,22 +210,68 @@ public class Aspirateur {
 	 		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getProfondeur(), (x) -> x < profondeur); 
 	 }
 	 
-	 public void downloadAll() {
-		 List<CompletableFuture<Set<Path>>> cfs= commandes.takeWhile(e -> e!=null).map(e -> { try {
-			g.addLauncher(e.getURL());
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} return g.launch(); }).collect(Collectors.toList());
-		 /*
-		 for(CompletableFuture<Set<Path>> cf : cfs) {
-			 cf.thenApply(
-					 set ->
-					 	for(Path p:set) {
-					 	}
-			);
+	 public CompletableFuture<Map<Path, String>>  downloadAll() throws IOException {
+		 g.addLauncher(this.getBaseURL(), commandes.map(e->e.getURL()).collect(Collectors.toSet()));
+		 for(Launcher l:g.list()) {
+			// System.out.print(l.getNom()+" "+l.getEtat());
 		 }
-		 */
+		 CompletableFuture<Map<Path, String>> c =g.launch()
+				 .thenApplyAsync(e ->
+				 { 
+					 System.err.println(e.size());
+					 for(Path p:e.keySet()) {
+						 System.out.println(p);
+						 String link = e.get(p);
+						 System.out.println(link);
+						 for(Path pere:e.keySet()) {
+							
+							File f = pere.toFile();
+							System.out.println(f.getName());
+							
+							File ftemp = null;
+							System.out.print(ftemp);
+							try {
+								System.out.println("before");
+								ftemp = File.createTempFile(e.get(pere),"");
+								System.out.println("after");
+								FileWriter fw = new FileWriter(ftemp);
+								
+								Scanner scan=new Scanner(f);
+								while(scan.hasNext()) {
+									String line = scan.next().replace(link,p.toString());
+									fw.write(line);
+								}
+								scan.close();
+								fw.close();
+							 
+								f.delete();
+							 
+								f.createNewFile();
+								fw = new FileWriter(f);
+								scan=new Scanner(ftemp);
+								while(scan.hasNext()) {
+									String line = scan.next();
+									System.out.println(line);
+									fw.write(line);
+								 }
+								scan.close();
+								fw.close();
+							} catch (IOException e1) {
+								System.out.println("aye");
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							
+						 }
+						 
+					 }
+					 
+					 return e;
+				 }
+				
+				);
+		 return c;
+		 
 	 }
 	 /*
 	// TO DO : applique une opération sur les résultats obtenu après telechargement

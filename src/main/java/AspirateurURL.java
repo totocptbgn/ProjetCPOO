@@ -74,7 +74,7 @@ final class AspirateurURL {
 	}
 	
 	public AspirateurURL(String URL) {
-		System.out.println(URL);
+		//System.out.println(URL);
 		image = false;
 		HttpURLConnection conn = null;
 		try {
@@ -90,7 +90,7 @@ final class AspirateurURL {
 		whiteList.add(tab[2]);
 	}
 	private AspirateurURL(String URL,AspirateurURL parent,boolean image) throws MalformedURLException, IOException {
-		System.out.println(URL);
+		//System.out.println(URL);
 		this.image = image;		
 		HttpURLConnection conn = null;
 		conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
@@ -109,10 +109,13 @@ final class AspirateurURL {
 	public Set<AspirateurURL> link() { 
 		Document doc = null;
 		try {
-			doc = Jsoup.connect(URL).get();
+			doc = Jsoup.connect(URL).userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
+		               .referrer("http://www.google.com")              
+		               .timeout(1000*5)
+		               .get();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//le site n'autorise pas la connection
+			return Set.of();
 		}  
 		Elements links = doc.select("a[href]");  
 		Set<AspirateurURL> liste = new HashSet<>();
@@ -144,10 +147,12 @@ final class AspirateurURL {
 	public Set<AspirateurURL> images() {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect(URL).get();
+			doc = Jsoup.connect(URL).userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
+		               .referrer("http://www.google.com")              
+		               .timeout(1000*5)
+		               .get();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			return Set.of();
 		}
 		Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");  
 		Set<AspirateurURL> liste = new HashSet<>();

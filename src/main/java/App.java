@@ -28,6 +28,7 @@ public class App {
     	t.setDaemon(true);
     	t.start();
     	*/
+    	/*
     	Gestionnaire g=new Gestionnaire();
     	g.addLauncher("https://www.irif.fr/~sighirea//cours/reseauxM/java.url.html");
     	for(Launcher l: g.list()) {
@@ -53,6 +54,9 @@ public class App {
     	for(Launcher l: g.list()) {
     		System.out.println(l.getNom()+" "+l.getSizeLeft()+" "+l.getEtat()+"\n");
     	}
+    	*/
+         Aspirateur a = Aspirateur.aspirateurPages("https://www.irif.fr/~sighirea//cours/reseauxM/java.url.html");
+         a.downloadAll().join();
     	 
     }
 }
