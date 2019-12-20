@@ -1,4 +1,4 @@
-package aspirateur;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -6,15 +6,18 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
 
 final class AspirateurURL {
 	private final String URL;
-	private AspirateurURL parent;
+	private AspirateurURL parent = null;
 	
-	
+	private final boolean image;
+	// activation de la whiteList
 	private boolean whiteListed = false;
+	// whiteList des sites
 	private Set<String> whiteList = new HashSet<>();
 		
 	private long size;
@@ -31,6 +34,8 @@ final class AspirateurURL {
 	}
 	
 	public boolean getWhiteListed() {
+		if(parent != null) 
+			return parent.getWhiteListed();
 		return whiteListed;
 	}
 	
@@ -38,8 +43,10 @@ final class AspirateurURL {
 		whiteListed = true;
 	}
 	
+	// permet de savoir si une URL rentre dans la whiteList
 	public boolean isWell(String URL) {
-		if(!whiteListed) return true;
+		if( URL.matches("#*")) return false;
+		if(!this.getWhiteListed()) return true;
 		String little;
 		String[] tab= URL.split("/");
 		if(tab.length < 2) {
@@ -61,17 +68,20 @@ final class AspirateurURL {
 		return parent;
 	}
 	public long getProfondeur() {
+		if(image) return 0;
 		if(this.getParent() == null) return 0;
 		return 1 + this.getParent().getProfondeur();
 	}
 	
 	public AspirateurURL(String URL) {
+		System.out.println(URL);
+		image = false;
 		HttpURLConnection conn = null;
 		try {
 			conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		this.size = conn.getContentLengthLong();
 		conn.disconnect();
@@ -79,14 +89,11 @@ final class AspirateurURL {
 		String[] tab= URL.split("/");
 		whiteList.add(tab[2]);
 	}
-	private AspirateurURL(String URL,AspirateurURL parent) {
+	private AspirateurURL(String URL,AspirateurURL parent,boolean image) throws MalformedURLException, IOException {
+		System.out.println(URL);
+		this.image = image;		
 		HttpURLConnection conn = null;
-		try {
-			conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
 		this.size = conn.getContentLengthLong();
 		conn.disconnect();
 		this.URL = URL;
@@ -96,6 +103,8 @@ final class AspirateurURL {
 	
 	/**
 	 * Renvoie les liens internes
+	 * @throws IOException 
+	 * @throws MalformedURLException 
 	 */
 	public Set<AspirateurURL> link() { 
 		Document doc = null;
@@ -109,14 +118,28 @@ final class AspirateurURL {
 		Set<AspirateurURL> liste = new HashSet<>();
 		for (Element link : links) {  
 			if(this.isWell(link.attr("href")))
-			 	liste.add(new AspirateurURL(link.attr("href"),this));
+				try {
+					liste.add(new AspirateurURL(transform(link.attr("href")),this,false));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+				}
 		} 
 		return liste;
 	}
 	
+	/*
+	 * to have a good url
+	 */
+	private String transform(String s) {
+		System.out.println(s);
+		return s.split("#")[0];
+	}
 	/**
 	 * 
 	 * @return renvoie les liens vers les images
+	 * @throws IOException 
+	 * @throws MalformedURLException 
 	 */
 	public Set<AspirateurURL> images() {
 		Document doc = null;
@@ -124,13 +147,18 @@ final class AspirateurURL {
 			doc = Jsoup.connect(URL).get();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");  
 		Set<AspirateurURL> liste = new HashSet<>();
 		for (Element image : images) {  
 			if(this.isWell(image.attr("src")))
-				liste.add(new AspirateurURL(image.attr("src"),this));  
+				try {
+					liste.add(new AspirateurURL(image.attr("src"),this,true));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
         }
 		return liste;  
 	}

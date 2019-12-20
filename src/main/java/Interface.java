@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Scanner;
@@ -27,9 +28,11 @@ public class Interface {
 		printIntro();
 
 		while (running) {
-			System.out.print("> ");
-			String cmd = sc.nextLine();
-			newCommand(cmd);
+			if(sc.hasNextLine()) {
+				System.out.print("> ");
+				String cmd = sc.nextLine();
+				newCommand(cmd);
+			}
 		}
 	}
 
@@ -38,71 +41,43 @@ public class Interface {
 	 */
 
 	private static void newCommand(String cmd) {
-		if (cmd.matches("^exit$")) {
+		if (cmd.equals("exit")) {
 			exit();
 			return;
 		}
-
-		if (cmd.matches("^add .+")) {
-			// System.out.println(ColoredOutput.set(Color.BLUE, "Adding a link."));
-			String link = cmd.substring(4);
-
-			if (link.matches("(http(s)?:\\/\\/.)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)")) {
-				System.out.println(ColoredOutput.set(Color.GREEN, "'" + link + "'" + " is a correct link."));
-			} else {
-				System.out.println(ColoredOutput.set(Color.RED, "'" + link + "'" + " is not a correct link."));
-			}
-			return;
-		}
-
-		if (cmd.matches("^add.*")) {
-			System.out.println(ColoredOutput.set(Color.RED, "Usage: add [link]"));
-			return;
-		}
-
-		if (cmd.matches("^launch [^ ]+$")) {
-			String name = cmd.substring(7);
-			System.out.println("Launching " + name + "...");
-			return;
-		}
-
-		if (cmd.matches("^launch")) {
-			System.out.println("Launching first in queue...");
-			return;
-		}
-
-		System.out.println(ColoredOutput.set(Color.YELLOW, "Unknown command : '" + cmd + "'."));
+		System.out.println(ColoredOutput.set(Color.BLUE, "  " + cmd));
 	}
 
 	private static void exit() {
 		running = false;
+		System.out.println("Exit.");
 	}
 
 	private static void printIntro() {
 		System.out.print(
-			" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
-			" |                                                                                                       |\n" +
-			" |                                                                                                       |\n" +
-			" |               ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗                   |\n" +
-			" |               ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗                  |\n" +
-			" |               ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║                  |\n" +
-			" |               ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║                  |\n" +
-			" |               ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝                  |\n" +
-			" |               ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝                   |\n" +
-			" |                                                                                                       |\n" +
-			" |                     ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗                     |\n" +
-			" |                     ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗                    |\n" +
-			" |                     ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝                    |\n" +
-			" |                     ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗                    |\n" +
-			" |                     ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║                    |\n" +
-			" |                     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝                    |\n" +
-			" |                                                                                                       |\n" +
-			" |                                                    *    Dao Thauvin & Thomas Copt-Bignon     *        |\n" +
-			" |                                                    *             version 1.0.0               *        |\n" +
-			" |                                                    *  CPOO | Final project | year 2019-2020  *        |\n" +
-			" |                                                                                                       |\n" +
-			" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n"
-		);
+				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
+				" |                                                                                                       |\n" +
+				" |                                                                                                       |\n" +
+				" |               ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗                   |\n" +
+				" |               ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗                  |\n" +
+				" |               ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║                  |\n" +
+				" |               ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║                  |\n" +
+				" |               ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝                  |\n" +
+				" |               ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝                   |\n" +
+				" |                                                                                                       |\n" +
+				" |                     ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗                     |\n" +
+				" |                     ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗                    |\n" +
+				" |                     ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝                    |\n" +
+				" |                     ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗                    |\n" +
+				" |                     ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║                    |\n" +
+				" |                     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝                    |\n" +
+				" |                                                                                                       |\n" +
+				" |                                                    *    Dao Thauvin & Thomas Copt-Bignon     *        |\n" +
+				" |                                                    *             version 1.0.0               *        |\n" +
+				" |                                                    *  CPOO | Final project | year 2019-2020  *        |\n" +
+				" |                                                                                                       |\n" +
+				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n"
+			);
 	}
 
 	/**

@@ -1,5 +1,3 @@
-package downloadmanager;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -54,18 +52,10 @@ final class TacheTelechargement extends Thread implements Tache {
 		}
 	}
 
-	// tache avec parent
-	private TacheTelechargement(String URL, TacheTelechargement father) throws MalformedURLException, IOException {
-		this.URL = URL;
-		HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
-		this.size = conn.getContentLengthLong();
-		conn.disconnect();
-	}
-
 	/*
 	 * Renvoie le nom qui sera donné à la page dans notre fichier
 	 */
-	private String getPage() {
+	public String getPage() {
 		String[] tab = URL.split("/");
 		return tab[tab.length-1];
 	}

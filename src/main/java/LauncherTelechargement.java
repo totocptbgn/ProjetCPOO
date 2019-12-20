@@ -1,5 +1,7 @@
-package downloadmanager;
+
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,7 +32,8 @@ public final class LauncherTelechargement implements Launcher {
 	private Set<Tache> elements;
 	private Set<Tache> elementsdone = new HashSet<Tache>();
 	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
-
+	private Set<Path> files = Collections.synchronizedSet(new HashSet<>());
+	
 	private ForkJoinPool es;
 
 	// Permettra à l'utilisateur de choisir ce launcher
@@ -83,17 +86,17 @@ public final class LauncherTelechargement implements Launcher {
 	 * Lance le téléchargement
 	 * 
 	 */
-	public synchronized CompletableFuture<Boolean> start() {
+	public synchronized CompletableFuture<Set<Path>> start() {
 		return CompletableFuture.supplyAsync(this::run);
 	}
 	
 	/*
 	 *  lance l'ensemble du telechargement 
 	 */
-	private synchronized Boolean run() {
+	private synchronized Set<Path> run() {
 		//etat non prevu
 		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
-			return false;
+			return null;
 		}
 		this.etat = state.WORK;
 		try {
@@ -116,7 +119,14 @@ public final class LauncherTelechargement implements Launcher {
 					es.shutdown();
 					this.etat= state.SUCCESS;
 					
-					return true;
+					for(ForkJoinTask<Tache> t:inExecution) {
+						try {
+							files.add(Paths.get(t.get().getPage()));
+						} catch (ExecutionException e) {
+							//should not happen
+						}
+						return files;
+					}
 				}
 				//thread tous interrompu -> fini sur erreur
 				if (inExecution.stream().allMatch(f -> f.isCancelled())) {
@@ -134,7 +144,7 @@ public final class LauncherTelechargement implements Launcher {
 			//notifie que la verification est terminé
 			this.notify();
 		}
-		return false;
+		return null;
 		
 	}
 
@@ -182,7 +192,7 @@ public final class LauncherTelechargement implements Launcher {
 		return true;
 	}
 	
-	public synchronized CompletableFuture<Boolean> restart() {
+	public synchronized CompletableFuture<Set<Path>> restart() {
 
 		for (Future<Tache> f:inExecution) {
 			
@@ -193,6 +203,7 @@ public final class LauncherTelechargement implements Launcher {
 					elements.remove(t);
 					//on garde les éléments dans une liste
 					elementsdone.add(t);
+					files.add(Paths.get(t.getPage()));
 				} catch (InterruptedException | ExecutionException e) {
 					//erreur ne devrait pas arrivé (et au pire on fait les autres taches
 				} 

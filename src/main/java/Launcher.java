@@ -1,4 +1,6 @@
-package downloadmanager;
+
+import java.nio.file.Path;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface Launcher {
@@ -6,9 +8,9 @@ public interface Launcher {
 	public state getEtat();
 
 	public boolean pause(); 	// WORK -> WAIT
-	public CompletableFuture<Boolean> restart(); 	// WAIT -> WORK
+	public CompletableFuture<Set<Path>> restart(); 	// WAIT -> WORK
 	public boolean delete(); 	// * -> FAIL
-	public CompletableFuture<Boolean> start(); 	// NEW -> WORK
+	public CompletableFuture<Set<Path>> start(); 	// NEW -> WORK
 	public long getSizeLeft();
 	public long getTotalSize();
 	public static enum state {
