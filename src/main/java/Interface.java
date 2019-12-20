@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Scanner;
@@ -20,19 +19,27 @@ import java.util.Scanner;
 public class Interface {
 
 	private static boolean running = true;
+	private static Gestionnaire gstn;
 
-	public static void main (String [] args) throws InterruptedException, IOException {
-		Gestionnaire g = new Gestionnaire();
+
+	public static void main (String [] args) throws IOException {
 		Scanner sc = new Scanner(System.in);
+		clearTerminal();
 		ColoredOutput.init();
-		printIntro();
+		printHeader();
+		gstn = new Gestionnaire();
 
 		while (running) {
-			if(sc.hasNextLine()) {
-				System.out.print("> ");
-				String cmd = sc.nextLine();
+			System.out.print("> ");
+			String cmd = sc.nextLine();
+			try {
 				newCommand(cmd);
+			} catch (Exception e) {
+				System.out.print(" ");
+				System.out.println(ColoredOutput.set(Color.RED, "Task failed... : "));
+				e.printStackTrace();
 			}
+
 		}
 	}
 
@@ -40,44 +47,94 @@ public class Interface {
 	 * Recoit une commande sous forme de String et la traite.
 	 */
 
-	private static void newCommand(String cmd) {
-		if (cmd.equals("exit")) {
+	private static void newCommand(String cmd) throws IOException {
+		// Ferme le programme
+		if (cmd.matches("^exit\\p{Blank}*")) {
 			exit();
+			clearTerminal();
 			return;
 		}
-		System.out.println(ColoredOutput.set(Color.BLUE, "  " + cmd));
+
+		// Clear le terminal
+		if (cmd.matches("^clear\\p{Blank}*")) {
+			clearTerminal();
+			return;
+		}
+
+		// Créé un Launcher
+		if (cmd.matches("^add .+")) {
+			String link = cmd.substring(4);
+
+			if (!link.matches("(http(s)?:\\/\\/.)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)")) {
+				System.out.println(ColoredOutput.set(Color.RED, "'" + link + "'" + " is not a correct link."));
+				return;
+			}
+			System.out.println(ColoredOutput.set(Color.GREEN, "'" + link + "'" + " is a correct link."));
+			gstn.addLauncher(link);
+			return;
+		}
+
+		// Lance un launcher par son nom
+		if (cmd.matches("^launch [^ ]+$")) {
+			String name = cmd.substring(7);
+			System.out.println("Launching " + name + "...");
+			return;
+		}
+
+		// Launch le dernier Laucher ajouté
+		if (cmd.matches("^launch")) {
+			System.out.println("Launching first in queue...");
+			gstn.launch();
+			return;
+		}
+
+		// Commandes mal utilisées
+		if (cmd.matches("^add\\p{Blank}*")) {
+			System.out.println(ColoredOutput.set(Color.RED, "Usage: add [link]"));
+			return;
+		}
+
+		// Commandes non reconnues
+		System.out.println(ColoredOutput.set(Color.YELLOW, "Unknown command : '" + cmd + "'."));
 	}
 
+	// Ferme le programme
 	private static void exit() {
 		running = false;
-		System.out.println("Exit.");
 	}
 
-	private static void printIntro() {
+	// Affiche l'en-tête du programme
+	private static void printHeader() {
 		System.out.print(
 				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
-				" |                                                                                                       |\n" +
-				" |                                                                                                       |\n" +
-				" |               ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗                   |\n" +
-				" |               ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗                  |\n" +
-				" |               ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║                  |\n" +
-				" |               ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║                  |\n" +
-				" |               ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝                  |\n" +
-				" |               ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝                   |\n" +
-				" |                                                                                                       |\n" +
-				" |                     ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗                     |\n" +
-				" |                     ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗                    |\n" +
-				" |                     ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝                    |\n" +
-				" |                     ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗                    |\n" +
-				" |                     ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║                    |\n" +
-				" |                     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝                    |\n" +
-				" |                                                                                                       |\n" +
-				" |                                                    *    Dao Thauvin & Thomas Copt-Bignon     *        |\n" +
-				" |                                                    *             version 1.0.0               *        |\n" +
-				" |                                                    *  CPOO | Final project | year 2019-2020  *        |\n" +
-				" |                                                                                                       |\n" +
-				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n"
-			);
+						" |                                                                                                       |\n" +
+						" |                                                                                                       |\n" +
+						" |               ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗                   |\n" +
+						" |               ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗                  |\n" +
+						" |               ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║                  |\n" +
+						" |               ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║                  |\n" +
+						" |               ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝                  |\n" +
+						" |               ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝                   |\n" +
+						" |                                                                                                       |\n" +
+						" |                     ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗                     |\n" +
+						" |                     ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗                    |\n" +
+						" |                     ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝                    |\n" +
+						" |                     ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗                    |\n" +
+						" |                     ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║                    |\n" +
+						" |                     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝                    |\n" +
+						" |                                                                                                       |\n" +
+						" |                                                    *    Dao Thauvin & Thomas Copt-Bignon     *        |\n" +
+						" |                                                    *             version 1.0.0               *        |\n" +
+						" |                                                    *  CPOO | Final project | year 2019-2020  *        |\n" +
+						" |                                                                                                       |\n" +
+						" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n"
+		);
+	}
+
+	// Nettoie le terminal
+	private static void clearTerminal() {
+		System.out.print("\033[H\033[2J");
+		System.out.flush();
 	}
 
 	/**

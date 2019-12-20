@@ -8,8 +8,6 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Téléchargement d'une page
@@ -42,13 +40,13 @@ final class TacheTelechargement extends Thread implements Tache {
 
 		try {
 			// pour les tests
-			Thread.sleep(3000);
+			// Thread.sleep(3000);
 			// non Asynch pour pouvoir l'areter
 			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(this.getPage())));
-			System.out.print("done\n");
+			// System.out.print("done\n");
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
-			System.out.print("stopped\n");
+			//System.out.print("stopped\n");
 		}
 	}
 
@@ -61,8 +59,6 @@ final class TacheTelechargement extends Thread implements Tache {
 	}
 
 	public void run() {
-
 		this.get();
-
 	}
 }

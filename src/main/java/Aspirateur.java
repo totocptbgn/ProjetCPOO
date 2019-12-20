@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -152,7 +151,7 @@ public class Aspirateur {
 		commandes.limit(MAX);
 	}
 
-	/**
+	/*
 	 * @param Predicate<Tache>
 	 *            p : La condition sur les URL 
 	 *            permet de prendre les elements acceptant la condition
@@ -162,7 +161,7 @@ public class Aspirateur {
 		commandes = commandes.filter(e -> p.test(e.getURL()));
 	}
 
-	/**
+	/*
 	 * @param V
 	 *            start : valeur de base de l'accumulateur
 	 * @param BiFunction<V,

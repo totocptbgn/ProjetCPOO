@@ -20,33 +20,34 @@ public class Gestionnaire {
 	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	private final static CompletableFuture<Set<Path>> not_possible = CompletableFuture.completedFuture(null);
+
 	/**
 	 * Dernier launcher non lancé
 	 */
 	public Launcher getCurrentNew() {
 		return newQueue.peek();
 	}
-	
+
 	/**
 	 * Dernier launcher en attente
 	 */
 	public Launcher getCurrentWait() {
 		return waitQueue.peek();
 	}
-	
+
 	/**
 	 * Dernier launcher lancé
 	 */
 	public Launcher getCurrentLaunch() {
 		return launchQueue.peek();
 	}
-	
+
 	public Gestionnaire() {
 
 	}
-	
+
 	public boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
-		Launcher l=queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
+		Launcher l = queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
 		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
@@ -54,7 +55,7 @@ public class Gestionnaire {
 		}
 		return false;
 	}
-	
+
 	// Lance le launcher au dessus de la pile
 	public CompletableFuture<Set<Path>> launch() {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
@@ -66,7 +67,7 @@ public class Gestionnaire {
 		}
 		return not_possible;
 	}
-	
+
 	/**
 	 * Lance le telechargement,
 	 * @param String launcher nom du telechargement
@@ -77,9 +78,9 @@ public class Gestionnaire {
 			return not_possible;
 		}
 		return this.launch();
-		
+
 	}
-	
+
 	public boolean delete() {
 		if (getCurrentLaunch() != null) {
 			Launcher l = launchQueue.pop();
@@ -89,15 +90,15 @@ public class Gestionnaire {
 		}
 		return false;
 	}
-	
+
 	public boolean delete(String launcher) {
 		if (!changeCurrentLauncher(launcher,launchQueue)) {
 			return false;
 		}
 		return this.delete();
-		
+
 	}
-	
+
 	public boolean pause() {
 		if (getCurrentLaunch() != null && this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
 			Launcher l = launchQueue.pop();
@@ -107,64 +108,64 @@ public class Gestionnaire {
 		}
 		return false;
 	}
-	
+
 	public boolean pause(String launcher) {
 		if (!changeCurrentLauncher(launcher,launchQueue)) {
 			return false;
 		}
 		return this.pause();
 	}
-	
+
 	public CompletableFuture<Set<Path>> restart() {
 		if (this.getCurrentWait()!= null && this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
 			Launcher l = waitQueue.pop();
 			launchQueue.push(l);
-			
+
 			return l.restart().thenApplyAsync((e) -> { if(launchQueue.remove(l)) { endQueue.add(l); } return e;});
 		}
 		return not_possible;
 	}
-	
+
 	public CompletableFuture<Set<Path>> restart(String launcher) {
 		if (!changeCurrentLauncher(launcher,waitQueue)) {
 			return not_possible;
 		}
 		return this.restart();
 	}
-	
-	
+
+
 	public void addLauncher(String URL) throws IOException {
 		Launcher l = new LauncherTelechargement(URL);
 		newQueue.push(l);
 	}
-	
+
 	public void addLauncher(String URL,Supplier<String> s) throws IOException {
 		Launcher l = new LauncherTelechargement(URL,s);
 		newQueue.push(l);
 	}
-	
 
-	
+
+
 	// Liste des noms et etats des launchers non lancé
 	public Set<Launcher> listNew() {
 		return newQueue.stream().collect(Collectors.toSet());
 	}
-	
+
 	//liste des noms et etats des launchers en pause
 	public Set<Launcher> listWait() {
 		return waitQueue.stream().collect(Collectors.toSet());
 	}
-	
+
 	//liste des noms et etats des launchers en pause
 	public Set<Launcher> listLaunch() {
 		return launchQueue.stream().collect(Collectors.toSet());
 	}
-	
+
 	//liste des noms et etats des launchers terminés/arétés
 	public Set<Launcher> listEnd() {
 		return endQueue.stream().collect(Collectors.toSet());
 	}
-	
+
 	//liste des noms et etats des launchers
 	public Set<Launcher> list() {
 		Set<Launcher> l = listLaunch();
@@ -172,14 +173,14 @@ public class Gestionnaire {
 		l.addAll(listNew());
 		return l;
 	}
-	
+
 	//liste des noms et etats des launchers
-		public Set<Launcher> listOfAll() {
-			Set<Launcher> l = listLaunch();
-			l.addAll(listWait());
-			l.addAll(listNew());
-			l.addAll(listEnd());
-			return l;
-		}
-	
+	public Set<Launcher> listOfAll() {
+		Set<Launcher> l = listLaunch();
+		l.addAll(listWait());
+		l.addAll(listNew());
+		l.addAll(listEnd());
+		return l;
+	}
+
 }
