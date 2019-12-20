@@ -20,9 +20,7 @@ public class Gestionnaire {
 	private final Deque<Launcher> waitQueue = new ConcurrentLinkedDeque<>();   // La file d'attente des téléchagements en pause
 	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
-	private final static CompletableFuture<Map<Path,String>> not_possible = CompletableFuture.completedFuture(null);
-	private final File f = new File("sites");
-	
+	private final File f = new File("download");
 	/**
 	 * Dernier launcher non lancé
 	 */
@@ -47,7 +45,7 @@ public class Gestionnaire {
 	public Gestionnaire() {
 		if(!f.isDirectory()) f.mkdir();
 	}
-	
+
 	public String nameOf(int id ,Deque<Launcher> d) {
 		for(Launcher l:d) {
 			if(l.getId() == id) {
@@ -74,7 +72,7 @@ public class Gestionnaire {
 			launchQueue.push(currentNew);
 			return currentNew.start().thenApplyAsync(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
 		}
-		return not_possible;
+		throw new NullPointerException();
 	}
 
 	/**
@@ -84,12 +82,12 @@ public class Gestionnaire {
 	 */
 	public CompletableFuture<Map<Path,String>> launch(String launcher) {
 		if (!changeCurrentLauncher(launcher,newQueue)) {
-			return not_possible;
+			throw new NullPointerException();
 		}
 		return this.launch();
 
 	}
-	
+
 	public CompletableFuture<Map<Path,String>> launch(int id) {
 		String launcher = nameOf(id ,newQueue);
 		return this.launch(launcher);
@@ -113,14 +111,14 @@ public class Gestionnaire {
 		return this.delete();
 
 	}
-	
+
 	public boolean delete(int id) {
 		String launcher = nameOf(id ,launchQueue);
 		return this.delete(launcher);
 
 	}
 
-	
+
 	public boolean pause() {
 		if (getCurrentLaunch() != null && this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
 			Launcher l = launchQueue.pop();
@@ -137,7 +135,7 @@ public class Gestionnaire {
 		}
 		return this.pause();
 	}
-	
+
 	public boolean pause(int id) {
 		String launcher = nameOf(id ,launchQueue);
 		return this.pause(launcher);
@@ -151,16 +149,16 @@ public class Gestionnaire {
 
 			return l.restart().thenApplyAsync((e) -> { if(launchQueue.remove(l)) { endQueue.add(l); } return e;});
 		}
-		return not_possible;
+		throw new NullPointerException();
 	}
 
 	public CompletableFuture<Map<Path,String>> restart(String launcher) {
 		if (!changeCurrentLauncher(launcher,waitQueue)) {
-			return not_possible;
+			throw new NullPointerException();
 		}
 		return this.restart();
 	}
-	
+
 	public CompletableFuture<Map<Path,String>> restart(int id) {
 		String launcher = nameOf(id ,waitQueue);
 		return this.restart(launcher);
@@ -176,8 +174,6 @@ public class Gestionnaire {
 		Launcher l = new LauncherTelechargement(URL,s);
 		newQueue.push(l);
 	}
-
-
 
 	// Liste des noms et etats des launchers non lancé
 	public Set<Launcher> listNew() {

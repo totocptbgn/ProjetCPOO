@@ -16,38 +16,38 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Aspirateur {
-	
+
 	//gestionnaire de telechargement
 	private static Gestionnaire g = new Gestionnaire();
-	
+
 	// Limite de nombre de fichier
 	private static long MAX = 3;
-	
+
 	// activation de la limite
 	private boolean limit = true;
-	
+
 	// ce que l'on ajoute à la page de base
 	private Stream<AspirateurURL> commandes;
-	
+
 	//base du téléchargement
 	private AspirateurURL base;
-	
+
 	public String getBaseURL() {
 		return base.getURL();
 	}
-	
+
 	public void whiteList(boolean whitelist) {
 		base.setWhiteListed(whitelist);
 	}
-	
+
 	public void addWhiteList(String site) {
 		base.addSitetoWhiteList(site);
 	}
-	
+
 	private Aspirateur(String URL) {
 		base = new AspirateurURL(URL);
 	}
-	
+
 	/**
 	 * @param URL de base
 	 * @return fabrique static pour un aspirateur qui n'aspire que la page donné
@@ -60,8 +60,8 @@ public class Aspirateur {
 		}
 		return a;
 	}
-	
-	
+
+
 	/**
 	 * @param URL de base
 	 * @return fabrique static pour un aspirateur qui aspire les pages accessibles
@@ -69,7 +69,7 @@ public class Aspirateur {
 	public static Aspirateur aspirateurPages(String URL) {
 		Aspirateur a = new Aspirateur(URL);
 		Supplier<AspirateurURL> supply = new Supplier<AspirateurURL> () {
-			
+
 			private Deque<AspirateurURL> myQueue;
 			@Override
 			public AspirateurURL get() {
@@ -82,7 +82,7 @@ public class Aspirateur {
 				myQueue.addAll(current.link());
 				return current;
 			}
-			
+
 		};
 		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
 		if(a.limit) {
@@ -90,7 +90,7 @@ public class Aspirateur {
 		}
 		return a;
 	}
-	
+
 	/**
 	 * @param URL de base
 	 * @return fabrique static pour un aspirateur qui aspire les images accessibles
@@ -98,7 +98,7 @@ public class Aspirateur {
 	public static Aspirateur aspirateurImages(String URL) {
 		Aspirateur a = new Aspirateur(URL);
 		Supplier<AspirateurURL> supply = new Supplier<AspirateurURL> () {
-			
+
 			private Deque<AspirateurURL> myQueue;
 			@Override
 			public AspirateurURL get() {
@@ -111,7 +111,7 @@ public class Aspirateur {
 				myQueue.addAll(current.images());
 				return current;
 			}
-			
+
 		};
 		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
 		if(a.limit) {
@@ -119,7 +119,7 @@ public class Aspirateur {
 		}
 		return a;
 	}
-	
+
 	/**
 	 * @param URL de base
 	 * @return fabrique static pour un aspirateur qui aspire les pages et images accessibles
@@ -127,7 +127,7 @@ public class Aspirateur {
 	public static Aspirateur aspirateurImagesPages(String URL) {
 		Aspirateur a = new Aspirateur(URL);
 		Supplier<AspirateurURL> supply = new Supplier<AspirateurURL> () {
-			
+
 			private Deque<AspirateurURL> myQueue;
 			@Override
 			public AspirateurURL get() {
@@ -141,7 +141,7 @@ public class Aspirateur {
 				myQueue.addAll(current.link());
 				return current;
 			}
-			
+
 		};
 		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
 		if(a.limit) {
@@ -157,7 +157,7 @@ public class Aspirateur {
 
 	/*
 	 * @param Predicate<Tache>
-	 *            p : La condition sur les URL 
+	 *            p : La condition sur les URL
 	 *            permet de prendre les elements acceptant la condition
 	 */
 
@@ -205,11 +205,11 @@ public class Aspirateur {
 	}
 
 	/* Limite la profondeur des pages du téléchargement du site */
-	 public void limitProfondeur(long profondeur) { 
+	 public void limitProfondeur(long profondeur) {
 		 	double deb = 0;
-	 		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getProfondeur(), (x) -> x < profondeur); 
+	 		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getProfondeur(), (x) -> x < profondeur);
 	 }
-	 
+
 	 public CompletableFuture<Map<Path, String>>  downloadAll() throws IOException {
 		 g.addLauncher(this.getBaseURL(), commandes.map(e->e.getURL()).collect(Collectors.toSet()));
 		 for(Launcher l:g.list()) {
@@ -217,17 +217,17 @@ public class Aspirateur {
 		 }
 		 CompletableFuture<Map<Path, String>> c =g.launch()
 				 .thenApplyAsync(e ->
-				 { 
+				 {
 					 System.err.println(e.size());
 					 for(Path p:e.keySet()) {
 						 System.out.println(p);
 						 String link = e.get(p);
 						 System.out.println(link);
 						 for(Path pere:e.keySet()) {
-							
+
 							File f = pere.toFile();
 							System.out.println(f.getName());
-							
+
 							File ftemp = null;
 							System.out.print(ftemp);
 							try {
@@ -235,7 +235,7 @@ public class Aspirateur {
 								ftemp = File.createTempFile(e.get(pere),"");
 								System.out.println("after");
 								FileWriter fw = new FileWriter(ftemp);
-								
+
 								Scanner scan=new Scanner(f);
 								while(scan.hasNext()) {
 									String line = scan.next().replace(link,p.toString());
@@ -243,9 +243,9 @@ public class Aspirateur {
 								}
 								scan.close();
 								fw.close();
-							 
+
 								f.delete();
-							 
+
 								f.createNewFile();
 								fw = new FileWriter(f);
 								scan=new Scanner(ftemp);
@@ -261,17 +261,17 @@ public class Aspirateur {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
-							
+
 						 }
-						 
+
 					 }
-					 
+
 					 return e;
 				 }
-				
+
 				);
 		 return c;
-		 
+
 	 }
 	 /*
 	// TO DO : applique une opération sur les résultats obtenu après telechargement

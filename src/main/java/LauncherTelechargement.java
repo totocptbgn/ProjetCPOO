@@ -1,30 +1,12 @@
-
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
-import java.util.stream.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Gère un ensemble de téléchargement créé à partir d'un URL (URL et ses enfants)
@@ -71,7 +53,7 @@ public final class LauncherTelechargement implements Launcher {
 		id++;
 		nom = id+"_"+URL.split("/")[2];
 		this.myid=id;
-		repository = new File("sites/"+nom);
+		repository = new File("download/"+nom);
 		if(!repository.isDirectory())
 			repository.mkdir();
 		elements = s.stream().map(e -> {
@@ -89,7 +71,7 @@ public final class LauncherTelechargement implements Launcher {
 		id++;
 		nom = id+"_"+URL.split("/")[2];
 		this.myid=id;
-		repository = new File("sites/"+nom);
+		repository = new File("download/"+nom);
 		if(!repository.isDirectory())
 			repository.mkdir();
 		elements = Stream.of(new TacheTelechargement(URL,repository)).collect(Collectors.toSet());
