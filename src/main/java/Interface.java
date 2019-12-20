@@ -1,3 +1,4 @@
+import javax.print.attribute.standard.NumberUp;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -41,7 +42,6 @@ public class Interface {
 				System.out.println(ColoredOutput.set(Color.RED, "Task failed... : "));
 				e.printStackTrace();
 			}
-
 		}
 	}
 
@@ -74,12 +74,13 @@ public class Interface {
 		if (cmd.matches("^add .+")) {
 			String link = cmd.substring(4);
 
-			if (!link.matches("(http(s)?:\\/\\/.)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)")) {
+			if (!link.matches("(http(s)?:\\/\\/.)(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\/([0-9a-zA-Z./])+")) {
 				System.out.println(ColoredOutput.set(Color.RED, "'" + link + "'" + " is not a correct link."));
 				return;
 			}
 			System.out.println(ColoredOutput.set(Color.GREEN, "'" + link + "'" + " is a correct link."));
 			gstn.addLauncher(link);
+			System.out.println(gstn.getCurrentNew().getNom() + " was added with id : " + gstn.getCurrentNew().getId());
 			return;
 		}
 
@@ -92,13 +93,19 @@ public class Interface {
 
 		// Launch le dernier Laucher ajouté
 		if (cmd.matches("^launch")) {
-			System.out.println("Launching first in queue...");
-			Map<Path,String> pages = gstn.getCurrentNew().getPages();
-			for (Map.Entry<Path, String> entry : pages.entrySet()) {
-				System.out.println(entry.getKey() + "  | " + entry.getValue());
+			Launcher t;
+			try {
+				t = gstn.getCurrentNew();
+				Map<Path,String> pages = t.getPages();
+				for (Map.Entry<Path, String> entry : pages.entrySet()) {
+					System.out.println(entry.getKey() + "  | " + entry.getValue());
+				}
+				gstn.launch();
+			} catch (NullPointerException n) {
+				System.out.println("Error: there is no launcher to start.");
+			} finally {
+				return;
 			}
-			gstn.launch();
-			return;
 		}
 
 		// Commandes mal utilisées

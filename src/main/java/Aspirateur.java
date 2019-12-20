@@ -207,13 +207,14 @@ public class Aspirateur {
 	 }
 	 
 	 public void downloadAll() {
+	 	/*
 		 List<CompletableFuture<Set<Path>>> cfs= commandes.takeWhile(e -> e!=null).map(e -> { try {
 			g.addLauncher(e.getURL());
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} return g.launch(); }).collect(Collectors.toList());
-		 /*
+
 		 for(CompletableFuture<Set<Path>> cf : cfs) {
 			 cf.thenApply(
 					 set ->
