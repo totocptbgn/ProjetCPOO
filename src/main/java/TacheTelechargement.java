@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 final class TacheTelechargement extends Thread implements Tache {
 	// Mettre un httpClient par thread?
 	private static final HttpClient client = HttpClient.newHttpClient();
-	private final long size;
+	private long size;
 	private final String URL;
 	private final File repository;
 	public String getURL() {
@@ -31,9 +31,14 @@ final class TacheTelechargement extends Thread implements Tache {
 	public TacheTelechargement(String URL,File f) throws MalformedURLException, IOException {
 		this.URL = URL;
 		repository = f;
-		HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
-		this.size = conn.getContentLengthLong();
-		conn.disconnect();
+		try {
+			HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
+			this.size = conn.getContentLengthLong();
+			conn.disconnect();
+		}
+		catch (MalformedURLException e) {
+			this.size = 0;
+		}
 	}
 
 	// met la page dans un fichier

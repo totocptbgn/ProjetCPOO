@@ -14,6 +14,7 @@ final class AspirateurURL {
 	private final String URL;
 	private AspirateurURL parent = null;
 	
+	private Set<String> inside;
 	private final boolean image;
 	// activation de la whiteList
 	private boolean whiteListed = false;
@@ -75,30 +76,44 @@ final class AspirateurURL {
 	
 	public AspirateurURL(String URL) {
 		//System.out.println(URL);
+		inside=new HashSet<String>();
+		inside.add(URL);
 		image = false;
 		HttpURLConnection conn = null;
 		try {
 			conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
+			this.size = conn.getContentLengthLong();
+			conn.disconnect();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
+			this.size = 0;
 		}
-		this.size = conn.getContentLengthLong();
-		conn.disconnect();
+	
 		this.URL = URL;
+		
 		String[] tab= URL.split("/");
 		whiteList.add(tab[2]);
+		System.out.println(URL);
+		
 	}
 	private AspirateurURL(String URL,AspirateurURL parent,boolean image) throws MalformedURLException, IOException {
-		//System.out.println(URL);
+		this.inside = parent.inside;
+		this.inside.add(URL);
 		this.image = image;		
 		HttpURLConnection conn = null;
-		conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
-		this.size = conn.getContentLengthLong();
-		conn.disconnect();
+		try {
+			conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
+			this.size = conn.getContentLengthLong();
+			conn.disconnect();
+		}
+		catch (MalformedURLException e) {
+			this.size = 0;
+		}
 		this.URL = URL;
 		this.parent = parent;
 		this.whiteList = parent.whiteList;
+		System.out.println(URL);
 	}
 	
 	/**
@@ -113,16 +128,33 @@ final class AspirateurURL {
 		               .referrer("http://www.google.com")              
 		               .timeout(1000*5)
 		               .get();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			//le site n'autorise pas la connection
 			return Set.of();
 		}  
 		Elements links = doc.select("a[href]");  
+		
 		Set<AspirateurURL> liste = new HashSet<>();
 		for (Element link : links) {  
 			if(this.isWell(link.attr("href")))
 				try {
-					liste.add(new AspirateurURL(transform(link.attr("href")),this,false));
+					String l = transform(link.attr("href"));
+					if(!inside.contains(l)) {
+						liste.add(new AspirateurURL(l,this,false));
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+				}
+		} 
+		links = doc.select("link[href]");
+		for (Element link : links) {  
+			if(this.isWell(link.attr("href")))
+				try {
+					String l = transform(link.attr("href"));
+					if(!inside.contains(l)) {
+						liste.add(new AspirateurURL(l,this,false));
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
@@ -135,8 +167,17 @@ final class AspirateurURL {
 	 * to have a good url
 	 */
 	private String transform(String s) {
+		
+		s = s.split("#")[0];
+		if(!s.contains("http")) {
+			String[] ens = this.getURL().split("/");
+			
+			for(int i=1;i<ens.length - 1;i++)
+				ens[0] = ens[0] + "/" + ens[i]; 
+			s = ens[0] + "/" + s;
+		}
 		System.out.println(s);
-		return s.split("#")[0];
+		return s;
 	}
 	/**
 	 * 
@@ -151,15 +192,19 @@ final class AspirateurURL {
 		               .referrer("http://www.google.com")              
 		               .timeout(1000*5)
 		               .get();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			return Set.of();
 		}
-		Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");  
+		Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");
+		images.addAll(doc.select("link[href]"));
 		Set<AspirateurURL> liste = new HashSet<>();
-		for (Element image : images) {  
-			if(this.isWell(image.attr("src")))
+		for (Element image : images) {
+			String l = transform(image.attr("src"));
+			if(this.isWell(l))
 				try {
-					liste.add(new AspirateurURL(image.attr("src"),this,true));
+					if(!inside.contains(l)) {
+						liste.add(new AspirateurURL(image.attr("src"),this,true));
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -167,4 +212,5 @@ final class AspirateurURL {
         }
 		return liste;  
 	}
+
 }

@@ -55,8 +55,11 @@ public class App {
     		System.out.println(l.getNom()+" "+l.getSizeLeft()+" "+l.getEtat()+"\n");
     	}
     	*/
-         Aspirateur a = Aspirateur.aspirateurPages("https://www.irif.fr/~sighirea//cours/reseauxM/java.url.html");
-         a.downloadAll().join();
+    	 Gestionnaire g = new Gestionnaire();
+        	 
+    	 Aspirateur a = Aspirateur.aspirateurImagesPages("https://caml.inria.fr/pub/docs/manual-ocaml/libref/Float.html");
+         g.addLauncher(a.getBaseURL(), a.getContent());
+         g.launch().join();
     	 
     }
 }

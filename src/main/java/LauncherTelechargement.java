@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -107,15 +108,15 @@ public final class LauncherTelechargement implements Launcher {
 			//télécharge jusqu'a arret
 			while(!es.isShutdown()) {
 				
-				//on laisse la main aux autres actions
-				this.wait();
+				//on laisse la main aux autres actions (pour 1000 secondes pour savoir si fini)
+				this.wait(1000);
 				//futur tous fini et non arété de force -> fini normalement
 				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled())) {
 					es.shutdown();
 					this.etat= state.SUCCESS;
 					for(ForkJoinTask<Tache> t:inExecution) {
 						try {
-							files.put(Paths.get(t.get().getPage()),t.get().getURL());
+							files.put(Path.of(repository.getAbsolutePath()+"/"+t.get().getPage()),t.get().getURL());
 						} catch (ExecutionException e) {
 							//should not happen
 						}
@@ -198,7 +199,7 @@ public final class LauncherTelechargement implements Launcher {
 					elements.remove(t);
 					//on garde les éléments dans une liste
 					elementsdone.add(t);
-					files.put(Paths.get(t.getPage()),t.getURL());
+					files.put(Path.of(repository.getAbsolutePath()+"/"+t.getPage()),t.getURL());
 				} catch (InterruptedException | ExecutionException e) {
 					//erreur ne devrait pas arrivé (et au pire on fait les autres taches
 				} 

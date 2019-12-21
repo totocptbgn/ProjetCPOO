@@ -17,11 +17,11 @@ import java.util.stream.Stream;
 
 public class Aspirateur {
 
-	//gestionnaire de telechargement
-	private static Gestionnaire g = new Gestionnaire();
-
 	// Limite de nombre de fichier
-	private static long MAX = 3;
+	private static long MAX = 100;
+	
+	private static int id = 0;
+	private final int myId;
 
 	// activation de la limite
 	private boolean limit = true;
@@ -44,7 +44,13 @@ public class Aspirateur {
 		base.addSitetoWhiteList(site);
 	}
 
+	public int getId() {
+		return myId;
+	}
+	
 	private Aspirateur(String URL) {
+		id++;
+		this.myId=id;
 		base = new AspirateurURL(URL);
 	}
 
@@ -53,6 +59,7 @@ public class Aspirateur {
 	 * @return fabrique static pour un aspirateur qui n'aspire que la page donné
 	 */
 	public static Aspirateur aspirateurNormal(String URL) {
+		
 		Aspirateur a = new Aspirateur(URL);
 		a.commandes = Stream.of(a.base);
 		if(a.limit) {
@@ -210,69 +217,10 @@ public class Aspirateur {
 	 		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getProfondeur(), (x) -> x < profondeur);
 	 }
 
-	 public CompletableFuture<Map<Path, String>>  downloadAll() throws IOException {
-		 g.addLauncher(this.getBaseURL(), commandes.map(e->e.getURL()).collect(Collectors.toSet()));
-		 for(Launcher l:g.list()) {
-			// System.out.print(l.getNom()+" "+l.getEtat());
-		 }
-		 CompletableFuture<Map<Path, String>> c =g.launch()
-				 .thenApplyAsync(e ->
-				 {
-					 System.err.println(e.size());
-					 for(Path p:e.keySet()) {
-						 System.out.println(p);
-						 String link = e.get(p);
-						 System.out.println(link);
-						 for(Path pere:e.keySet()) {
-
-							File f = pere.toFile();
-							System.out.println(f.getName());
-
-							File ftemp = null;
-							System.out.print(ftemp);
-							try {
-								System.out.println("before");
-								ftemp = File.createTempFile(e.get(pere),"");
-								System.out.println("after");
-								FileWriter fw = new FileWriter(ftemp);
-
-								Scanner scan=new Scanner(f);
-								while(scan.hasNext()) {
-									String line = scan.next().replace(link,p.toString());
-									fw.write(line);
-								}
-								scan.close();
-								fw.close();
-
-								f.delete();
-
-								f.createNewFile();
-								fw = new FileWriter(f);
-								scan=new Scanner(ftemp);
-								while(scan.hasNext()) {
-									String line = scan.next();
-									System.out.println(line);
-									fw.write(line);
-								 }
-								scan.close();
-								fw.close();
-							} catch (IOException e1) {
-								System.out.println("aye");
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-
-						 }
-
-					 }
-
-					 return e;
-				 }
-
-				);
-		 return c;
-
+	 Set<String> getContent() {
+		 return commandes.map(e->e.getURL()).collect(Collectors.toSet());
 	 }
+	 
 	 /*
 	// TO DO : applique une opération sur les résultats obtenu après telechargement
 	private void apply(Consumer<String> consumer) {

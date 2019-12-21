@@ -1,8 +1,10 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -21,6 +23,10 @@ public class Gestionnaire {
 	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	private final File f = new File("download");
+	
+	public String pathDownload() throws IOException {
+		return f.getAbsolutePath();
+	}
 	/**
 	 * Dernier launcher non lancé
 	 */
@@ -70,7 +76,55 @@ public class Gestionnaire {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			Launcher currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-			return currentNew.start().thenApplyAsync(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
+			return currentNew.start().thenApplyAsync(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;})
+					 .thenApplyAsync(e ->
+					 {
+						 //System.err.println(e.size());
+						 for(Path p:e.keySet()) {
+							 String link = e.get(p);
+
+							 for(Path pere:e.keySet()) {
+
+								File f = pere.toFile();
+								//System.out.println(f.getAbsolutePath());
+
+								File ftemp = null;
+								try {
+									ftemp = File.createTempFile(e.get(pere),"");
+									FileWriter fw = new FileWriter(ftemp);
+
+									Scanner scan=new Scanner(f);
+									while(scan.hasNext()) {
+										String mot = scan.next().replace(link,p.toString());
+										fw.write(mot+" ");
+									}
+									scan.close();
+									fw.close();
+
+									f.delete();
+
+									f.createNewFile();
+									fw = new FileWriter(f);
+									scan=new Scanner(ftemp);
+									while(scan.hasNext()) {
+										String mot = scan.next();
+										//System.out.println(line);
+										fw.write(mot+" ");
+									 }
+									scan.close();
+									fw.close();
+								} catch (IOException e1) {
+									//unexcepted exception
+								}
+
+							 }
+
+						 }
+
+						 return e;
+					 }
+
+					);
 		}
 		throw new NullPointerException();
 	}
@@ -147,7 +201,54 @@ public class Gestionnaire {
 			Launcher l = waitQueue.pop();
 			launchQueue.push(l);
 
-			return l.restart().thenApplyAsync((e) -> { if(launchQueue.remove(l)) { endQueue.add(l); } return e;});
+			return l.restart().thenApplyAsync((e) -> { if(launchQueue.remove(l)) { endQueue.add(l); } return e;})
+					.thenApplyAsync(e ->
+					 {
+						 //System.err.println(e.size());
+						 for(Path p:e.keySet()) {
+							 String link = e.get(p);
+
+							 for(Path pere:e.keySet()) {
+								File f = pere.toFile();
+								//System.out.println(f.getAbsolutePath());
+
+								File ftemp = null;
+								try {
+									ftemp = File.createTempFile(e.get(pere),"");
+									FileWriter fw = new FileWriter(ftemp);
+
+									Scanner scan=new Scanner(f);
+									while(scan.hasNext()) {
+										String mot = scan.next().replace(link,p.toString());
+										fw.write(mot+" ");
+									}
+									scan.close();
+									fw.close();
+
+									f.delete();
+
+									f.createNewFile();
+									fw = new FileWriter(f);
+									scan=new Scanner(ftemp);
+									while(scan.hasNext()) {
+										String mot = scan.next();
+										//System.out.println(line);
+										fw.write(mot+" ");
+									 }
+									scan.close();
+									fw.close();
+								} catch (IOException e1) {
+									//unexcepted exception
+								}
+
+							 }
+
+						 }
+
+						 return e;
+					 }
+
+					);
 		}
 		throw new NullPointerException();
 	}
