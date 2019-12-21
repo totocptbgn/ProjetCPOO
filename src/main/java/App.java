@@ -68,7 +68,7 @@ public class App {
     	 }
     	 
     	 g.addLauncher(a.getBaseURL(), s);
-    	 CompletableFuture<Map<Path, String>> ens = g.launch();
+    	 CompletableFuture<Map<Path, String>> ens = g.launch(1);
     	 for(Launcher l:g.list()) {
     		 System.out.println(l.getTotalSize());
     	 }

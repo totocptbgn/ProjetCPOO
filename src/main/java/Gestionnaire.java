@@ -61,8 +61,8 @@ public class Gestionnaire {
 		return null;
 	}
 
-	public boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
-		Launcher l = queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:null);
+	private boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
+		Launcher l = queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:a);
 		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
@@ -94,9 +94,9 @@ public class Gestionnaire {
 										FileWriter fw = new FileWriter(ftemp);
 
 										Scanner scan=new Scanner(f);
-										while(scan.hasNext()) {
-											String mot = scan.next().replace(link,p.toString());
-											fw.write(mot+" ");
+										while(scan.hasNextLine()) {
+											String mot = scan.nextLine().replace(link,p.toString());
+											fw.write(mot+"\n");
 										}
 										scan.close();
 										fw.close();
@@ -106,10 +106,10 @@ public class Gestionnaire {
 										f.createNewFile();
 										fw = new FileWriter(f);
 										scan=new Scanner(ftemp);
-										while(scan.hasNext()) {
-											String mot = scan.next();
+										while(scan.hasNextLine()) {
+											String mot = scan.nextLine();
 											//System.out.println(line);
-											fw.write(mot+" ");
+											fw.write(mot+"\n");
 										}
 										scan.close();
 										fw.close();
