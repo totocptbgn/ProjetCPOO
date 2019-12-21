@@ -91,7 +91,7 @@ public class Aspirateur {
 			}
 
 		};
-		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
+		a.commandes = Stream.generate(supply);
 		if(a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
@@ -142,6 +142,7 @@ public class Aspirateur {
 					myQueue = new ConcurrentLinkedDeque<AspirateurURL>();
 					myQueue.add(a.base);
 				}
+				System.out.println(myQueue.size());
 				if(myQueue.isEmpty()) return null;
 				AspirateurURL current = myQueue.poll();
 				myQueue.addAll(current.images());

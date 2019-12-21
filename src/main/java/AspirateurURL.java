@@ -47,6 +47,7 @@ final class AspirateurURL {
 	// permet de savoir si une URL rentre dans la whiteList
 	public boolean isWell(String URL) {
 		if( URL.matches("#*")) return false;
+		if(URL.isBlank()) return false;
 		if(!this.getWhiteListed()) return true;
 		String little;
 		String[] tab= URL.split("/");
@@ -136,9 +137,10 @@ final class AspirateurURL {
 		
 		Set<AspirateurURL> liste = new HashSet<>();
 		for (Element link : links) {  
-			if(this.isWell(link.attr("href")))
+			String l = transform(link.attr("href"));
+			if(this.isWell(l))
 				try {
-					String l = transform(link.attr("href"));
+					
 					if(!inside.contains(l)) {
 						liste.add(new AspirateurURL(l,this,false));
 					}
@@ -149,9 +151,9 @@ final class AspirateurURL {
 		} 
 		links = doc.select("link[href]");
 		for (Element link : links) {  
-			if(this.isWell(link.attr("href")))
+			String l = transform(link.attr("href"));
+			if(this.isWell(l))
 				try {
-					String l = transform(link.attr("href"));
 					if(!inside.contains(l)) {
 						liste.add(new AspirateurURL(l,this,false));
 					}
@@ -167,8 +169,10 @@ final class AspirateurURL {
 	 * to have a good url
 	 */
 	private String transform(String s) {
-		
-		s = s.split("#")[0];
+		if(s.isBlank()) return s;
+		String[] tab =s.split("#");
+		if(tab.length==0) return s;
+		s = tab[0];
 		if(!s.contains("http")) {
 			String[] ens = this.getURL().split("/");
 			
@@ -176,7 +180,6 @@ final class AspirateurURL {
 				ens[0] = ens[0] + "/" + ens[i]; 
 			s = ens[0] + "/" + s;
 		}
-		System.out.println(s);
 		return s;
 	}
 	/**
@@ -203,7 +206,7 @@ final class AspirateurURL {
 			if(this.isWell(l))
 				try {
 					if(!inside.contains(l)) {
-						liste.add(new AspirateurURL(image.attr("src"),this,true));
+						liste.add(new AspirateurURL(l,this,true));
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block

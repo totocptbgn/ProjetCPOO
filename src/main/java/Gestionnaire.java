@@ -82,43 +82,43 @@ public class Gestionnaire {
 						 //System.err.println(e.size());
 						 for(Path p:e.keySet()) {
 							 String link = e.get(p);
+							 if(!link.endsWith("png") && !link.endsWith("jpg") && !link.endsWith("jpeg") && !link.endsWith("gif")) {
+								 for(Path pere:e.keySet()) {
 
-							 for(Path pere:e.keySet()) {
+								 File f = pere.toFile();
+									//System.out.println(f.getAbsolutePath());
 
-								File f = pere.toFile();
-								//System.out.println(f.getAbsolutePath());
+									File ftemp = null;
+									try {
+										ftemp = File.createTempFile(e.get(pere),"");
+										FileWriter fw = new FileWriter(ftemp);
 
-								File ftemp = null;
-								try {
-									ftemp = File.createTempFile(e.get(pere),"");
-									FileWriter fw = new FileWriter(ftemp);
+										Scanner scan=new Scanner(f);
+										while(scan.hasNext()) {
+											String mot = scan.next().replace(link,p.toString());
+											fw.write(mot+" ");
+										}
+										scan.close();
+										fw.close();
 
-									Scanner scan=new Scanner(f);
-									while(scan.hasNext()) {
-										String mot = scan.next().replace(link,p.toString());
-										fw.write(mot+" ");
+										f.delete();
+
+										f.createNewFile();
+										fw = new FileWriter(f);
+										scan=new Scanner(ftemp);
+										while(scan.hasNext()) {
+											String mot = scan.next();
+											//System.out.println(line);
+											fw.write(mot+" ");
+										}
+										scan.close();
+										fw.close();
+									} catch (IOException e1) {
+										//unexcepted exception
 									}
-									scan.close();
-									fw.close();
 
-									f.delete();
-
-									f.createNewFile();
-									fw = new FileWriter(f);
-									scan=new Scanner(ftemp);
-									while(scan.hasNext()) {
-										String mot = scan.next();
-										//System.out.println(line);
-										fw.write(mot+" ");
-									 }
-									scan.close();
-									fw.close();
-								} catch (IOException e1) {
-									//unexcepted exception
-								}
-
+							 	}
 							 }
-
 						 }
 
 						 return e;

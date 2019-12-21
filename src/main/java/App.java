@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -57,9 +59,19 @@ public class App {
     	*/
     	 Gestionnaire g = new Gestionnaire();
         	 
-    	 Aspirateur a = Aspirateur.aspirateurImagesPages("https://caml.inria.fr/pub/docs/manual-ocaml/libref/Float.html");
-         g.addLauncher(a.getBaseURL(), a.getContent());
-         g.launch().join();
+    	 Aspirateur a = Aspirateur.aspirateurImagesPages("http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
+    	 a.limit(1);
+    	 Set<String> s = a.getContent();
+    	 System.out.println(s.size());
+    	 for(String lien:s) {
+    		 System.out.println(lien);
+    	 }
     	 
+    	 g.addLauncher(a.getBaseURL(), s);
+    	 CompletableFuture<Map<Path, String>> ens = g.launch();
+    	 for(Launcher l:g.list()) {
+    		 System.out.println(l.getTotalSize());
+    	 }
+    	 ens.join();
     }
 }
