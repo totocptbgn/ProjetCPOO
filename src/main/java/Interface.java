@@ -9,14 +9,13 @@ import java.util.Set;
  *
  * Liste des commandes à faire :
  *
- *   launch [name]
- *   add [link]
- *   delete [name]
- *   pause [name]
- *   list [type] | all
- *   help
- *   rename
- *   (option -v pour verbal)
+ *   start (ex launch) 		à ameliorer
+ *   add 					ok
+ *   delete 				à faire
+ *   pause 					à faire
+ *   list 					à ameliorer
+ *   help					à faire
+ *   rename					à faire (?)
  */
 
 public class Interface {
@@ -82,15 +81,49 @@ public class Interface {
 			return;
 		}
 
-		// Lance un launcher par son nom
-		if (cmd.matches("^launch [^ ]+$")) {
-			String name = cmd.substring(7);
-			System.out.println("Not implemented...");
+		// Start un launcher par son nom ou son id
+		if (cmd.matches("^start [^\\p{Blank}]+")) {
+			String name = cmd.substring(6);
+			Iterator<Launcher> it = gstn.listNew().iterator();
+			try {
+				int id = Integer.valueOf(name);
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (id == l.getId()) {
+						gstn.launch(l.getNom());
+						System.out.print("Started launcher " + l.getNom() + " [" + l.getId() + "]");
+						if (l.getTotalSize() != -1l) {
+							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
+						} else {
+							System.out.print("\n");
+						}
+						System.out.println("Launcher found but can't be started.");
+						return;
+					}
+				}
+			} catch (NumberFormatException e) {
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (name.equals(l.getNom())) {
+						gstn.launch(l.getNom());
+						System.out.print("Started launcher " + l.getNom() + " [" + l.getId() + "]");
+						if (l.getTotalSize() != -1l) {
+							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
+						} else {
+							System.out.print("\n");
+						}
+						System.out.println("Launcher found but can't be started.");
+						return;
+					}
+				}
+			}
+
+			System.out.println("The Launcher was not found...");
 			return;
 		}
 
-		// Launch le dernier Laucher ajouté
-		if (cmd.matches("\\p{Blank}*launch\\p{Blank}*")) {
+		// Start le dernier Laucher ajouté
+		if (cmd.matches("\\p{Blank}*start\\p{Blank}*")) {
 			Launcher t;
 			try {
 				t = gstn.getCurrentNew();
