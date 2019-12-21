@@ -60,10 +60,6 @@ public class GestionnaireAspirateur {
 		return g.nameOf(id, d);
 	}
 
-	public boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
-		return g.changeCurrentLauncher(nom, queue);
-	}
-
 	// Lance le launcher au dessus de la pile
 	public CompletableFuture<Map<Path,String>> launch() {
 		return g.launch();
