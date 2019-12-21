@@ -1,9 +1,6 @@
-import javax.print.attribute.standard.NumberUp;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Path;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -18,6 +15,7 @@ import java.util.Set;
  *   pause [name]
  *   list [type] | all
  *   help
+ *   rename
  *   (option -v pour verbal)
  */
 
@@ -33,7 +31,7 @@ public class Interface {
 		ColoredOutput.init();
 		gstn = new Gestionnaire();
 		printHeader();
-		
+
 		while (running) {
 			System.out.print("> ");
 			String cmd = sc.nextLine();
@@ -75,7 +73,7 @@ public class Interface {
 		if (cmd.matches("^add .+")) {
 			String link = cmd.substring(4);
 
-			if (!link.matches("(http(s)?:\\/\\/.)(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\/([*0-9a-zA-Z._\\-/=])+")) {
+			if (!link.matches("(http(s)?:\\/\\/.)(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\/([~*0-9a-zA-Z._\\-/=])+")) {
 				System.out.println("Error: This is not a correct link.");
 				return;
 			}
@@ -105,15 +103,16 @@ public class Interface {
 			}
 		}
 
-		// Commandes mal utilisées
-		if (cmd.matches("\\p{Blank}*add\\p{Blank}*")) {
-			System.out.println(ColoredOutput.set(Color.RED, "Usage: add [link]"));
+		// Liste tout les launcher
+		if (cmd.matches("\\p{Blank}*list\\p{Blank}*")) {
+			Set<Launcher> set = gstn.listOfAll();
+			printListOfLauncher(set);
 			return;
 		}
 
-		if (cmd.matches("\\p{Blank}*list\\p{Blank}*")) {
-			Iterator<Launcher> it = gstn.listOfAll().iterator();
-			printListOfLauncher(it);
+		// Commandes mal utilisées
+		if (cmd.matches("\\p{Blank}*add\\p{Blank}*")) {
+			System.out.println(ColoredOutput.set(Color.RED, "Usage: add [link]"));
 			return;
 		}
 
@@ -163,10 +162,87 @@ public class Interface {
 	}
 
 	// Affiche les launcher avec leur id, état, nom et taille
-	private static void printListOfLauncher(Iterator<Launcher> it) {
-		while (it.hasNext()){
+	private static void printListOfLauncher(Set<Launcher> set) {
+		Iterator<Launcher> it = set.iterator();
+		if (!it.hasNext()) {
+			System.out.println("There is no launcher added.");
+			return;
+		}
+
+		int id = 2;
+		int name = 4;
+		int state = 5;
+		int dl = 4;
+
+		while (it.hasNext()) {
 			Launcher l = it.next();
-			System.out.println(l.getId() + " | " + l.getNom() + " | " + l.getEtat() + " | " + getSizeDownloaded(l));
+			id = Math.max(((Integer)l.getId()).toString().length(), id);
+			name = Math.max(l.getNom().length(), name);
+			state = Math.max(l.getEtat().toString().length(), state);
+			dl = Math.max(getSizeDownloaded(l).length(), dl);
+		}
+
+		it = set.iterator();
+
+		System.out.print("+-");
+		printChara(id, '-');
+		System.out.print("-+-");
+		printChara(name, '-');
+		System.out.print("-+-");
+		printChara(state, '-');
+		System.out.print("-+-");
+		printChara(dl, '-');
+		System.out.print("-+\n");
+
+		System.out.print("| ID");
+		printChara(id - 2, ' ');
+		System.out.print(" | NAME");
+		printChara(name - 4, ' ');
+		System.out.print(" | STATE");
+		printChara(state - 5, ' ');
+		System.out.print(" | SIZE");
+		printChara(dl - 4, ' ');
+		System.out.print(" |\n");
+
+		System.out.print("+-");
+		printChara(id, '-');
+		System.out.print("-+-");
+		printChara(name, '-');
+		System.out.print("-+-");
+		printChara(state, '-');
+		System.out.print("-+-");
+		printChara(dl, '-');
+		System.out.print("-+\n");
+
+
+		while (it.hasNext()) {
+			Launcher l = it.next();
+			System.out.print("| " + l.getId());
+			printChara(id - ((Integer)l.getId()).toString().length(), ' ');
+			System.out.print(" | " + l.getNom());
+			printChara(name - l.getNom().length(), ' ');
+			System.out.print(" | " + l.getEtat());
+			printChara(state - l.getEtat().toString().length(), ' ');
+			System.out.print(" | " + getSizeDownloaded(l));
+			printChara(dl - getSizeDownloaded(l).length(), ' ');
+			System.out.print(" |\n");
+		}
+
+		System.out.print("+-");
+		printChara(id, '-');
+		System.out.print("-+-");
+		printChara(name, '-');
+		System.out.print("-+-");
+		printChara(state, '-');
+		System.out.print("-+-");
+		printChara(dl, '-');
+		System.out.print("-+\n");
+	}
+
+	// Print n fois le charactère c (utile pour la fonction printListOfLauncher())
+	private static void printChara(int n, char c) {
+		for (int i = 0; i < n; i++) {
+			System.out.print(c);
 		}
 	}
 
