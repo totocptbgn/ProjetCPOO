@@ -69,7 +69,6 @@ public class Gestionnaire {
 		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
-			System.out.println("ok");
 			return true;
 		}
 		return false;
