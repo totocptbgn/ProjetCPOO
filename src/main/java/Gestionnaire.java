@@ -52,7 +52,10 @@ public class Gestionnaire {
 		if(!f.isDirectory()) f.mkdir();
 	}
 
-	public String nameOf(int id ,Deque<Launcher> d) {
+	/*
+	 * Donne le nom d'un launcher grace à son id
+	 */
+	private String nameOf(int id ,Deque<Launcher> d) {
 		for(Launcher l:d) {
 			if(l.getId() == id) {
 				return l.getNom();
@@ -62,10 +65,11 @@ public class Gestionnaire {
 	}
 
 	private boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
-		Launcher l = queue.parallelStream().reduce(null, (a,e) -> e.getNom().equals(nom)?e:a);
+		Launcher l = queue.stream().reduce(null, (a,e) -> nom.equals(e.getNom())?e:a);
 		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
+			System.out.println("ok");
 			return true;
 		}
 		return false;

@@ -38,27 +38,42 @@ public class GestionnaireAspirateur {
 		g = new Gestionnaire();
 	}
 	
+	/*
+	 * Aspirateur n'aspirant pas
+	 */
 	public int addPage(String URL) {
 		Aspirateur a = Aspirateur.aspirateurNormal(URL);
 		aspirateurs.add(a);
 		return a.getId();
 	}
-	
+	/*
+	 * Aspirateur aspirant les pages
+	 */
 	public int addAspirateurPages(String URL) {
 		Aspirateur a = Aspirateur.aspirateurPages(URL);
 		aspirateurs.add(a);
 		return a.getId();
 	}
 	
+	/*
+	 * Aspirateur aspirant les images
+	 */
+	public int addAspirateurImages(String URL) {
+		Aspirateur a = Aspirateur.aspirateurImages(URL);
+		aspirateurs.add(a);
+		return a.getId();
+	}
+	
+	
+	/*
+	 * Aspirateur aspirant les pages et les images
+	 */
 	public int addAspirateurPagesWithImages(String URL) {
 		Aspirateur a = Aspirateur.aspirateurImagesPages(URL);
 		aspirateurs.add(a);
 		return a.getId();
 	}
 
-	public String nameOf(int id ,Deque<Launcher> d) {
-		return g.nameOf(id, d);
-	}
 
 	// Lance le launcher au dessus de la pile
 	public CompletableFuture<Map<Path,String>> launch() {
@@ -159,4 +174,29 @@ public class GestionnaireAspirateur {
 	public Set<Launcher> listOfAll() {
 		return g.listOfAll();
 	}
+	
+	/*
+	 * Recupere un aspirateur avec son URL
+	 */
+	public Aspirateur getAspirateur(String URL) {
+		for(Aspirateur a : aspirateurs) {
+			if(a.getBaseURL().equals(URL)) {
+				return a;
+			}
+		}
+		return null;
+	}
+	
+	/*
+	 * Recupere un aspirateur avec son id
+	 */
+	public Aspirateur getAspirateur(int id) {
+		for(Aspirateur a : aspirateurs) {
+			if(a.getId()==id) {
+				return a;
+			}
+		}
+		return null;
+	}
+	
 }
