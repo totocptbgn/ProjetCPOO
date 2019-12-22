@@ -9,11 +9,11 @@ import java.util.Set;
  *
  * Liste des commandes à faire :
  *
- *   start (ex launch) 		à ameliorer
+ *   start 			 		ok
  *   add 					ok
- *   delete 				à faire
- *   pause 					à faire
- *   list 					à ameliorer
+ *   delete 				ok (a test)
+ *   pause 					ok (a test)
+ *   list 					ok
  *   help					à faire
  *   rename					à faire (?)
  */
@@ -90,14 +90,13 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launch(l.getNom());
+						gstn.launch(l.getId());
 						System.out.print("Started launcher " + l.getNom() + " [" + l.getId() + "]");
 						if (l.getTotalSize() != -1l) {
 							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
 						} else {
 							System.out.print("\n");
 						}
-						System.out.println("Launcher found but can't be started.");
 						return;
 					}
 				}
@@ -112,13 +111,12 @@ public class Interface {
 						} else {
 							System.out.print("\n");
 						}
-						System.out.println("Launcher found but can't be started.");
 						return;
 					}
 				}
 			}
 
-			System.out.println("The Launcher was not found...");
+			System.out.println("Error: the launcher was not found...");
 			return;
 		}
 
@@ -140,6 +138,107 @@ public class Interface {
 		if (cmd.matches("\\p{Blank}*list\\p{Blank}*")) {
 			Set<Launcher> set = gstn.listOfAll();
 			printListOfLauncher(set);
+			return;
+		}
+
+		// Liste tous les launchers
+		if (cmd.matches("\\p{Blank}*list\\p{Blank}*")) {
+			Set<Launcher> set = gstn.listOfAll();
+			printListOfLauncher(set);
+			return;
+		}
+
+		if (cmd.matches("^list .+")) {
+			String type = cmd.substring(5);
+			if (type.matches("new\\p{Blank}*")) {
+				Set<Launcher> set = gstn.listNew();
+				printListOfLauncher(set);
+				return;
+			}
+			if (type.matches("wait\\p{Blank}*")) {
+				Set<Launcher> set = gstn.listWait();
+				printListOfLauncher(set);
+				return;
+			}
+			if (type.matches("started\\p{Blank}*")) {
+				Set<Launcher> set = gstn.listLaunch();
+				printListOfLauncher(set);
+				return;
+			}
+			if (type.matches("done\\p{Blank}*")) {
+				Set<Launcher> set = gstn.listEnd();
+				printListOfLauncher(set);
+				return;
+			}
+			if (type.matches("all\\p{Blank}*")) {
+				Set<Launcher> set = gstn.listOfAll();
+				printListOfLauncher(set);
+				return;
+			}
+			System.out.println("Usage: list [new | new | wait | started | done | all]");
+		}
+
+		// Delete un launcher par son nom ou son id
+		if (cmd.matches("^delete [^\\p{Blank}]+")) {
+			String name = cmd.substring(7);
+			Iterator<Launcher> it = gstn.listOfAll().iterator();
+			try {
+				int id = Integer.valueOf(name);
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (id == l.getId()) {
+						System.out.println("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
+						gstn.delete(l.getId());
+						return;
+					}
+				}
+			} catch (NumberFormatException e) {
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (name.equals(l.getNom())) {
+						System.out.println("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
+						gstn.delete(l.getNom());
+						return;
+					}
+				}
+			}
+			System.out.println("Error: the launcher was not found...");
+			return;
+		}
+
+		// Pause un launcher par son nom ou son id
+		if (cmd.matches("^pause [^\\p{Blank}]+")) {
+			String name = cmd.substring(6);
+			Iterator<Launcher> it = gstn.listOfAll().iterator();
+			try {
+				int id = Integer.valueOf(name);
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (id == l.getId()) {
+						if (l.getEtat() != Launcher.state.WORK) {
+							System.out.println("Error: the launcher is not downloading, state = " + l.getEtat() + ".");
+							return;
+						}
+						System.out.println("Stoped launcher " + l.getNom() + " [" + l.getId() + "]");
+						gstn.pause(l.getId());
+						return;
+					}
+				}
+			} catch (NumberFormatException e) {
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (name.equals(l.getNom())) {
+						if (l.getEtat() != Launcher.state.WORK) {
+							System.out.println("Error: the launcher is not downloading, state = " + l.getEtat() + ".");
+							return;
+						}
+						System.out.println("Stoped launcher " + l.getNom() + " [" + l.getId() + "]");
+						gstn.pause(l.getNom());
+						return;
+					}
+				}
+			}
+			System.out.println("Error: the launcher was not found...");
 			return;
 		}
 
@@ -198,7 +297,7 @@ public class Interface {
 	private static void printListOfLauncher(Set<Launcher> set) {
 		Iterator<Launcher> it = set.iterator();
 		if (!it.hasNext()) {
-			System.out.println("There is no launcher added.");
+			System.out.println("Error: there is no launcher to print.");
 			return;
 		}
 
