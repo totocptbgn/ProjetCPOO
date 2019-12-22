@@ -16,6 +16,9 @@ import java.util.Set;
  *   list 					ok
  *   help					à faire
  *   rename					à faire (?)
+ *   startnew               -> créer et lance un launcher (en même temps)
+ *   listof                 -> donne la liste des pages d'un launcher
+ *   restart                -> relance une tache en pause
  */
 
 public class Interface {
@@ -122,7 +125,7 @@ public class Interface {
 
 		// Start le dernier Laucher ajouté
 		if (cmd.matches("\\p{Blank}*start\\p{Blank}*")) {
-			Launcher t;
+			LauncherIntern t;
 			try {
 				t = gstn.getCurrentNew();
 				System.out.println("Launching [" + t.getId() + "]");

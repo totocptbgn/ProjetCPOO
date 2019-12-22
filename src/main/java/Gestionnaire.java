@@ -16,16 +16,17 @@ import java.util.stream.Collectors;
 /**
  * Gère l'ensemble des téléchargements des launchers <br/>
  * Exceptions : <br/>
- * - IllegalStateException : Erreur inattendu
- * - RuntimeException "name has failed" : Erreur de modification de fichier
+ * - IllegalStateException : Erreur inattendu <br/>
+ * - RuntimeException "name has failed" : Erreur de modification de fichier <br/>
  * - UnsupportedOperationException : Erreur de connection
+ * - NullPointerException : Launcher inexistant
  */
 public final class Gestionnaire {
 	// Liste des telechargements
-	private final Deque<Launcher> newQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements instanciés
-	private final Deque<Launcher> waitQueue = new ConcurrentLinkedDeque<>();   // La file d'attente des téléchagements en pause
-	private final Deque<Launcher> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
-	private final Deque<Launcher> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
+	private final Deque<LauncherIntern> newQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements instanciés
+	private final Deque<LauncherIntern> waitQueue = new ConcurrentLinkedDeque<>();   // La file d'attente des téléchagements en pause
+	private final Deque<LauncherIntern> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
+	private final Deque<LauncherIntern> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	private final File f = new File("download");
 	/**
 	 * @return renvoie l'emplacement du fichier download
@@ -38,21 +39,21 @@ public final class Gestionnaire {
 	/**
 	 * @result Dernier launcher non lancé
 	 */
-	public Launcher getCurrentNew() {
+	public LauncherIntern getCurrentNew() {
 		return newQueue.peek();
 	}
 
 	/**
 	 * @result Dernier launcher en attente
 	 */
-	public Launcher getCurrentWait() {
+	public LauncherIntern getCurrentWait() {
 		return waitQueue.peek();
 	}
 
 	/**
 	 * @result Dernier launcher lancé
 	 */
-	public Launcher getCurrentLaunch() {
+	public LauncherIntern getCurrentLaunch() {
 		return launchQueue.peek();
 	}
 
@@ -65,8 +66,8 @@ public final class Gestionnaire {
 	 * @param d - Queue où chercher
 	 * @return renvoie le nom associé à l'id dans d
 	 */
-	private String nameOf(int id ,Deque<Launcher> d) {
-		for(Launcher l:d) {
+	private String nameOf(int id ,Deque<LauncherIntern> d) {
+		for(LauncherIntern l:d) {
 			if(l.getId() == id) {
 				return l.getNom();
 			}
@@ -79,8 +80,8 @@ public final class Gestionnaire {
 	 * @param queue - queue de téléchargement
 	 * @return Renvoie false si le téléchargement n'éxiste pas
 	 */
-	private boolean changeCurrentLauncher(String nom,Deque<Launcher> queue) {
-		Launcher l = queue.stream().reduce(null, (a,e) -> nom.equals(e.getNom())?e:a);
+	private boolean changeCurrentLauncher(String nom,Deque<LauncherIntern> queue) {
+		LauncherIntern l = queue.stream().reduce(null, (a,e) -> nom.equals(e.getNom())?e:a);
 		if (l != null) {
 			queue.remove(l);
 			queue.push(l);
@@ -95,7 +96,7 @@ public final class Gestionnaire {
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launch() {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
-			Launcher currentNew = newQueue.pop();
+			LauncherIntern currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
 			return currentNew.start().thenApplyAsync(e -> { if(!e.isEmpty() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
 		}
@@ -130,7 +131,7 @@ public final class Gestionnaire {
 	 */
 	public boolean delete() {
 		if (getCurrentLaunch() != null) {
-			Launcher l = launchQueue.pop();
+			LauncherIntern l = launchQueue.pop();
 			boolean b = l.delete();
 			if(b) endQueue.add(l);
 			return b;
@@ -144,7 +145,7 @@ public final class Gestionnaire {
 	 *  @return réussite de la suppression
 	 */
 	public boolean delete(String launcher) {
-		for(Launcher l:this.listOfAll()) {
+		for(LauncherIntern l:listOfAllInside()) {
 			if(l.getNom().equals(launcher)) {
 				boolean b = l.delete();
 				
@@ -188,7 +189,7 @@ public final class Gestionnaire {
 	 */
 	public boolean pause() {
 		if (getCurrentLaunch() != null && this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
-			Launcher l = launchQueue.pop();
+			LauncherIntern l = launchQueue.pop();
 			boolean b = l.pause();
 			if(b) waitQueue.add(l);
 			return b;
@@ -225,7 +226,7 @@ public final class Gestionnaire {
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> restart() {
 		if (this.getCurrentWait()!= null && this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
-			Launcher l = waitQueue.pop();
+			LauncherIntern l = waitQueue.pop();
 			launchQueue.push(l);
 
 			return l.restart().thenApplyAsync((e) -> { if(!e.isEmpty() && launchQueue.remove(l)) { endQueue.add(l); } return e;});					
@@ -261,7 +262,7 @@ public final class Gestionnaire {
 	 * @throws IOException - si une I/O exception se produit
 	 */
 	public void addLauncher(String URL) throws IOException {
-		Launcher l = new LauncherTelechargement(URL);
+		LauncherIntern l = new LauncherTelechargement(URL);
 		newQueue.push(l);
 	}
 	
@@ -272,7 +273,7 @@ public final class Gestionnaire {
 	 * @throws IOException - si une I/O exception se produit
 	 */
 	public void addLauncher(String URL,Set<String> s) throws IOException {
-		Launcher l = new LauncherTelechargement(URL,s);
+		LauncherIntern l = new LauncherTelechargement(URL,s);
 		newQueue.push(l);
 	}
 
@@ -322,6 +323,17 @@ public final class Gestionnaire {
 		l.addAll(listWait());
 		l.addAll(listNew());
 		l.addAll(listEnd());
+		return l;
+	}
+	
+	/**
+	 * @return liste de tous les launchers
+	 */
+	private Set<LauncherIntern> listOfAllInside() {
+		Set<LauncherIntern> l = launchQueue.stream().collect(Collectors.toSet());
+		l.addAll(waitQueue);
+		l.addAll(newQueue);
+		l.addAll(endQueue);
 		return l;
 	}
 
