@@ -309,7 +309,7 @@ public final class LauncherTelechargement implements Launcher {
 
 
 	public synchronized long getTotalSize() {
-		if(this.etat == Launcher.state.FAIL) return -1;
+		if(this.etat == Launcher.state.FAIL) return 0;
 		long res = 0;
 		for(Tache t:elements) {
 			res+=t.getSize();

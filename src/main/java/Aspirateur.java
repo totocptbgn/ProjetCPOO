@@ -1,13 +1,5 @@
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -15,11 +7,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Aspirateur de page internet
+ */
 public class Aspirateur {
 
 	// Limite de nombre de fichier
 	private static long MAX = 100;
 	
+	//id de l'aspirateur
 	private static int id = 0;
 	private final int myId;
 
@@ -32,6 +28,9 @@ public class Aspirateur {
 	//base du téléchargement
 	private AspirateurURL base;
 
+	/**
+	 * @return URL de base du téléchargement
+	 */
 	public String getBaseURL() {
 		return base.getURL();
 	}
