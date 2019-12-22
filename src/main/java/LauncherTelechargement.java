@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * Chaque Launcher sera représenté par un nom et un id
  */
 
-public final class LauncherTelechargement implements Launcher {
+public final class LauncherTelechargement implements LauncherIntern {
 	private static int id = 0;
 	//id du launcher
 	private int myid;
@@ -37,8 +37,9 @@ public final class LauncherTelechargement implements Launcher {
 	public String getNom() {
 		return nom;
 	}
+	
 	/**
-	 * Etat du téléchargement -> renvoie null si interrompu
+	 * Etat du launcher -> renvoie null si interrompu
 	 */
 	public synchronized state getEtat () {
 		
@@ -77,6 +78,7 @@ public final class LauncherTelechargement implements Launcher {
 			}
 		}).collect(Collectors.toSet());
 	}
+	
 	/**
 	 * @param URL : URL de base
 	 * Realise un launcher pour une tache
@@ -91,10 +93,6 @@ public final class LauncherTelechargement implements Launcher {
 		elements = Stream.of(new TacheTelechargement(URL,repository)).collect(Collectors.toSet());
 	}
 
-	/**
-	 * Lance le téléchargement
-	 * 
-	 */
 	public synchronized CompletableFuture<Optional<Map<Path,String>>> start() {
 		return CompletableFuture.supplyAsync(this::run).thenApplyAsync(e ->
 		 {
@@ -148,7 +146,8 @@ public final class LauncherTelechargement implements Launcher {
 	}
 	
 	/**
-	 *  lance l'ensemble du telechargement -> observe annulation avec la fonction cancel des futures
+	 * Lance le téléchargement
+	 * @return - renvoie le contenu necessaire pour la fin du téléchargement
 	 */
 	private synchronized Optional<Map<Path,String>> run() {
 		//etat non prevu
@@ -346,7 +345,6 @@ public final class LauncherTelechargement implements Launcher {
 		return m;
 	}
 
-	@Override
 	public int getId() {
 		return myid;
 	}

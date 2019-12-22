@@ -58,25 +58,13 @@ public class App {
     		System.out.println(l.getNom()+" "+l.getSizeLeft()+" "+l.getEtat()+"\n");
     	}
     	*/
-    	 Gestionnaire g = new Gestionnaire();
-        	 
-    	 Aspirateur a = Aspirateur.aspirateurImagesPages("http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
-    	 a.limit(1);
-    	 Set<String> s = a.getContent();
-    	 System.out.println(s.size());
-    	 for(String lien:s) {
-    		 System.out.println(lien);
+    	 GestionnaireAspirateur g = new GestionnaireAspirateur();
+    	 g.addAspirateurPagesWithImages("http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
+    	 g.getAspirateur(1).limitProfondeur(2);
+    	 g.aspirateurToLauncher(1).join();
+    	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom());
     	 }
-    	 
-    	 g.addLauncher(a.getBaseURL(), s);
-    	 g.addLauncher("https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html");
-    	 CompletableFuture<Optional<Map<Path, String>>> ens = g.launch(1);
-    	 Thread.sleep(1000);
-    	 System.out.println(g.pause());
-    	 
-    	 ens.join();
-    	 for(Launcher l:g.listOfAll()) {
-    		 System.out.println(l.getNom()+" "+l.getEtat()+" "+l.getTotalSize());
-    	 }
+    	 g.getGestionnaire().launch().join();
     }
 }

@@ -194,12 +194,16 @@ final class AspirateurURL {
 					throw new UnsupportedOperationException();
 				}
 				catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//une erreur est survenu, la page ne sera juste pas téléchargé
 				}
 		} 
 		return liste;
 	}
+	
+	/**
+	 * recupère les liens vers les pages css
+	 * @return la liste d'AspirateurURL de ces liens
+	 */
 	public Set<AspirateurURL> css() { 
 		Document doc = null;
 		try {
@@ -218,7 +222,7 @@ final class AspirateurURL {
 		if(this.isWell(l))
 			try {
 				if(!inside.contains(l)) {
-					liste.add(new AspirateurURL(l,this,false));
+					liste.add(new AspirateurURL(l,this,true));
 				}
 			}
 			catch (java.net.UnknownHostException e) {
@@ -226,6 +230,7 @@ final class AspirateurURL {
 			}
 			catch (IOException e) {
 				//une erreur est survenu, la page ne sera juste pas téléchargé
+				
 			}
 		} 
 		return liste;
@@ -267,7 +272,7 @@ final class AspirateurURL {
 			throw new UnsupportedOperationException();
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return Set.of();
 		}
 		Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");
@@ -281,11 +286,13 @@ final class AspirateurURL {
 						liste.add(new AspirateurURL(l,this,true));
 					}
 				} 
-				catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				catch (java.net.UnknownHostException e) {
+					throw new UnsupportedOperationException();
 				}
-        }
+				catch (IOException e) {
+					//une erreur est survenu, la page ne sera juste pas téléchargé
+				}
+        }	
 		return liste;  
 	}
 

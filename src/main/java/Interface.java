@@ -15,14 +15,10 @@ import java.util.Set;
  *   pause 	y				ok
  *   list 	y				ok
  *   help					à faire
- *   restart                à faire
- *
- *
- *   Colors :
- *   RED : error, FAIL
- *   YELLOW : usage, unknown cmd, WAIT
- *   BLUE : list tab, some print (?)
- *   GREEN : SUCCESS, some successfull print (?)
+ *   rename					à faire (?)
+ *   startnew               -> créer et lance un launcher (en même temps)
+ *   listof                 -> donne la liste des pages d'un launcher
+ *   restart                -> relance une tache en pause
  */
 
 public class Interface {
@@ -131,7 +127,7 @@ public class Interface {
 
 		// Start le dernier Laucher ajouté
 		if (cmd.matches("\\p{Blank}*start\\p{Blank}*")) {
-			Launcher t;
+			LauncherIntern t;
 			try {
 				t = gstn.getCurrentNew();
 				System.out.println("Launching [" + t.getId() + "]");
