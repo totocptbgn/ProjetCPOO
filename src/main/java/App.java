@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -69,10 +70,12 @@ public class App {
     	 
     	 g.addLauncher(a.getBaseURL(), s);
     	 g.addLauncher("https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html");
-    	 CompletableFuture<Map<Path, String>> ens = g.launch(1);
-    	 for(Launcher l:g.list()) {
-    		 System.out.println(l.getTotalSize());
-    	 }
+    	 CompletableFuture<Optional<Map<Path, String>>> ens = g.launch(1);
+    	 //g.delete();
+    	 
     	 ens.join();
+    	 for(Launcher l:g.list()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat()+" "+l.getTotalSize());
+    	 }
     }
 }

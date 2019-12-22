@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -76,7 +77,7 @@ public class GestionnaireAspirateur {
 
 
 	// Lance le launcher au dessus de la pile
-	public CompletableFuture<Map<Path,String>> launch() {
+	public CompletableFuture<Optional<Map<Path,String>>> launch() {
 		return g.launch();
 	}
 
@@ -85,12 +86,12 @@ public class GestionnaireAspirateur {
 	 * @param String launcher nom du telechargement
 	 * @return : si celui ci n'existe pas renvoie faux
 	 */
-	public CompletableFuture<Map<Path,String>> launch(String launcher) {
+	public CompletableFuture<Optional<Map<Path,String>>> launch(String launcher) {
 		return g.launch(launcher);
 
 	}
 
-	public CompletableFuture<Map<Path,String>> launch(int id) {
+	public CompletableFuture<Optional<Map<Path,String>>> launch(int id) {
 		return g.launch(id);
 	}
 
@@ -122,15 +123,15 @@ public class GestionnaireAspirateur {
 	}
 
 
-	public CompletableFuture<Map<Path,String>> restart() {
+	public CompletableFuture<Optional<Map<Path,String>>> restart() {
 		return g.restart();
 	}
 
-	public CompletableFuture<Map<Path,String>> restart(String launcher) {
+	public CompletableFuture<Optional<Map<Path,String>>> restart(String launcher) {
 		return g.restart(launcher);
 	}
 
-	public CompletableFuture<Map<Path,String>> restart(int id) {
+	public CompletableFuture<Optional<Map<Path,String>>> restart(int id) {
 		return g.restart(id);
 	}
 

@@ -144,9 +144,13 @@ final class AspirateurURL {
 					if(!inside.contains(l)) {
 						liste.add(new AspirateurURL(l,this,false));
 					}
-				} catch (IOException e) {
+				}
+				catch (java.net.UnknownHostException e) {
+					throw new UnsupportedOperationException();
+				}
+				catch (IOException e) {
 					// TODO Auto-generated catch block
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 		} 
 		links = doc.select("link[href]");
@@ -157,9 +161,13 @@ final class AspirateurURL {
 					if(!inside.contains(l)) {
 						liste.add(new AspirateurURL(l,this,false));
 					}
-				} catch (IOException e) {
+				}
+				catch (java.net.UnknownHostException e) {
+					throw new UnsupportedOperationException();
+				}
+				catch (IOException e) {
 					// TODO Auto-generated catch block
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 		} 
 		return liste;
@@ -195,7 +203,11 @@ final class AspirateurURL {
 		               .referrer("http://www.google.com")              
 		               .timeout(1000*5)
 		               .get();
-		} catch (Exception e) {
+		} catch (java.net.UnknownHostException e) {
+			throw new UnsupportedOperationException();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 			return Set.of();
 		}
 		Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");
@@ -208,7 +220,8 @@ final class AspirateurURL {
 					if(!inside.contains(l)) {
 						liste.add(new AspirateurURL(l,this,true));
 					}
-				} catch (IOException e) {
+				} 
+				catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}

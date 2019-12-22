@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -11,45 +12,57 @@ import java.util.stream.Stream;
 
 /**
  * Gère un ensemble de téléchargement créé à partir d'un URL (URL et ses enfants)
- * Chaque Launcher sera représenté par un nom
+ * Chaque Launcher sera représenté par un nom et un id
  */
 
 public final class LauncherTelechargement implements Launcher {
 	private static int id = 0;
+	//id du launcher
 	private int myid;
+	//état du téléchargement
 	private state etat = state.NEW;
+	//taches à faire
 	private Set<Tache> elements;
+	//taches finies
 	private Set<Tache> elementsdone = new HashSet<Tache>();
+	//future des taches en cours d'execution
 	private List<ForkJoinTask<Tache>> inExecution = new ArrayList<ForkJoinTask<Tache>>();
-	private Map<Path,String> files = Collections.synchronizedMap(new HashMap<>());
+	//resultat optenu : Path -> chemin vers le fichier, String -> lien de la page
+	private Optional<Map<Path,String>> files = Optional.of(Collections.synchronizedMap(new HashMap<>()));
+	//repertoire de téléchargement du launcher
 	private File repository;
+	//pool ou sont executés toutes les taches
 	private ForkJoinPool es;
 
-	// Permettra à l'utilisateur de choisir ce launcher
+	// nom sous la forme id_nomdelapage
 	private final String nom;
 
 	public String getNom() {
 		return nom;
 	}
-	
-	public synchronized state getEtat() {
+	/**
+	 * Etat du téléchargement -> renvoie null si interrompu
+	 */
+	public synchronized state getEtat () {
+		
 		if(this.etat==Launcher.state.WORK) {
 			//verifie si modification de l'info
 			this.notify();
 			try {
 				this.wait();
-			} catch (InterruptedException e) {
-				//arret de l'application avant la fin -> rien à faire
+			}
+			catch(InterruptedException e) {
+				return null;
 			}
 		}
 		return etat;
 	}
-
-	/*
-	 * Créer le launcher
-	 * @param String URL : URL de base
-	 */
 	
+	/**
+	 * @param URL : URL de base (pour avoir un nom)
+	 * @param s : Ensemble des taches
+	 * Realise un launcher pour un ensemble de taches
+	 */
 	LauncherTelechargement(String URL,Set<String> s) {
 		id++;
 		nom = id+"_"+URL.split("/")[2];
@@ -61,13 +74,16 @@ public final class LauncherTelechargement implements Launcher {
 			try {
 				return new TacheTelechargement(e,repository);
 			} catch (IOException e1) {
-				//System.err.println(e1.getMessage());
+				//unexcepted link
 				return null;
-				//error should not occur
+				
 			}
 		}).collect(Collectors.toSet());
 	}
-	
+	/**
+	 * @param URL : URL de base
+	 * Realise un launcher pour une tache
+	 */
 	LauncherTelechargement(String URL) throws IOException {
 		id++;
 		nom = id+"_"+URL.split("/")[2];
@@ -82,17 +98,65 @@ public final class LauncherTelechargement implements Launcher {
 	 * Lance le téléchargement
 	 * 
 	 */
-	public synchronized CompletableFuture<Map<Path,String>> start() {
-		return CompletableFuture.supplyAsync(this::run);
+	public synchronized CompletableFuture<Optional<Map<Path,String>>> start() {
+		return CompletableFuture.supplyAsync(this::run).thenApplyAsync(e ->
+		 {
+			 if(e.isEmpty()) return e;
+			 Map<Path,String> map = e.get();
+			 //System.err.println(e.size());
+			 for(Path p:map.keySet()) {
+				 String link = map.get(p);
+
+				 for(Path pere:map.keySet()) {
+					File f = pere.toFile();
+					//System.out.println(f.getAbsolutePath());
+
+					File ftemp = null;
+					try {
+						ftemp = File.createTempFile(map.get(pere),"");
+						FileWriter fw = new FileWriter(ftemp);
+
+						Scanner scan=new Scanner(f);
+						while(scan.hasNext()) {
+							String mot = scan.next().replace(link,p.toString());
+							fw.write(mot+" ");
+						}
+						scan.close();
+						fw.close();
+
+						f.delete();
+
+						f.createNewFile();
+						fw = new FileWriter(f);
+						scan=new Scanner(ftemp);
+						while(scan.hasNext()) {
+							String mot = scan.next();
+							//System.out.println(line);
+							fw.write(mot+" ");
+						 }
+						scan.close();
+						fw.close();
+					} catch (IOException e1) {
+						//unexcepted exception
+					}
+
+				 }
+
+			 }
+
+			 return e;
+		 }
+
+		);
 	}
 	
-	/*
-	 *  lance l'ensemble du telechargement 
+	/**
+	 *  lance l'ensemble du telechargement -> observe annulation avec la fonction cancel des futures
 	 */
-	private synchronized Map<Path,String> run() {
+	private synchronized Optional<Map<Path,String>> run() {
 		//etat non prevu
 		if(this.etat!=Launcher.state.NEW && this.etat!=Launcher.state.STOP) {
-			return null;
+			return Optional.empty();
 		}
 		this.etat = state.WORK;
 		try {
@@ -111,20 +175,23 @@ public final class LauncherTelechargement implements Launcher {
 				//on laisse la main aux autres actions (pour 1000 secondes pour savoir si fini)
 				this.wait(1000);
 				//futur tous fini et non arété de force -> fini normalement
-				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled())) {
+				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled() && f.isCompletedNormally())) {
 					es.shutdown();
 					this.etat= state.SUCCESS;
+					Map<Path,String> finalfiles = this.files.get();
 					for(ForkJoinTask<Tache> t:inExecution) {
 						try {
-							files.put(Path.of(repository.getAbsolutePath()+"/"+t.get().getPage()),t.get().getURL());
-						} catch (ExecutionException e) {
-							//should not happen
+							finalfiles.put(Path.of(repository.getAbsolutePath()+"/"+t.get().getPage()),t.get().getURL());
+						} catch (InterruptedException | ExecutionException e) {
+							//le fichier n'a pas pu être ajouté au résultat final
+							//isCompletedNormally -> n'arrive pas
+							throw new IllegalStateException();
 						}
-						
 					}
+					
 					return files;
 				}
-				//thread tous interrompu -> fini sur erreur
+				//thread tous interrompus -> interrompu
 				if (inExecution.stream().allMatch(f -> f.isCancelled())) {
 					throw new InterruptedException();
 				}
@@ -134,32 +201,56 @@ public final class LauncherTelechargement implements Launcher {
 			
 			
 		} catch (InterruptedException e) {
-			//e.printStackTrace();
+			//interruption
 		}
 		finally {
 			//notifie que la verification est terminé
 			this.notify();
 		}
-		return null;
+		return Optional.empty(); //arrive quand la tache echoue
 		
 	}
 
 	public synchronized boolean delete() {
-		try {
-			//si fini -> ne fait rien
-			if(es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
-				return false;
-			}
-		} catch (InterruptedException e) {
-			//fin non voulu de l'application
+		if(this.etat == Launcher.state.FAIL) {
 			return false;
 		}
-
-		//on n'utilise plus le gestionnaire de téléchargement
-		es.shutdownNow();
+		if(this.etat == Launcher.state.WORK) {
+			try {
+				if(!es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
+					//on n'utilise plus le gestionnaire de téléchargement
+					es.shutdownNow();
+				
+					
+					this.notify();
+				}
+			} catch (InterruptedException e) {
+				//tache interrompu
+				return false;
+			}
+			
+		}
 		//on change l'état
 		this.etat = Launcher.state.FAIL;
-		this.notify();
+		
+		//supprime les taches finies
+		for(ForkJoinTask<Tache> fjt:inExecution) {
+			if(fjt.isDone() && !fjt.isCancelled() &&fjt.isCompletedNormally()) {
+				try {
+					File f = new File(repository.getAbsolutePath()+"/"+fjt.get().getPage());
+					f.delete();
+				} catch (InterruptedException | ExecutionException e) {
+					//le fichier n'a pas pu être récupéré
+					//isCompletedNormally -> n'arrive pas
+					throw new IllegalStateException();
+				}
+			}
+		}
+		for(Tache t:elementsdone) {
+			File f = new File(repository.getAbsolutePath()+"/"+t.getPage());
+			f.delete();
+		}
+		repository.delete();
 		return true;
 		
 	}
@@ -188,26 +279,28 @@ public final class LauncherTelechargement implements Launcher {
 		return true;
 	}
 	
-	public synchronized CompletableFuture<Map<Path,String>> restart() {
-
-		for (Future<Tache> f:inExecution) {
+	public synchronized CompletableFuture<Optional<Map<Path,String>>> restart() {
+	
+		for (ForkJoinTask<Tache> f:inExecution) {
 			
-			if(f.isDone() && !f.isCancelled()) {
+			if(f.isDone() && !f.isCancelled() && f.isCompletedNormally()) {
 				try {
 					Tache t = f.get();
 					//on enlève les taches qui ont eu le temps de finir
 					elements.remove(t);
 					//on garde les éléments dans une liste
 					elementsdone.add(t);
-					files.put(Path.of(repository.getAbsolutePath()+"/"+t.getPage()),t.getURL());
+					files.get().put(Path.of(repository.getAbsolutePath()+"/"+t.getPage()),t.getURL());
 				} catch (InterruptedException | ExecutionException e) {
-					//erreur ne devrait pas arrivé (et au pire on fait les autres taches
+					throw new IllegalStateException();
+					//ne devrait pas arrivé
+					
 				} 
 			}
 		}
 		this.etat = Launcher.state.STOP;
 
-		return CompletableFuture.supplyAsync(this::run);
+		return this.start();
 	}
 
 
@@ -229,20 +322,17 @@ public final class LauncherTelechargement implements Launcher {
 			return this.getTotalSize();
 		}
 		long res = 0;
-		Set<Tache> finished = inExecution.stream().filter((e) -> !e.isCancelled() && e.isDone()).map(e -> {
+		Set<Tache> finished = inExecution.stream().filter((e) -> e.isCompletedAbnormally() && !e.isCancelled() && e.isDone()).map(e -> {
 			try {
 				return e.get();
 			} catch (InterruptedException | ExecutionException e1) {
-				//unexcepted error
-				return null;
+				throw new IllegalStateException();
+				//ne devrait pas arrivé
 			}
 			
 		}).collect(Collectors.toSet());
 		Set<Tache> notfinished = elements.stream().filter(e -> !finished.contains(e)).collect(Collectors.toSet());
 		for(Tache t:notfinished) {
-			res+=t.getSize();
-		}
-		for(Tache t:elementsdone) {
 			res+=t.getSize();
 		}
 		return res;

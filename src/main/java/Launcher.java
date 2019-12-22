@@ -1,15 +1,16 @@
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface Launcher {
 	public String getNom();
 	public state getEtat();
-	public boolean pause(); 						// WORK -> WAIT
-	public CompletableFuture<Map<Path,String>> restart(); 	// WAIT -> WORK
-	public boolean delete(); 						// * -> FAIL
-	public CompletableFuture<Map<Path,String>> start(); 	// NEW -> WORK
+	public boolean pause(); // WORK -> WAIT
+	public CompletableFuture<Optional<Map<Path,String>>> restart(); // WAIT -> WORK
+	public boolean delete(); // * -> FAIL
+	public CompletableFuture<Optional<Map<Path,String>>> start(); // NEW -> WORK
 	public long getSizeLeft();
 	public long getTotalSize();
 	public Map<Path,String> getPages();

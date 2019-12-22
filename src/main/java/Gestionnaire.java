@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -76,59 +77,11 @@ public class Gestionnaire {
 	}
 
 	// Lance le launcher au dessus de la pile
-	public CompletableFuture<Map<Path,String>> launch() {
+	public CompletableFuture<Optional<Map<Path,String>>> launch() {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			Launcher currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-			return currentNew.start().thenApplyAsync(e -> { if(launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;})
-					 .thenApplyAsync(e ->
-					 {
-						 //System.err.println(e.size());
-						 for(Path p:e.keySet()) {
-							 String link = e.get(p);
-							 if(!link.endsWith("png") && !link.endsWith("jpg") && !link.endsWith("jpeg") && !link.endsWith("gif")) {
-								 for(Path pere:e.keySet()) {
-
-								 File f = pere.toFile();
-									//System.out.println(f.getAbsolutePath());
-
-									File ftemp = null;
-									try {
-										ftemp = File.createTempFile(e.get(pere),"");
-										FileWriter fw = new FileWriter(ftemp);
-
-										Scanner scan=new Scanner(f);
-										while(scan.hasNextLine()) {
-											String mot = scan.nextLine().replace(link,p.toString());
-											fw.write(mot+"\n");
-										}
-										scan.close();
-										fw.close();
-
-										f.delete();
-
-										f.createNewFile();
-										fw = new FileWriter(f);
-										scan=new Scanner(ftemp);
-										while(scan.hasNextLine()) {
-											String mot = scan.nextLine();
-											//System.out.println(line);
-											fw.write(mot+"\n");
-										}
-										scan.close();
-										fw.close();
-									} catch (IOException e1) {
-										//unexcepted exception
-									}
-
-							 	}
-							 }
-						 }
-
-						 return e;
-					 }
-
-					);
+			return currentNew.start().thenApplyAsync(e -> { if(!e.isEmpty() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
 		}
 		throw new NullPointerException();
 	}
@@ -138,7 +91,7 @@ public class Gestionnaire {
 	 * @param String launcher nom du telechargement
 	 * @return : si celui ci n'existe pas renvoie faux
 	 */
-	public CompletableFuture<Map<Path,String>> launch(String launcher) {
+	public CompletableFuture<Optional<Map<Path,String>>> launch(String launcher) {
 		if (!changeCurrentLauncher(launcher,newQueue)) {
 			throw new NullPointerException();
 		}
@@ -146,7 +99,7 @@ public class Gestionnaire {
 
 	}
 
-	public CompletableFuture<Map<Path,String>> launch(int id) {
+	public CompletableFuture<Optional<Map<Path,String>>> launch(int id) {
 		String launcher = nameOf(id ,newQueue);
 		return this.launch(launcher);
 
@@ -163,15 +116,35 @@ public class Gestionnaire {
 	}
 
 	public boolean delete(String launcher) {
-		if (!changeCurrentLauncher(launcher,launchQueue)) {
-			return false;
+		for(Launcher l:this.list()) {
+			if(l.getNom().equals(launcher)) {
+				boolean b = l.delete();
+				
+				if(b) { 
+					endQueue.remove(l);
+					launchQueue.remove(l);
+					waitQueue.remove(l);
+					newQueue.remove(l);
+					endQueue.add(l);
+				}
+				return b;
+			}
 		}
-		return this.delete();
+		return false;
 
 	}
 
 	public boolean delete(int id) {
 		String launcher = nameOf(id ,launchQueue);
+		if(launcher==null) {
+			launcher = nameOf(id ,endQueue);
+		}
+		if(launcher==null) {
+			launcher = nameOf(id ,newQueue);
+		}
+		if(launcher==null) {
+			launcher = nameOf(id ,waitQueue);
+		}
 		return this.delete(launcher);
 
 	}
@@ -200,71 +173,24 @@ public class Gestionnaire {
 	}
 
 
-	public CompletableFuture<Map<Path,String>> restart() {
+	public CompletableFuture<Optional<Map<Path,String>>> restart() {
 		if (this.getCurrentWait()!= null && this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
 			Launcher l = waitQueue.pop();
 			launchQueue.push(l);
 
-			return l.restart().thenApplyAsync((e) -> { if(launchQueue.remove(l)) { endQueue.add(l); } return e;})
-					.thenApplyAsync(e ->
-					 {
-						 //System.err.println(e.size());
-						 for(Path p:e.keySet()) {
-							 String link = e.get(p);
-
-							 for(Path pere:e.keySet()) {
-								File f = pere.toFile();
-								//System.out.println(f.getAbsolutePath());
-
-								File ftemp = null;
-								try {
-									ftemp = File.createTempFile(e.get(pere),"");
-									FileWriter fw = new FileWriter(ftemp);
-
-									Scanner scan=new Scanner(f);
-									while(scan.hasNext()) {
-										String mot = scan.next().replace(link,p.toString());
-										fw.write(mot+" ");
-									}
-									scan.close();
-									fw.close();
-
-									f.delete();
-
-									f.createNewFile();
-									fw = new FileWriter(f);
-									scan=new Scanner(ftemp);
-									while(scan.hasNext()) {
-										String mot = scan.next();
-										//System.out.println(line);
-										fw.write(mot+" ");
-									 }
-									scan.close();
-									fw.close();
-								} catch (IOException e1) {
-									//unexcepted exception
-								}
-
-							 }
-
-						 }
-
-						 return e;
-					 }
-
-					);
+			return l.restart().thenApplyAsync((e) -> { if(!e.isEmpty() && launchQueue.remove(l)) { endQueue.add(l); } return e;});					
 		}
 		throw new NullPointerException();
 	}
 
-	public CompletableFuture<Map<Path,String>> restart(String launcher) {
+	public CompletableFuture<Optional<Map<Path,String>>> restart(String launcher) {
 		if (!changeCurrentLauncher(launcher,waitQueue)) {
 			throw new NullPointerException();
 		}
 		return this.restart();
 	}
 
-	public CompletableFuture<Map<Path,String>> restart(int id) {
+	public CompletableFuture<Optional<Map<Path,String>>> restart(int id) {
 		String launcher = nameOf(id ,waitQueue);
 		return this.restart(launcher);
 	}

@@ -37,23 +37,7 @@ final class TacheTelechargement extends Thread implements Tache {
 			conn.disconnect();
 		}
 		catch (MalformedURLException e) {
-			this.size = 0;
-		}
-	}
-
-	// met la page dans un fichier
-	private synchronized void get() {
-		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
-
-		try {
-			// pour les tests
-			// Thread.sleep(3000);
-			// non Asynch pour pouvoir l'areter
-			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
-			// System.out.print("done\n");
-		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			//System.out.print("stopped\n");
+			this.size = -1;
 		}
 	}
 
@@ -65,7 +49,22 @@ final class TacheTelechargement extends Thread implements Tache {
 		return tab[tab.length-1];
 	}
 
-	public void run() {
-		this.get();
+	public synchronized void run() {
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
+
+		try {
+			// pour les tests
+			// Thread.sleep(3000);
+			// non Asynch pour pouvoir l'areter
+			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
+			// System.out.print("done\n");
+		} catch (java.net.ConnectException e) {
+			throw new UnsupportedOperationException();
+		}
+		catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+			//interruption -> on ne fait rien de spécial (on observe l'arret grace à cancel car on veut pouvoir connaitre les taches même en cas d'arret)
+			//System.out.print("stopped\n");
+		}
 	}
 }
