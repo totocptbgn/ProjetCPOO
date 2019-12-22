@@ -71,10 +71,11 @@ public class App {
     	 g.addLauncher(a.getBaseURL(), s);
     	 g.addLauncher("https://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html");
     	 CompletableFuture<Optional<Map<Path, String>>> ens = g.launch(1);
-    	 //g.delete();
+    	 Thread.sleep(1000);
+    	 System.out.println(g.pause());
     	 
     	 ens.join();
-    	 for(Launcher l:g.list()) {
+    	 for(Launcher l:g.listOfAll()) {
     		 System.out.println(l.getNom()+" "+l.getEtat()+" "+l.getTotalSize());
     	 }
     }

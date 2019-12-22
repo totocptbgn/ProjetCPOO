@@ -15,7 +15,6 @@ import java.nio.file.Paths;
  */
 
 final class TacheTelechargement extends Thread implements Tache {
-	// Mettre un httpClient par thread?
 	private static final HttpClient client = HttpClient.newHttpClient();
 	private long size;
 	private final String URL;
@@ -24,11 +23,19 @@ final class TacheTelechargement extends Thread implements Tache {
 		return this.URL;
 	}
 
+	/**
+	 * @return taille du fichier ( -1 si introuvable ) 
+	 */
 	public long getSize() {
 		return this.size;
 	}
 
-	public TacheTelechargement(String URL,File f) throws MalformedURLException, IOException {
+	/**
+	 * @param URL - URL de la page
+	 * @param f - fichier ou sera téléchargé la page
+	 * @throws IOException - si une I/O exception se produit
+	 */
+	public TacheTelechargement(String URL,File f) throws IOException {
 		this.URL = URL;
 		repository = f;
 		try {
@@ -41,20 +48,25 @@ final class TacheTelechargement extends Thread implements Tache {
 		}
 	}
 
-	/*
-	 * Renvoie le nom qui sera donné à la page dans notre fichier
+	/**
+	 * @return - Le nom qui sera donné à la page dans notre fichier
 	 */
 	public String getPage() {
 		String[] tab = URL.split("/");
 		return tab[tab.length-1];
 	}
 
+	/**
+	 * Lance la tache <br/>
+	 * arret d'une tache -> la fonction ne fait rien <br/>
+	 * Pas de connection -> UnsupportedOperationException <br/>
+	 */
 	public synchronized void run() {
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(URL)).build();
 
 		try {
 			// pour les tests
-			// Thread.sleep(3000);
+			//Thread.sleep(5000);
 			// non Asynch pour pouvoir l'areter
 			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
 			// System.out.print("done\n");
@@ -62,7 +74,6 @@ final class TacheTelechargement extends Thread implements Tache {
 			throw new UnsupportedOperationException();
 		}
 		catch (IOException | InterruptedException e) {
-			e.printStackTrace();
 			//interruption -> on ne fait rien de spécial (on observe l'arret grace à cancel car on veut pouvoir connaitre les taches même en cas d'arret)
 			//System.out.print("stopped\n");
 		}

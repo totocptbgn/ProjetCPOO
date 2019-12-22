@@ -1,6 +1,9 @@
+/**
+ * Tache de téléchargement
+ */
 public interface Tache extends Runnable {
 	/**
-	 * @return taille du téléchargement
+	 * @return taille de l'élément à télécharger
 	 */
 	public long getSize();
 	/**
@@ -8,7 +11,7 @@ public interface Tache extends Runnable {
 	 */
 	public String getURL();
 	/**
-	 * @return nom de la page téléchargée
+	 * @return nom de la page télécharger
 	 */
 	public String getPage();
 }

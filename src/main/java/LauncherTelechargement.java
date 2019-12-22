@@ -1,17 +1,15 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Gère un ensemble de téléchargement créé à partir d'un URL (URL et ses enfants)
+ * Gère un ensemble de téléchargement créé à partir d'une URL<br/>
  * Chaque Launcher sera représenté par un nom et un id
  */
 
@@ -74,7 +72,7 @@ public final class LauncherTelechargement implements Launcher {
 			try {
 				return new TacheTelechargement(e,repository);
 			} catch (IOException e1) {
-				//unexcepted link
+				//unexcepted link -> forget it
 				return null;
 				
 			}
@@ -137,7 +135,7 @@ public final class LauncherTelechargement implements Launcher {
 						scan.close();
 						fw.close();
 					} catch (IOException e1) {
-						//unexcepted exception
+						throw new RuntimeException(f.getName()+" has failed");
 					}
 
 				 }
@@ -218,6 +216,10 @@ public final class LauncherTelechargement implements Launcher {
 		if(this.etat == Launcher.state.WORK) {
 			try {
 				if(!es.awaitTermination(1, TimeUnit.NANOSECONDS)) {
+					//interrons les taches
+					for (ForkJoinTask<Tache> f:inExecution) {
+						f.cancel(true);
+					}
 					//on n'utilise plus le gestionnaire de téléchargement
 					es.shutdownNow();
 				
@@ -229,9 +231,11 @@ public final class LauncherTelechargement implements Launcher {
 				return false;
 			}
 			
+			
 		}
 		//on change l'état
 		this.etat = Launcher.state.FAIL;
+		
 		
 		//supprime les taches finies
 		for(ForkJoinTask<Tache> fjt:inExecution) {
@@ -305,6 +309,7 @@ public final class LauncherTelechargement implements Launcher {
 
 
 	public synchronized long getTotalSize() {
+		if(this.etat == Launcher.state.FAIL) return -1;
 		long res = 0;
 		for(Tache t:elements) {
 			res+=t.getSize();
