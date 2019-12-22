@@ -9,13 +9,20 @@ import java.util.Set;
  *
  * Liste des commandes à faire :
  *
- *   start 			 		ok
- *   add 					ok
- *   delete 				ok (a test)
- *   pause 					ok (a test)
- *   list 					ok
+ *   start 	y		 		ok
+ *   add 	y				ok
+ *   delete y				ok
+ *   pause 	y				ok
+ *   list 	y				ok
  *   help					à faire
- *   rename					à faire (?)
+ *   restart                à faire
+ *
+ *
+ *   Colors :
+ *   RED : error, FAIL
+ *   YELLOW : usage, unknown cmd, WAIT
+ *   BLUE : list tab, some print (?)
+ *   GREEN : SUCCESS, some successfull print (?)
  */
 
 public class Interface {
@@ -36,9 +43,12 @@ public class Interface {
 			String cmd = sc.nextLine();
 			try {
 				newCommand(cmd);
-			} catch (Exception e) {
-				System.out.print(" ");
-				System.out.println(ColoredOutput.set(Color.RED, "Task failed... : "));
+			} catch (UnsupportedOperationException e) {
+				System.out.println("Error : UnsupportedOperationException, a connection ");
+			} catch (IllegalStateException e) {
+				System.out.println("Error: IllegalStateException, an internal error happened...");
+			}  catch (RuntimeException e) {
+				System.out.println("Error: RuntimeException, a file modification error happened...");
 				e.printStackTrace();
 			}
 		}
@@ -72,7 +82,7 @@ public class Interface {
 		if (cmd.matches("^add .+")) {
 			String link = cmd.substring(4);
 
-			if (!link.matches("(http(s)?:\\/\\/.)(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\/([~*0-9a-zA-Z._\\-/=])+")) {
+			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-zA-Z._\\-/=])+")) {
 				System.out.println("Error: This is not a correct link.");
 				return;
 			}
@@ -92,7 +102,7 @@ public class Interface {
 					if (id == l.getId()) {
 						gstn.launch(l.getId());
 						System.out.print("Started launcher " + l.getNom() + " [" + l.getId() + "]");
-						if (l.getTotalSize() != -1l) {
+						if (l.getTotalSize() != -1L) {
 							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
 						} else {
 							System.out.print("\n");
@@ -106,8 +116,8 @@ public class Interface {
 					if (name.equals(l.getNom())) {
 						gstn.launch(l.getNom());
 						System.out.print("Started launcher " + l.getNom() + " [" + l.getId() + "]");
-						if (l.getTotalSize() != -1l) {
-							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
+						if (l.getTotalSize() != -1L) {
+							System.out.print(" of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
 						} else {
 							System.out.print("\n");
 						}
@@ -115,7 +125,6 @@ public class Interface {
 					}
 				}
 			}
-
 			System.out.println("Error: the launcher was not found...");
 			return;
 		}
@@ -129,15 +138,7 @@ public class Interface {
 				gstn.launch();
 			} catch (NullPointerException n) {
 				System.out.println("Error: there is no launcher to start.");
-			} finally {
-				return;
 			}
-		}
-
-		// Liste tout les launcher
-		if (cmd.matches("\\p{Blank}*list\\p{Blank}*")) {
-			Set<Launcher> set = gstn.listOfAll();
-			printListOfLauncher(set);
 			return;
 		}
 
@@ -175,7 +176,7 @@ public class Interface {
 				printListOfLauncher(set);
 				return;
 			}
-			System.out.println("Usage: list [new | new | wait | started | done | all]");
+			System.out.println("Usage: list [new | wait | started | done | all]");
 		}
 
 		// Delete un launcher par son nom ou son id
@@ -242,9 +243,60 @@ public class Interface {
 			return;
 		}
 
+		// Pause un launcher par son nom ou son id
+		if (cmd.matches("^restart [^\\p{Blank}]+")) {
+			String name = cmd.substring(8);
+			Iterator<Launcher> it = gstn.listOfAll().iterator();
+			try {
+				int id = Integer.valueOf(name);
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (id == l.getId()) {
+						if (l.getEtat() != Launcher.state.WAIT) {
+							System.out.println("Error: the launcher is not paused, state = " + l.getEtat() + ".");
+							return;
+						}
+						System.out.println("Restarted launcher " + l.getNom() + " [" + l.getId() + "]");
+						gstn.restart(l.getId());
+						return;
+					}
+				}
+			} catch (NumberFormatException e) {
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (name.equals(l.getNom())) {
+						if (l.getEtat() != Launcher.state.WAIT) {
+							System.out.println("Error: the launcher is not paused, state = " + l.getEtat() + ".");
+							return;
+						}
+						System.out.println("Restarted launcher " + l.getNom() + " [" + l.getId() + "]");
+						gstn.restart(l.getNom());
+						return;
+					}
+				}
+			}
+			System.out.println("Error: the launcher was not found...");
+			return;
+		}
+
+		// Print manual page
+		if (cmd.matches("\\p{Blank}*help\\p{Blank}*")) {
+			System.out.print(
+					""
+			);
+		}
+
 		// Commandes mal utilisées
 		if (cmd.matches("\\p{Blank}*add\\p{Blank}*")) {
-			System.out.println(ColoredOutput.set(Color.RED, "Usage: add [link]"));
+			System.out.println("Usage: add [link]");
+			return;
+		}
+		if (cmd.matches("\\p{Blank}*delete\\p{Blank}*")) {
+			System.out.println("Usage: delete [id | name]");
+			return;
+		}
+		if (cmd.matches("\\p{Blank}*pause\\p{Blank}*")) {
+			System.out.println("Usage: pause [id | name]");
 			return;
 		}
 
@@ -388,7 +440,11 @@ public class Interface {
 		} else {
 			sizeof+= humanReadableSize(l.getTotalSize());
 		}
-		return (downloaded * 100 / total) + sizeof;
+		try {
+			return  (downloaded * 100 / total) + sizeof;
+		} catch (ArithmeticException e) {
+			return 0 + sizeof;
+		}
 	}
 
 	// Renvoie un String représentant une taille en octet facilemnt lisible
@@ -410,15 +466,15 @@ public class Interface {
 	 */
 
 	static class ColoredOutput {
-		public static Color basic = Color.WHITE;
+		public static Color defaultColor = Color.WHITE;
 
 		public static String set(Color color, String s) {
-			return (char) 27 + "[" + color.code + "m" + s + (char) 27 + "[" + basic.code + "m";
+			return (char) 27 + "[" + color.code + "m" + s + (char) 27 + "[" + defaultColor.code + "m";
 		}
 
 		public static void init(PrintStream output, Color defaultColor) {
-			basic = defaultColor;
-			output.print((char) 27 + "[" + basic.code + "m");
+			ColoredOutput.defaultColor = defaultColor;
+			output.print((char) 27 + "[" + ColoredOutput.defaultColor.code + "m");
 		}
 
 		public static void init() {

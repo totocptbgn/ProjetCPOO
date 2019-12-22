@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
@@ -309,7 +308,6 @@ public final class LauncherTelechargement implements Launcher {
 
 
 	public synchronized long getTotalSize() {
-		if(this.etat == Launcher.state.FAIL) return 0;
 		long res = 0;
 		for(Tache t:elements) {
 			res+=t.getSize();
@@ -321,18 +319,14 @@ public final class LauncherTelechargement implements Launcher {
 	}
 	
 	public synchronized long getSizeLeft() {
-		if(this.etat == Launcher.state.FAIL || this.etat == Launcher.state.SUCCESS)
-			return 0;
-		if(this.etat == Launcher.state.NEW) {
-			return this.getTotalSize();
-		}
+		if (this.etat == state.SUCCESS) return 0;
+		if (this.etat == state.NEW || this.etat == state.FAIL) return getTotalSize();
 		long res = 0;
 		Set<Tache> finished = inExecution.stream().filter((e) -> e.isCompletedAbnormally() && !e.isCancelled() && e.isDone()).map(e -> {
 			try {
 				return e.get();
 			} catch (InterruptedException | ExecutionException e1) {
 				throw new IllegalStateException();
-				//ne devrait pas arrivé
 			}
 			
 		}).collect(Collectors.toSet());

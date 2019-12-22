@@ -1,16 +1,9 @@
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 
 /**
@@ -97,7 +90,7 @@ public final class Gestionnaire {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			Launcher currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-			return currentNew.start().thenApplyAsync(e -> { if(!e.isEmpty() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
+			return currentNew.start().thenApplyAsync(e -> { if(e.isPresent() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
 		}
 		throw new NullPointerException();
 	}
@@ -116,7 +109,7 @@ public final class Gestionnaire {
 	}
 	/**
 	 * Lance le launcher d'id id
-	 * @param launcher - id du launcher
+	 * @param id - id du launcher
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launch(int id) {
@@ -145,10 +138,9 @@ public final class Gestionnaire {
 	 */
 	public boolean delete(String launcher) {
 		for(Launcher l:this.listOfAll()) {
-			if(l.getNom().equals(launcher)) {
+			if (l.getNom().equals(launcher)) {
 				boolean b = l.delete();
-				
-				if(b) { 
+				if (b) {
 					endQueue.remove(l);
 					launchQueue.remove(l);
 					waitQueue.remove(l);
@@ -159,7 +151,6 @@ public final class Gestionnaire {
 			}
 		}
 		return false;
-
 	}
 
 	/**
@@ -179,7 +170,6 @@ public final class Gestionnaire {
 			launcher = nameOf(id ,waitQueue);
 		}
 		return this.delete(launcher);
-
 	}
 
 	/**
@@ -233,7 +223,6 @@ public final class Gestionnaire {
 		throw new NullPointerException();
 	}
 	/**
-	 * 
 	 * Relance un launcher de nom launcher
 	 * @param launcher - nom du launcher à mettre en pause
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation restart de launcher)
@@ -280,28 +269,28 @@ public final class Gestionnaire {
 	 * @return Liste des launchers non lancés
 	 */
 	public Set<Launcher> listNew() {
-		return newQueue.stream().collect(Collectors.toSet());
+		return new HashSet<>(newQueue);
 	}
 	
 	/**
 	 * @return liste des launchers en pause
 	 */
 	public Set<Launcher> listWait() {
-		return waitQueue.stream().collect(Collectors.toSet());
+		return new HashSet<>(waitQueue);
 	}
 
 	/**
 	 * @return liste des launchers en cours de téléchargement
 	 */
 	public Set<Launcher> listLaunch() {
-		return launchQueue.stream().collect(Collectors.toSet());
+		return new HashSet<>(launchQueue);
 	}
 
 	/**
 	 * @return liste des launchers terminés/supprimés
 	 */
 	public Set<Launcher> listEnd() {
-		return endQueue.stream().collect(Collectors.toSet());
+		return new HashSet<>(endQueue);
 	}
 
 	/**
@@ -324,6 +313,4 @@ public final class Gestionnaire {
 		l.addAll(listEnd());
 		return l;
 	}
-
-
 }
