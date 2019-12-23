@@ -6,7 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
-
 /**
  * Gère l'ensemble des téléchargements des launchers <br/>
  * Exceptions : <br/>
