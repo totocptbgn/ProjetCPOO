@@ -170,9 +170,9 @@ public final class LauncherTelechargement implements LauncherIntern {
 			while(!es.isShutdown()) {
 				//on laisse la main aux autres actions (pour 1000 secondes pour savoir si fini)
 				this.wait(1000);
-				System.out.println("Total :"+inExecution.size());
-				System.out.println("Done : "+inExecution.stream().filter(f -> f.isDone() && !f.isCancelled() && f.isCompletedNormally()).count());
-				System.out.println("Bugged : "+inExecution.stream().filter(f -> f.isDone() && f.isCancelled()).count());
+				// System.out.println("Total :"+inExecution.size());
+				// System.out.println("Done : "+inExecution.stream().filter(f -> f.isDone() && !f.isCancelled() && f.isCompletedNormally()).count());
+				// System.out.println("Bugged : "+inExecution.stream().filter(f -> f.isDone() && f.isCancelled()).count());
 				//futur tous fini et non arété de force -> fini normalement
 				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled() && f.isCompletedNormally())) {
 					es.shutdown();

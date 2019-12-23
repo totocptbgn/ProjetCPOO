@@ -1,9 +1,7 @@
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,18 +11,18 @@ import java.util.Set;
  * Aspirateur sur une seule page
  */
 final class AspirateurURL {
-	//URL de la page
+	// URL de la page
 	private final String URL;
-	//le parent de l'URL si elle existe
+	// le parent de l'URL si elle existe
 	private AspirateurURL parent = null;
 	
-	//les pages déjà téléchargées (évite les boucles)
+	// les pages déjà téléchargées (évite les boucles)
 	private Set<String> inside;
 	
 	// activation de la whiteList
 	private boolean whiteListed = false;
 	// si le lien est une image
-	private boolean notPage = false;
+	private boolean notPage;
 	
 	// whiteList des sites
 	private Set<String> whiteList = new HashSet<>();

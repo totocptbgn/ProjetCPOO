@@ -26,7 +26,7 @@ public class Aspirateur {
 	// ce que l'on ajoute à la page de base
 	private Stream<AspirateurURL> commandes;
 
-	//base du téléchargement
+	// base du téléchargement
 	private AspirateurURL base;
 
 	/**
@@ -96,11 +96,11 @@ public class Aspirateur {
 			private Deque<AspirateurURL> myQueue;
 			@Override
 			public AspirateurURL get() {
-				if(myQueue==null) {
+				if (myQueue==null) {
 					myQueue = new ConcurrentLinkedDeque<AspirateurURL>();
 					myQueue.add(a.base);
 				}
-				if(myQueue.isEmpty()) return null;
+				if (myQueue.isEmpty()) return null;
 				AspirateurURL current = myQueue.poll();
 				myQueue.addAll(current.link());
 				myQueue.addAll(current.css());
@@ -109,7 +109,7 @@ public class Aspirateur {
 
 		};
 		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
-		if(a.limit) {
+		if (a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
 		return a;
@@ -126,7 +126,7 @@ public class Aspirateur {
 			private Deque<AspirateurURL> myQueue;
 			@Override
 			public AspirateurURL get() {
-				if(myQueue==null) {
+				if (myQueue==null) {
 					myQueue = new ConcurrentLinkedDeque<AspirateurURL>();
 					myQueue.add(a.base);
 				}

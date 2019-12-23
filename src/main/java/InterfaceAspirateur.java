@@ -4,19 +4,25 @@ import java.util.Scanner;
 import java.util.Set;
 
 /**
- * Interface textuelle pour le gestionnaire de téléchargement
+ * Interface textuelle pour l'aspirateur de sites
+ *
+ *  TODO: Presque tout...
+ *
+ *
  */
 
-public class Interface {
+public class InterfaceAspirateur {
 
 	private static boolean running = true;
 	private static Gestionnaire gstn;
+	private static GestionnaireAspirateur aspi;
 
 	public static void main (String [] args) throws IOException {
 		Scanner sc = new Scanner(System.in);
 		clearTerminal();
 		ColoredOutput.init();
-		gstn = new Gestionnaire();
+		aspi = new GestionnaireAspirateur();
+		gstn = aspi.getGestionnaire();
 		printHeader();
 
 		while (running) {
@@ -515,4 +521,6 @@ public class Interface {
 						"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n"
 		);
 	}
+
+
 }
