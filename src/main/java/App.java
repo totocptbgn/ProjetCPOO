@@ -59,7 +59,7 @@ public class App {
     	}
     	*/
     	 GestionnaireAspirateur g = new GestionnaireAspirateur();
-    	 g.addAspirateurPagesWithImages("http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
+    	 g.addAspirateurPagesWithImages(/*"https://www.irif.fr/~francoisl//l3algo.html"*/"http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
     	 g.getAspirateur(1).limitProfondeur(2);
     	 g.aspirateurToLauncher(1).join();
     	 for(Launcher l:g.getGestionnaire().listOfAll()) {

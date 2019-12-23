@@ -96,25 +96,27 @@ public final class LauncherTelechargement implements LauncherIntern {
 	public synchronized CompletableFuture<Optional<Map<Path,String>>> start() {
 		return CompletableFuture.supplyAsync(this::run).thenApplyAsync(e ->
 		 {
+			 System.out.println("ok");
 			 if(e.isEmpty()) return e;
 			 Map<Path,String> map = e.get();
 			 //System.err.println(e.size());
-			 for(Path p:map.keySet()) {
-				 String link = map.get(p);
-
-				 for(Path pere:map.keySet()) {
+			for(Path pere:map.keySet()) {
+				if(!pere.endsWith("pdf") && !pere.endsWith("png") && !pere.endsWith("jpg") && !pere.endsWith("jpeg") && !!pere.endsWith("gif")) {	
 					File f = pere.toFile();
-					//System.out.println(f.getAbsolutePath());
-
 					File ftemp = null;
 					try {
 						ftemp = File.createTempFile(map.get(pere),"");
 						FileWriter fw = new FileWriter(ftemp);
 
 						Scanner scan=new Scanner(f);
-						while(scan.hasNext()) {
-							String mot = scan.next().replace(link,p.toString());
-							fw.write(mot+" ");
+						while(scan.hasNextLine()) {
+							String mot = scan.nextLine();
+							 for(Path p:map.keySet()) {
+								 String link = map.get(p);
+								 mot = mot.replaceAll(link,p.toString());
+							 }
+							 fw.write(mot+"\n");
+							
 						}
 						scan.close();
 						fw.close();
@@ -124,18 +126,17 @@ public final class LauncherTelechargement implements LauncherIntern {
 						f.createNewFile();
 						fw = new FileWriter(f);
 						scan=new Scanner(ftemp);
-						while(scan.hasNext()) {
-							String mot = scan.next();
+						while(scan.hasNextLine()) {
+							String mot = scan.nextLine();
 							//System.out.println(line);
-							fw.write(mot+" ");
+							fw.write(mot+"\n");
 						 }
 						scan.close();
 						fw.close();
 					} catch (IOException e1) {
 						throw new RuntimeException(f.getName()+" has failed");
 					}
-
-				 }
+				}
 
 			 }
 
@@ -167,9 +168,11 @@ public final class LauncherTelechargement implements LauncherIntern {
 		
 			//télécharge jusqu'a arret
 			while(!es.isShutdown()) {
-				
 				//on laisse la main aux autres actions (pour 1000 secondes pour savoir si fini)
 				this.wait(1000);
+				System.out.println("Total :"+inExecution.size());
+				System.out.println("Done : "+inExecution.stream().filter(f -> f.isDone() && !f.isCancelled() && f.isCompletedNormally()).count());
+				System.out.println("Bugged : "+inExecution.stream().filter(f -> f.isDone() && f.isCancelled()).count());
 				//futur tous fini et non arété de force -> fini normalement
 				if (inExecution.stream().allMatch(f -> f.isDone() && !f.isCancelled() && f.isCompletedNormally())) {
 					es.shutdown();

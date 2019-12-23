@@ -68,14 +68,22 @@ final class TacheTelechargement extends Thread implements Tache {
 			// pour les tests
 			//Thread.sleep(5000);
 			// non Asynch pour pouvoir l'areter
-			HttpResponse<Path> hr = client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
+			client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
 			// System.out.print("done\n");
 		} catch (java.net.ConnectException e) {
 			throw new UnsupportedOperationException();
 		}
-		catch (IOException | InterruptedException e) {
+		catch(IOException e) {
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			throw new UnsupportedOperationException();
+		}
+		catch (InterruptedException e) {
 			//interruption -> on ne fait rien de spécial (on observe l'arret grace à cancel car on veut pouvoir connaitre les taches même en cas d'arret)
 			//System.out.print("stopped\n");
+		
+				
+			
 		}
 	}
 }
