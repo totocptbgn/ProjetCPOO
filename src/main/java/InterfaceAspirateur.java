@@ -6,9 +6,15 @@ import java.util.Set;
 /**
  * Interface textuelle pour l'aspirateur de sites
  *
- *  TODO: Presque tout...
- *
- *
+ *  list aspi -> id et nom de l'aspirateur
+ *  create {-i} {-p} URL -> creer un aspirateur d'images / pages 
+ *  limit {-p} {-m} {-f} id/nom int -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
+ *  limit id/nom -> remet la limite de base
+ *  limitless id/nom -> enlève la limite de fichier de base (dangereux)
+ *  whiteList id/nom -> donne la whitelist d'un aspirateur
+ *  addWL id/nom [fichier] -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
+ *  removeWL id/nom [fichier] -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
+ *  list pages id/nom -> affiche la liste des pages d'un launcher (et pas aspirateur)
  */
 
 public class InterfaceAspirateur {
