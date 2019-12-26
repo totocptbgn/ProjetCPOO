@@ -84,6 +84,59 @@ public final class Gestionnaire {
 	}
 
 	/**
+	 * Lance le dernier launcher créé en attendant time millisecondes
+	 * @param time - temps à attendre en nanosecondes
+	 * @return renvoie le ComplétableFuture du launcher (voir documentation startAt de launcher)
+	 */
+	public CompletableFuture<Optional<Map<Path,String>>> launchAt(int time) {
+		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
+			LauncherIntern currentNew = newQueue.pop();
+			launchQueue.push(currentNew);
+			return currentNew.startAt(time).thenApplyAsync(e -> { if(e.isPresent() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
+		}
+		throw new NullPointerException();
+	}
+
+	/**
+	 * Lance le launcher en attendant time millisecondes
+	 * @param launcher - nom du launcher à lancer
+	 * @param time - temps à attendre en nanosecondes
+	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
+	 */
+	public CompletableFuture<Optional<Map<Path,String>>> launchAt(String launcher,int time) {
+		if (!changeCurrentLauncher(launcher,newQueue)) {
+			throw new NullPointerException();
+		}
+		return this.launchAt(time);
+
+	}
+	
+	/**
+	 * Lance le launcher d'id id en attendant time millisecondes
+	 * @param id - id du launcher
+	 * @param time - temps à attendre en nanosecondes
+	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
+	 */
+	public CompletableFuture<Optional<Map<Path,String>>> launch(int id,int time) {
+		String launcher = nameOf(id ,newQueue);
+		return this.launchAt(launcher,time);
+
+	}
+	
+
+	public Set<CompletableFuture<Optional<Map<Path,String>>>> launchAll() {
+		Set s=new HashSet<>();
+		try {
+			this.launch();
+			s.addAll(this.launchAll());
+			return s;
+		}
+		catch(NullPointerException e) {
+			return s;
+		}
+	}
+	
+	/**
 	 * Lance le dernier launcher créé
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
 	 */
@@ -95,6 +148,7 @@ public final class Gestionnaire {
 		}
 		throw new NullPointerException();
 	}
+
 
 	/**
 	 * Lance le launcher
@@ -108,10 +162,11 @@ public final class Gestionnaire {
 		return this.launch();
 
 	}
+	
 	/**
 	 * Lance le launcher d'id id
 	 * @param id - id du launcher
-	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
+	 * @return renvoie le CompletableFuture du launcher (voir documentation start de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launch(int id) {
 		String launcher = nameOf(id ,newQueue);
@@ -131,7 +186,7 @@ public final class Gestionnaire {
 		}
 		return false;
 	}
-
+	
 	/**
 	 *  Enlève le launcher avec le nom launcher
 	 *  @param launcher - nom du launcher à supprimer
@@ -171,6 +226,67 @@ public final class Gestionnaire {
 			launcher = nameOf(id ,waitQueue);
 		}
 		return this.delete(launcher);
+	}
+	
+	/**
+	 *  Enlève le dernier launcher éxécuté si celui-ci n'est pas fini apres time millisecondes
+	 *  @param time - temps d'attente avant suppression
+	 *  @return réussite de la suppression
+	 */
+	public CompletableFuture<Boolean> deleteAt(int time) {
+		if (getCurrentLaunch() != null) {
+			LauncherIntern l = launchQueue.pop();
+			CompletableFuture<Boolean> b = l.deleteAt(time);
+			
+			return b.thenApplyAsync(e -> { if(e) endQueue.add(l); return e; });
+		}
+		throw new NullPointerException();
+	}
+
+	/**
+	 *  Enlève le launcher avec le nom launcher après time millisecondes s'il n'est pas fini
+	 *  @param launcher - nom du launcher à supprimer
+	 *  @param time - temps d'attente avant suppression
+	 *  @return réussite de la suppression
+	 */
+	public CompletableFuture<Boolean> deleteAt(String launcher,int time) {
+		for(LauncherIntern l:listOfAllInside()) {
+			if(l.getNom().equals(launcher)) {
+				CompletableFuture<Boolean> b = l.deleteAt(time);
+				return b.thenApplyAsync(e -> {
+					if(e) {
+						endQueue.remove(l);
+						launchQueue.remove(l);
+						waitQueue.remove(l);
+						newQueue.remove(l);
+						endQueue.add(l);
+					}
+					return e;
+				});
+			}
+		}
+		throw new NullPointerException();
+	}
+
+	/**
+	 *  Enlève le launcher avec l'id id après time millisecondes s'il n'est pas fini
+	 *  @param id - id du launcher à supprimer
+	 *  @param time - temps d'attente avant suppression
+	 *  @return réussite de la suppression
+	 */
+	
+	public CompletableFuture<Boolean> deleteAt(int id,int time) {
+		String launcher = nameOf(id ,launchQueue);
+		if(launcher == null) {
+			launcher = nameOf(id ,endQueue);
+		}
+		if(launcher == null) {
+			launcher = nameOf(id ,newQueue);
+		}
+		if(launcher == null) {
+			launcher = nameOf(id ,waitQueue);
+		}
+		return this.deleteAt(launcher,time);
 	}
 
 	/**
@@ -223,6 +339,7 @@ public final class Gestionnaire {
 		}
 		throw new NullPointerException();
 	}
+	
 	/**
 	 * Relance un launcher de nom launcher
 	 * @param launcher - nom du launcher à mettre en pause
@@ -244,6 +361,7 @@ public final class Gestionnaire {
 		String launcher = nameOf(id ,waitQueue);
 		return this.restart(launcher);
 	}
+	
 
 	/**
 	 * Ajoute un launcher grace à l'URL

@@ -15,6 +15,9 @@ import java.util.Set;
  *  addWL id/nom [fichier] -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
  *  removeWL id/nom [fichier] -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
  *  list pages id/nom -> affiche la liste des pages d'un launcher (et pas aspirateur)
+ *  tolauncher [id/nom] -> transforme l'aspirateur en launcher
+ *  tolaunchers [id/nom] -> transforme l'aspirateur en launchers
+ *  cancel [id/nom] -> suppression de l'aspirateur
  */
 
 public class InterfaceAspirateur {

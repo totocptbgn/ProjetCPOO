@@ -1,4 +1,5 @@
 import java.util.Deque;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -13,8 +14,24 @@ import java.util.stream.Stream;
  */
 public class Aspirateur {
 
+	/**
+	 * WAIT -> en attente de transformation en launcher <br/>
+	 * TAKE -> en train de se transformer
+	 * DIE -> l'aspiration est fini
+	 */
+	 
+	public enum state {
+		WAIT,TAKE,DIE;
+	}
+	
+	//le future permettant de récupéré la tache
+	private CompletableFuture<Optional<Set<String>>> future;
+	
+	//etat du thread
+	private state etat = state.WAIT;
+
 	// Limite de nombre de fichier
-	private static long MAX = 100;
+	private final static long MAX = 100;
 	
 	//id de l'aspirateur
 	private static int id = 0;
@@ -30,6 +47,14 @@ public class Aspirateur {
 	private AspirateurURL base;
 
 	/**
+	 * Donne l'état de l'aspirateur (WAIT -> en attente de transformation, TAKE -> En attente de transformation
+	 */
+	public synchronized state getState() {
+		return this.etat;
+	}
+	
+	
+	/**
 	 * @return URL de base du téléchargement
 	 */
 	public String getBaseURL() {
@@ -41,7 +66,8 @@ public class Aspirateur {
 	 * @param whitelist - active ou désactive la whiteList
 	 */
 	public void whiteList(boolean whitelist) {
-		base.setWhiteListed(whitelist);
+		if(this.etat == state.WAIT)
+			base.setWhiteListed(whitelist);
 	}
 
 	/**
@@ -49,7 +75,8 @@ public class Aspirateur {
 	 * @param site - ajoute site à la whiteList
 	 */
 	public void addWhiteList(String site) {
-		base.addSitetoWhiteList(site);
+		if(this.etat == state.WAIT)
+			base.addSitetoWhiteList(site);
 	}
 
 	/**
@@ -108,10 +135,11 @@ public class Aspirateur {
 			}
 
 		};
-		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
+		a.commandes = Stream.generate(supply);
 		if (a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
+		a.commandes = a.commandes.takeWhile(e -> e!=null);
 		return a;
 	}
 
@@ -138,10 +166,11 @@ public class Aspirateur {
 			}
 
 		};
-		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
+		a.commandes = Stream.generate(supply);
 		if(a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
+		a.commandes = a.commandes.takeWhile(e -> e!=null);
 		return a;
 	}
 
@@ -160,7 +189,7 @@ public class Aspirateur {
 					myQueue = new ConcurrentLinkedDeque<AspirateurURL>();
 					myQueue.add(a.base);
 				}
-				System.out.println(myQueue.size());
+				//System.out.println("size :"+myQueue.size());
 				if(myQueue.isEmpty()) return null;
 				AspirateurURL current = myQueue.poll();
 				myQueue.addAll(current.images());
@@ -170,10 +199,11 @@ public class Aspirateur {
 			}
 
 		};
-		a.commandes = Stream.generate(supply).takeWhile(e -> e!=null);
+		a.commandes = Stream.generate(supply);
 		if(a.limit) {
 			a.commandes = a.commandes.limit(MAX);
 		}
+		a.commandes = a.commandes.takeWhile(e -> e!=null);
 		return a;
 	}
 
@@ -181,10 +211,12 @@ public class Aspirateur {
 	 * active ou desactive (! dangereux) la limite 
 	 * @param limit - true -> active la limite | false -> desactive la limite
 	 */
-	protected void setLimit(boolean limit) {
-		this.limit = limit;
-		if(limit) commandes.limit(MAX);
-		else commandes.limit(Integer.MAX_VALUE);
+	protected synchronized void setLimit(boolean limit) {
+		if(this.etat == state.WAIT) {
+			this.limit = limit;
+			if(limit) commandes.limit(MAX);
+			else commandes.limit(Integer.MAX_VALUE);
+		}
 	}
 
 	/**
@@ -192,8 +224,9 @@ public class Aspirateur {
 	 * @param p : La condition sur les URL
 	 */
 
-	private void addPredicate(Predicate<AspirateurURL> p) {
-		commandes = commandes.filter(e -> p.test(e));
+	private synchronized void addPredicate(Predicate<AspirateurURL> p) {
+		if(this.etat == state.WAIT)
+			commandes = commandes.filter(e -> p.test(e));
 	}
 
 	/**
@@ -205,7 +238,6 @@ public class Aspirateur {
 	 */
 
 	private <V> void addPredicateWithAccumulator(V start, BiFunction<V, AspirateurURL, V> faccu, Predicate<V> p) {
-
 		Predicate<AspirateurURL> pwithaccu = new Predicate<AspirateurURL>() {
 			V accumulator = start;
 
@@ -225,40 +257,73 @@ public class Aspirateur {
 	 * 
 	 * @param limit - limite en nombre de fichier
 	 */
-	public void limit(long limit) {
-		commandes = commandes.limit(limit);
+	public synchronized void limit(long limit) {
+		if(this.etat == state.WAIT)
+			commandes = commandes.limit(limit);
 	}
 
 	/**
 	 * @param size - limite de taille
 	 */
-	public void limitSize(long size) {
+	public synchronized void limitSize(long size) {
+		
 		double deb = 0;
-		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), x -> x < size);
+		if(this.etat == state.WAIT)
+			this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), x -> x < size);
 	}
 	/**
 	 * limite la taille de chaque fichier
 	 * @param size - taille limite (inclus la taille limite comme acceptable)
 	 */
-	public void limitMax(long size) {
-	
-		this.addPredicate(p -> p.getSize()<=size);
+	public synchronized void limitMax(long size) {
+		if(this.etat == state.WAIT)
+			this.addPredicate(p -> p.getSize()<=size);
 	}
 
 	/**
 	 * @param profondeur - limite de profondeur (ne prend pas en compte image et css)
 	 */
-	 public void limitProfondeur(long profondeur) {
-		 	double deb = 0;
-	 		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getProfondeur(), (x) -> x < profondeur);
+	 public synchronized void limitProfondeur(long profondeur) {
+		 if(this.etat == state.WAIT)	
+			 this.addPredicate(p -> p.getProfondeur() < profondeur);
 	 }
 
 	 /**
 	  * @return URLs récupérés par l'aspirateur
 	  */
-	 CompletableFuture<Set<String>> getContent() {
-		 
-		 return CompletableFuture.supplyAsync(() -> commandes.map(e->e.getURL()).collect(Collectors.toSet()));
+	 synchronized CompletableFuture<Optional<Set<String>>> getContent() {
+		 if(this.etat == state.WAIT) {
+			this.etat = state.TAKE;
+		 	future = CompletableFuture.supplyAsync(() -> commandes.map(e->e.getURL()).collect(Collectors.toSet())).thenApplyAsync(this::ending);
+		 }
+		 return future;
+	 }
+	 
+	 /**
+	  * dernière étape avant le renvoie du résultat de l'aspirateur
+	  * @param e - resultat de l'aspiration
+	  * @return renvoie le résultat de l'aspiration si celui ci n'a pas été annulé
+	  */
+	 private synchronized Optional<Set<String>> ending(Set<String> e) {
+		 if(this.getState() == state.DIE) {
+			 return Optional.empty();
+				
+		 }
+		 else {
+			 this.etat = state.DIE;
+			 return Optional.of(e);
+			 
+		 }
+	 }
+	 
+	 /**
+	  * Supprime la tache (meme si celle-ci est TAKE)
+	  */
+	 synchronized void cancel() {
+		 if(this.etat == state.TAKE) {
+			 future.cancel(true);
+		 }
+		 this.etat = state.DIE;
 	 }
 	 
 	 /*
@@ -267,4 +332,6 @@ public class Aspirateur {
 		commandes.peek(p -> consumer.accept(p.getURL()));
 	}
 	*/
+	 
+	 
 }

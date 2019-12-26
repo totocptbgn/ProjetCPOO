@@ -22,7 +22,25 @@ public class GestionnaireAspirateur {
 		g = new Gestionnaire();
 	}
 	
-
+	/**
+	 * Suppression de l'aspirateur d'id id
+	 * @param id - id de l'aspirateur
+	 */
+	public void cancel(int id) {
+		Aspirateur a=this.getAspirateur(id);
+		aspirateurs.remove(a);
+		a.cancel();
+		
+	}
+	/**
+	 * Suppression de l'aspirateur de nom nom
+	 * @param nom - nom de l'aspirateur
+	 */
+	public void cancel(String nom) {
+		Aspirateur a=this.getAspirateur(nom);
+		aspirateurs.remove(a);
+		a.cancel();
+	}
 	/**
 	 * @param URL de base de l'aspirateur
 	 * @return aspirateur n'aspirant rien
@@ -106,15 +124,19 @@ public class GestionnaireAspirateur {
 		return aspirateurs.stream().collect(Collectors.toSet());
 	}
 	/**
-	 * transforme un aspirateur en launcher d'id id
+	 * transforme un aspirateur d'id id en launcher 
 	 * @param id - id de l'aspirateur
-	 * @return 
+	 * @return renvoie un CompletableFuture de la tache
 	 */
 	public CompletableFuture<Void> aspirateurToLauncher(int id) {
 		Aspirateur a = this.getAspirateur(id);
 		return a.getContent().thenAcceptAsync(e -> {
 			try {
-				g.addLauncher(a.getBaseURL(),e);
+				if(e.isPresent()) {
+					Set<String> set = e.get();
+					aspirateurs.remove(a);
+					g.addLauncher(a.getBaseURL(),set);
+				}
 			} catch (IOException e1) {
 				throw new IllegalStateException();
 			}
@@ -122,14 +144,61 @@ public class GestionnaireAspirateur {
 	}
 	
 	/**
-	 * transforme un aspirateur en launcher de nom nom
+	 * transforme un aspirateur de nom nom en launcher 
 	 * @param nom - nom de l'aspirateur
+	 * @return renvoie un CompletableFuture de la tache
 	 */
-	public void aspirateurToLauncher(String nom) {
+	public  CompletableFuture<Void> aspirateurToLauncher(String nom) {
 		Aspirateur a = this.getAspirateur(nom);
-		a.getContent().thenAcceptAsync(e -> {
+		return a.getContent().thenAcceptAsync(e -> {
 			try {
-				g.addLauncher(a.getBaseURL(),e);
+				if(e.isPresent()) {
+					Set<String> set = e.get();
+					aspirateurs.remove(a);
+					g.addLauncher(a.getBaseURL(),set);
+				}
+			} catch (IOException e1) {
+				throw new IllegalStateException();
+			}
+		});
+	}
+	
+	/**
+	 * transforme un aspirateur de nom nom en plusieurs launchers 
+	 * @param nom - nom de l'aspirateur
+	 * @return CompletableFuture correspondant à la fin de la tache
+	 */
+	public CompletableFuture<Void> aspirateurToLaunchers(String nom) {
+		Aspirateur a = this.getAspirateur(nom);
+		return a.getContent().thenAcceptAsync(e -> {
+			try {
+				if(e.isPresent()) {
+					Set<String> set = e.get();
+					for(String name:set)
+						g.addLauncher(name);
+					aspirateurs.remove(a);
+				}
+			} catch (IOException e1) {
+				throw new IllegalStateException();
+			}
+		});
+	}
+	
+	/**
+	 * transforme un aspirateur d'id id en plusieurs launchers 
+	 * @param id - id de l'aspirateur
+	 * @return CompletableFuture correspondant à la fin de la tache
+	 */
+	public CompletableFuture<Void> aspirateurToLaunchers(int id) {
+		Aspirateur a = this.getAspirateur(id);
+		return a.getContent().thenAcceptAsync(e -> {
+			try {
+				if(e.isPresent()) {
+					Set<String> set = e.get();
+					for(String name:set)
+						g.addLauncher(name);
+					aspirateurs.remove(a);
+				}
 			} catch (IOException e1) {
 				throw new IllegalStateException();
 			}
