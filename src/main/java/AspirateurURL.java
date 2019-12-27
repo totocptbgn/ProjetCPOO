@@ -149,6 +149,7 @@ final class AspirateurURL {
 		this.notPage = notPage;	
 		HttpURLConnection conn = null;
 		try {
+			//System.out.println(URL);
 			conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
 			this.size = conn.getContentLengthLong();
 			conn.disconnect();
@@ -182,18 +183,21 @@ final class AspirateurURL {
 		for (Element link : links) {  
 			String l = transform(link.attr("href"));
 			if(this.isWell(l))
-				try {
 					
-					if(!inside.contains(l)) {
-						liste.add(new AspirateurURL(l,this,false));
+				if(!inside.contains(l)) {
+					try {
+						AspirateurURL aURL = new AspirateurURL(l,this,false);
+						liste.add(aURL);
+					}
+					catch (java.net.UnknownHostException e) {
+						throw new UnsupportedOperationException();
+					}
+					catch(Exception e) {
+							//pas ajouté
 					}
 				}
-				catch (java.net.UnknownHostException e) {
-					throw new UnsupportedOperationException();
-				}
-				catch (IOException e) {
-					//une erreur est survenu, la page ne sera juste pas téléchargé
-				}
+				
+		
 		} 
 		return liste;
 	}
@@ -218,17 +222,18 @@ final class AspirateurURL {
 		for (Element link : links) {  
 		String l = transform(link.attr("href"));
 		if(this.isWell(l))
-			try {
-				if(!inside.contains(l)) {
-					liste.add(new AspirateurURL(l,this,true));
+			
+			if(!inside.contains(l)) {
+				try {
+					AspirateurURL aURL = new AspirateurURL(l,this,true);
+					liste.add(aURL);
 				}
-			}
-			catch (java.net.UnknownHostException e) {
-				throw new UnsupportedOperationException();
-			}
-			catch (IOException e) {
-				//une erreur est survenu, la page ne sera juste pas téléchargé
-				
+				catch (java.net.UnknownHostException e) {
+					throw new UnsupportedOperationException();
+				}
+				catch(Exception e) {
+					//pas ajouté
+				}
 			}
 		} 
 		return liste;
@@ -242,6 +247,9 @@ final class AspirateurURL {
 	private String transform(String s) {
 		if(s.isBlank()) return s;
 		String[] tab =s.split("#");
+		if(tab.length==0) return s;
+		s = tab[0];
+		tab =s.split("\\?");
 		if(tab.length==0) return s;
 		s = tab[0];
 		if(!s.contains("http")) {
@@ -287,7 +295,7 @@ final class AspirateurURL {
 				catch (java.net.UnknownHostException e) {
 					throw new UnsupportedOperationException();
 				}
-				catch (IOException e) {
+				catch (Exception e) {
 					//une erreur est survenu, la page ne sera juste pas téléchargé
 				}
         }	

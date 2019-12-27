@@ -3,6 +3,10 @@ import java.util.*;
 
 /**
  * Interface textuelle pour le gestionnaire de téléchargement
+ * à ajouter : 
+ * | launchAll -> lance tous les launchers 
+ * | launchAt time [id/start] -> lance le telechargement après time 
+ * | LaunchInTime time [id/start] -> lance le launcher et le supprime si celui-ci n'est pas terminé après time (utilise la fonction de suppression avec le temps)
  */
 
 public class Interface {

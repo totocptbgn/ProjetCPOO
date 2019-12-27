@@ -39,7 +39,9 @@ final class TacheTelechargement extends Thread implements Tache {
 		this.URL = URL;
 		repository = f;
 		try {
+			//System.out.print(URL);
 			HttpURLConnection conn = (HttpURLConnection) new java.net.URL(URL).openConnection();
+			
 			this.size = conn.getContentLengthLong();
 			conn.disconnect();
 		}
@@ -71,11 +73,13 @@ final class TacheTelechargement extends Thread implements Tache {
 			client.send(request, BodyHandlers.ofFile(Paths.get(repository.getPath()+"/"+this.getPage())));
 			// System.out.print("done\n");
 		} catch (java.net.ConnectException e) {
+			//probleme de connection
 			throw new UnsupportedOperationException();
 		}
 		catch(IOException e) {
-			e.printStackTrace();
-			System.out.println(e.getMessage());
+			//e.printStackTrace();
+			//System.out.println(e.getMessage());
+			
 			throw new UnsupportedOperationException();
 		}
 		catch (InterruptedException e) {

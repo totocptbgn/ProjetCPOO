@@ -59,12 +59,44 @@ public class App {
     	}
     	*/
     	 GestionnaireAspirateur g = new GestionnaireAspirateur();
-    	 g.addAspirateurPagesWithImages(/*"https://www.irif.fr/~francoisl//l3algo.html"*/"http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
-    	 g.getAspirateur(1).limitProfondeur(2);
+    	 g.addAspirateurPagesWithImages("http://matdisblog.informatique.univ-paris-diderot.fr/2019/11/22/plus-court-chemin-dans-une-grille-mathman-a-la-rescousse/");
+    	 g.getAspirateur(1).limit(30);
     	 g.aspirateurToLauncher(1).join();
+    	 
+    	 System.out.println("---before launch---");
+
     	 for(Launcher l:g.getGestionnaire().listOfAll()) {
-    		 System.out.println(l.getNom());
+    		 System.out.println(l.getNom()+" "+l.getEtat());
     	 }
-    	 g.getGestionnaire().launch().join();
+    	 
+    	 CompletableFuture<Optional<Map<Path, String>>> cf = g.getGestionnaire().launch();
+    	 
+    	 System.out.println("---before pause---");
+    	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat());
+    	 }
+    	 Thread.sleep(1000);
+    	 System.out.println(g.getGestionnaire().pause());
+    	 System.out.println("---after pause---");
+    	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat());
+    	 }
+    	 
+    	 cf = g.getGestionnaire().restart();
+    	 System.out.println("---before restart---");
+    	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat());
+    	 }
+    	 System.out.println("---after restart---");
+    	 
+    	 cf.join();
+    	 System.out.println("---after end---");
+    	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat());
+    	 }
+    	 
+    	 
+    	 
+    	 
     }
 }
