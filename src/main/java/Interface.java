@@ -1,7 +1,5 @@
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Interface textuelle pour le gestionnaire de téléchargement
@@ -18,28 +16,63 @@ public class Interface {
 		ColoredOutput.init();
 		gstn = new Gestionnaire();
 		printHeader();
+		System.out.print("> ");
+
+		while (running) {
+			String cmd = sc.nextLine();
+			new Thread(() -> {
+				try {
+					newCommand(cmd);
+				} catch (UnsupportedOperationException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
+				} catch (IllegalStateException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
+				}  catch (RuntimeException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
+				} catch (IOException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an error happened...");
+				} finally {
+					System.out.print("> ");
+				}
+			}).start();
+		}
+
+		/*
+
+		LinkedList<Runnable> cmds = new LinkedList<>();
+		new Thread(() -> {
+			while (running) {
+				if (!cmds.isEmpty())
+					new Thread(() -> cmds.pollFirst().run()).start();
+			}
+		}).start();
 
 		while (running) {
 			System.out.print("> ");
 			String cmd = sc.nextLine();
-			try {
-				newCommand(cmd);
-			} catch (UnsupportedOperationException e) {
-				System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
-			} catch (IllegalStateException e) {
-				System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
-			}  catch (RuntimeException e) {
-				System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
-				e.printStackTrace();
-			}
+			cmds.add(() -> {
+				try {
+					newCommand(cmd);
+				} catch (UnsupportedOperationException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
+				} catch (IllegalStateException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
+				}  catch (RuntimeException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
 		}
+		 */
 	}
 
 	/**
 	 * Recoit une commande sous forme de String et la traite.
 	 */
 
-	private static void newCommand(String cmd) throws IOException {
+	private static synchronized void newCommand(String cmd) throws IOException {
 
 		// Ne fais rien quand rien n'est tapé
 		if (cmd.matches("^\\p{Blank}*$")) {
