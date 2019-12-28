@@ -1,17 +1,8 @@
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Interface textuelle pour le gestionnaire de téléchargement
- * à ajouter : 
- * | launchAll -> lance tous les launchers 
- * | launchAt time [id/start] -> lance le telechargement après time 
- * | LaunchInTime time [id/start] -> lance le launcher et le supprime si celui-ci n'est pas terminé après time (utilise la fonction de suppression avec le temps)
- */
-
 public class Interface {
 
-	private static boolean running = true;
 	private static Gestionnaire gstn;
 
 	public static void main (String [] args) throws IOException {
@@ -20,9 +11,9 @@ public class Interface {
 		ColoredOutput.init();
 		gstn = new Gestionnaire();
 		printHeader();
-		System.out.print("> ");
 
-		while (running) {
+		while (true) {
+			System.out.print("> ");
 			String cmd = sc.nextLine();
 			new Thread(() -> {
 				try {
@@ -31,52 +22,22 @@ public class Interface {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
 				} catch (IllegalStateException e) {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
-				}  catch (RuntimeException e) {
+				} catch (RuntimeException e) {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
 				} catch (IOException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an error happened...");
-				} finally {
-					System.out.print("> ");
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
+				} catch (InterruptedException e) {
+					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
 				}
 			}).start();
 		}
-
-		/*
-
-		LinkedList<Runnable> cmds = new LinkedList<>();
-		new Thread(() -> {
-			while (running) {
-				if (!cmds.isEmpty())
-					new Thread(() -> cmds.pollFirst().run()).start();
-			}
-		}).start();
-
-		while (running) {
-			System.out.print("> ");
-			String cmd = sc.nextLine();
-			cmds.add(() -> {
-				try {
-					newCommand(cmd);
-				} catch (UnsupportedOperationException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
-				} catch (IllegalStateException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
-				}  catch (RuntimeException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
-		}
-		 */
 	}
 
 	/**
 	 * Recoit une commande sous forme de String et la traite.
 	 */
 
-	private static synchronized void newCommand(String cmd) throws IOException {
+	private static void newCommand(String cmd) throws IOException, InterruptedException {
 
 		// Ne fais rien quand rien n'est tapé
 		if (cmd.matches("^\\p{Blank}*$")) {
@@ -86,7 +47,6 @@ public class Interface {
 		// Ferme le programme
 		if (cmd.matches("\\p{Blank}*exit\\p{Blank}*")) {
 			exit();
-			clearTerminal();
 			return;
 		}
 
@@ -101,11 +61,11 @@ public class Interface {
 			String link = cmd.substring(4);
 
 			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-zA-Z._\\-/=])+")) {
-				System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
+				print(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
 				return;
 			}
 			gstn.addLauncher(link);
-			System.out.println(ColoredOutput.set(Color.GREEN, "[Info] ") +  gstn.getCurrentNew().getNom() + " added with id : [" + gstn.getCurrentNew().getId() + "].");
+			print(ColoredOutput.set(Color.GREEN, "[Info] ") +  gstn.getCurrentNew().getNom() + " added with id : [" + gstn.getCurrentNew().getId() + "].");
 			return;
 		}
 
@@ -119,12 +79,13 @@ public class Interface {
 					Launcher l = it.next();
 					if (id == l.getId()) {
 						gstn.launch(l.getId());
-						System.out.print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]");
+						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
-							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
+							s += (" of the size of " + humanReadableSize(l.getTotalSize()) + ".");
 						} else {
-							System.out.print(".\n");
+							s += ".";
 						}
+						print(s);
 						return;
 					}
 				}
@@ -133,17 +94,18 @@ public class Interface {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
 						gstn.launch(l.getNom());
-						System.out.print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]");
+						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
-							System.out.print("of the size of " + humanReadableSize(l.getTotalSize()) + ".\n");
+							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".\n";
 						} else {
-							System.out.print(".\n");
+							s += ".";
 						}
+						print(s);
 						return;
 					}
 				}
 			}
-			System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
 			return;
 		}
 
@@ -152,10 +114,10 @@ public class Interface {
 			LauncherIntern t;
 			try {
 				t = gstn.getCurrentNew();
-				System.out.println(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
 				gstn.launch();
 			} catch (NullPointerException n) {
-				System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to start.");
+				print(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to start.");
 			}
 			return;
 		}
@@ -194,7 +156,7 @@ public class Interface {
 				printListOfLauncher(set);
 				return;
 			}
-			System.out.println("Usage: list [new | wait | started | done | all]");
+			print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " list [new | wait | started | done | all]");
 		}
 
 		// Delete un launcher par son nom ou son id
@@ -206,7 +168,7 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						System.out.println("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
+						print("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
 						gstn.delete(l.getId());
 						return;
 					}
@@ -215,13 +177,13 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						System.out.println("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
+						print("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
 						gstn.delete(l.getNom());
 						return;
 					}
 				}
 			}
-			System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
 			return;
 		}
 
@@ -235,10 +197,10 @@ public class Interface {
 					Launcher l = it.next();
 					if (id == l.getId()) {
 						if (l.getEtat() != Launcher.state.WORK) {
-							System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not downloading, state = " + l.getEtat() + ".");
+							print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not downloading, state = " + l.getEtat() + ".");
 							return;
 						}
-						System.out.println(ColoredOutput.set(Color.GREEN, "[Info] ") +  "stopped launcher " + l.getNom() + " [" + l.getId() + "].");
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "stopped launcher " + l.getNom() + " [" + l.getId() + "].");
 						gstn.pause(l.getId());
 						return;
 					}
@@ -248,16 +210,16 @@ public class Interface {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
 						if (l.getEtat() != Launcher.state.WORK) {
-							System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not downloading, state = " + l.getEtat() + ".");
+							print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not downloading, state = " + l.getEtat() + ".");
 							return;
 						}
-						System.out.println(ColoredOutput.set(Color.GREEN, "[Info] ") +  "stopped launcher " + l.getNom() + " [" + l.getId() + "].");
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "stopped launcher " + l.getNom() + " [" + l.getId() + "].");
 						gstn.pause(l.getNom());
 						return;
 					}
 				}
 			}
-			System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
 			return;
 		}
 
@@ -271,10 +233,10 @@ public class Interface {
 					Launcher l = it.next();
 					if (id == l.getId()) {
 						if (l.getEtat() != Launcher.state.WAIT) {
-							System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not paused, state = " + l.getEtat() + ".");
+							print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not paused, state = " + l.getEtat() + ".");
 							return;
 						}
-						System.out.println(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
 						gstn.restart(l.getId());
 						return;
 					}
@@ -284,16 +246,16 @@ public class Interface {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
 						if (l.getEtat() != Launcher.state.WAIT) {
-							System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not paused, state = " + l.getEtat() + ".");
+							print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher is not paused, state = " + l.getEtat() + ".");
 							return;
 						}
-						System.out.println(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
 						gstn.restart(l.getNom());
 						return;
 					}
 				}
 			}
-			System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
 			return;
 		}
 
@@ -307,7 +269,7 @@ public class Interface {
 		if (cmd.matches("^startnew .+")) {
 			String link = cmd.substring(9);
 			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-zA-Z._\\-/=])+")) {
-				System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
+				print(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
 				return;
 			}
 			newCommand("add " + link);
@@ -315,27 +277,160 @@ public class Interface {
 			return;
 		}
 
+		// Launch tous les launchers
+		if (cmd.matches("\\p{Blank}*startall\\p{Blank}*")) {
+			Set<Launcher> set = gstn.listNew();
+			set.forEach(l ->  {
+				gstn.launch(l.getId());
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]");
+			});
+			return;
+		}
+
+		// Launch après un certain temps
+		if (cmd.matches("\\p{Blank}*startat .*")) {
+			String[] arr = cmd.split(" +");
+			if (arr.length != 3) {
+				print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " startat [seconds] [id | name]");
+			}
+
+			int time = 0;
+			try {
+				time = Integer.valueOf(arr[1]) * 1000;
+			} catch (NumberFormatException e) {
+				print(ColoredOutput.set(Color.RED, "[Error]") + " The time is incorrect.");
+			}
+
+			String name = arr[2];
+			Iterator<Launcher> it = gstn.listNew().iterator();
+			try {
+				int id = Integer.valueOf(name);
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (id == l.getId()) {
+						gstn.launchAt(l.getNom(), time).thenRun(() -> {
+							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
+							if (l.getTotalSize() != -1L) {
+								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
+							} else {
+								s += ".";
+							}
+							print(s);
+						});
+						return;
+					}
+				}
+			} catch (NumberFormatException e) {
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (name.equals(l.getNom())) {
+						gstn.launchAt(l.getNom(), time).thenRun(() -> {
+							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
+							if (l.getTotalSize() != -1L) {
+								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
+							} else {
+								s += ".";
+							}
+							print(s);
+						});
+						return;
+					}
+				}
+			}
+			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			return;
+		}
+
+		// Launch et limite le temps de téléchargement
+		if (cmd.matches("\\p{Blank}*startlimit .*")) {
+			String[] arr = cmd.split(" +");
+			if (arr.length != 3) {
+				print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " launchat [seconds] [id | name]");
+			}
+
+			int time = 0;
+			try {
+				time = Integer.valueOf(arr[1]) * 1000;
+			} catch (NumberFormatException e) {
+				print(ColoredOutput.set(Color.RED, "[Error]") + " The time is incorrect.");
+			}
+
+			String name = arr[2];
+			Iterator<Launcher> it = gstn.listNew().iterator();
+			try {
+				int id = Integer.valueOf(name);
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (id == l.getId()) {
+						gstn.launch(l.getId());
+						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
+						if (l.getTotalSize() != -1L) {
+							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
+						} else {
+							s += ".";
+						}
+						print(s);
+						int finalTime = time;
+						gstn.deleteAt(l.getNom(), time).thenApplyAsync(e -> {
+							if (e) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
+							}
+							return null;
+						});
+						return;
+					}
+				}
+			} catch (NumberFormatException e) {
+				while (it.hasNext()) {
+					Launcher l = it.next();
+					if (name.equals(l.getNom())) {
+						gstn.launch(l.getNom());
+						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
+						if (l.getTotalSize() != -1L) {
+							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
+						} else {
+							s += ".";
+						}
+						print(s);int finalTime = time;
+						gstn.deleteAt(l.getNom(), time).thenApplyAsync(b -> {
+							if (b) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
+							}
+							return null;
+						});
+					}
+				}
+			}
+			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			return;
+		}
+
 		// Commandes mal utilisées
 		if (cmd.matches("\\p{Blank}*add\\p{Blank}*")) {
-			System.out.println("Usage: add [link]");
+			print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " add [link]");
 			return;
 		}
 		if (cmd.matches("\\p{Blank}*delete\\p{Blank}*")) {
-			System.out.println("Usage: delete [id | name]");
+			print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " delete [id | name]");
 			return;
 		}
 		if (cmd.matches("\\p{Blank}*pause\\p{Blank}*")) {
-			System.out.println("Usage: pause [id | name]");
+			print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " pause [id | name]");
 			return;
 		}
 
 		// Commandes non reconnues
-		System.out.println(ColoredOutput.set(Color.YELLOW, "Unknown command : ") + cmd);
+		print(ColoredOutput.set(Color.YELLOW, "Unknown command : ") + cmd);
 	}
 
 	// Ferme le programme
 	private static void exit() {
-		running = false;
+		clearTerminal();
+		System.exit(0);
+	}
+
+	private static void print(String s) {
+		System.out.print("\r" + s + "\n> ");
 	}
 
 	// Affiche l'en-tête du programme
@@ -372,13 +467,14 @@ public class Interface {
 	private static void clearTerminal() {
 		System.out.print("\033[H\033[2J");
 		System.out.flush();
+		System.out.println("> ");
 	}
 
 	// Affiche les launcher avec leur id, état, nom et taille
 	private static void printListOfLauncher(Set<Launcher> set) {
 		Iterator<Launcher> it = set.iterator();
 		if (!it.hasNext()) {
-			System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to print.");
+			print(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to print.");
 			return;
 		}
 
@@ -396,7 +492,7 @@ public class Interface {
 		}
 
 		it = set.iterator();
-
+		System.out.print("\r");
 		System.out.print("+-");
 		printChara(id, '-');
 		System.out.print("-+-");
@@ -450,6 +546,7 @@ public class Interface {
 		System.out.print("-+-");
 		printChara(dl, '-');
 		System.out.print("-+\n");
+		System.out.print("> ");
 	}
 
 	// Print n fois le charactère c (utile pour la fonction printListOfLauncher())
@@ -492,7 +589,7 @@ public class Interface {
 	// Affiche la page d'aide
 	private static void printManPage() {
 		System.out.print(
-				"\n" +
+				"\r\n" +
 						"-- " + ColoredOutput.set(Color.YELLOW, "Manual Page") + " --\n" +
 						"\n" +
 						"This programm was made to download files for you.\n" +
@@ -528,6 +625,13 @@ public class Interface {
 						"| " + ColoredOutput.set(Color.WHITE, "help") + "        | " + ColoredOutput.set(Color.WHITE, "(none)") + "                         | " + ColoredOutput.set(Color.WHITE, "Print the manual page.") + "                                                           |\n" +
 						"+-------------+--------------------------------+----------------------------------------------------------------------------------+\n" +
 						"| " + ColoredOutput.set(Color.WHITE, "startnew") + "    | " + ColoredOutput.set(Color.WHITE, "[link]") + "                         | " + ColoredOutput.set(Color.WHITE, "Shortcut to create and start a launcher directly.") + "                                |\n" +
+						"+-------------+--------------------------------+----------------------------------------------------------------------------------+\n" +
+						"| " + ColoredOutput.set(Color.WHITE, "startall") + "    | " + ColoredOutput.set(Color.WHITE, "(none)") + "                         | " + ColoredOutput.set(Color.WHITE, "Shortcut to start all the launchers directly.") + "                                    |\n" +
+						"+-------------+--------------------------------+----------------------------------------------------------------------------------+\n" +
+						"| " + ColoredOutput.set(Color.WHITE, "startat") + "     | " + ColoredOutput.set(Color.WHITE, "[time] [id | name]") + "             | " + ColoredOutput.set(Color.WHITE, "Launch but begin to download after the given time (in seconds).") + "                  |\n" +
+						"+-------------+--------------------------------+----------------------------------------------------------------------------------+\n" +
+						"| " + ColoredOutput.set(Color.WHITE, "startlimit") + "  | " + ColoredOutput.set(Color.WHITE, "[time] [id | name]") + "             | " + ColoredOutput.set(Color.WHITE, "Launch and delete the launcher if the download is not done before the given time") + " |\n" +
+						"|             |                                | " + ColoredOutput.set(Color.WHITE, "(in seconds). ") + "                                                                   |\n" +
 						"+-------------+--------------------------------+----------------------------------------------------------------------------------+\n"
 		);
 		System.out.print(
@@ -549,7 +653,7 @@ public class Interface {
 		ColoredOutput.init();
 		System.out.print(
 				"-- " + ColoredOutput.set(Color.YELLOW, "About") + " --\n" +
-						"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n"
+						"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n> "
 		);
 	}
 }
