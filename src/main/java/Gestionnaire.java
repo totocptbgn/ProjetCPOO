@@ -84,6 +84,17 @@ public final class Gestionnaire {
 	}
 
 	/**
+	 * appliqué à la fin de tache
+	 * @param e - resultat de la tache
+	 * @param li - launcher 
+	 * @return resultat de la tache après avoir ajouté la tache au taches finies
+	 */
+	
+	private synchronized Optional<Map<Path, String>> ending(Optional<Map<Path, String>> e,LauncherIntern li) {
+		if(launchQueue.remove(li)) { endQueue.add(li); } 
+		return e;	
+	}
+	/**
 	 * Lance le dernier launcher créé en attendant time millisecondes
 	 * @param time - temps à attendre en nanosecondes
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation startAt de launcher)
@@ -92,7 +103,7 @@ public final class Gestionnaire {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			LauncherIntern currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-			return currentNew.startAt(time).thenApplyAsync(e -> { if(e.isPresent() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
+			return currentNew.startAt(time).thenApplyAsync(e -> { return ending(e,currentNew); });
 		}
 		throw new NullPointerException();
 	}
@@ -125,7 +136,7 @@ public final class Gestionnaire {
 	
 
 	public Set<CompletableFuture<Optional<Map<Path,String>>>> launchAll() {
-		Set s=new HashSet<>();
+		Set<CompletableFuture<Optional<Map<Path,String>>>> s=new HashSet<>();
 		try {
 			this.launch();
 			s.addAll(this.launchAll());
@@ -144,7 +155,9 @@ public final class Gestionnaire {
 		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			LauncherIntern currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
-			return currentNew.start().thenApplyAsync(e -> { if(e.isPresent() && launchQueue.remove(currentNew)) { endQueue.add(currentNew); } return e;});
+			
+			return currentNew.start().thenApplyAsync( e -> { return ending(e,currentNew); });
+			
 		}
 		throw new NullPointerException();
 	}
@@ -179,10 +192,8 @@ public final class Gestionnaire {
 	 */
 	public boolean delete() {
 		if (getCurrentLaunch() != null) {
-			LauncherIntern l = launchQueue.pop();
-			boolean b = l.delete();
-			if(b) endQueue.add(l);
-			return b;
+			LauncherIntern l = this.getCurrentLaunch();
+			return l.delete();
 		}
 		return false;
 	}
@@ -197,11 +208,8 @@ public final class Gestionnaire {
 			if(l.getNom().equals(launcher)) {
 				boolean b = l.delete();
 				if (b) {
-					endQueue.remove(l);
-					launchQueue.remove(l);
-					waitQueue.remove(l);
-					newQueue.remove(l);
-					endQueue.add(l);
+					if(launchQueue.remove(l) || newQueue.remove(l) || waitQueue.remove(l))
+							endQueue.add(l);					
 				}
 				return b;
 			}
@@ -235,10 +243,9 @@ public final class Gestionnaire {
 	 */
 	public CompletableFuture<Boolean> deleteAt(int time) {
 		if (getCurrentLaunch() != null) {
-			LauncherIntern l = launchQueue.pop();
+			LauncherIntern l = launchQueue.getLast();
 			CompletableFuture<Boolean> b = l.deleteAt(time);
-			
-			return b.thenApplyAsync(e -> { if(e) endQueue.add(l); return e; });
+			return b;
 		}
 		throw new NullPointerException();
 	}
@@ -254,12 +261,9 @@ public final class Gestionnaire {
 			if(l.getNom().equals(launcher)) {
 				CompletableFuture<Boolean> b = l.deleteAt(time);
 				return b.thenApplyAsync(e -> {
-					if(e) {
-						endQueue.remove(l);
-						launchQueue.remove(l);
-						waitQueue.remove(l);
-						newQueue.remove(l);
-						endQueue.add(l);
+					if (e) {
+						if(launchQueue.remove(l) || newQueue.remove(l) || waitQueue.remove(l))
+								endQueue.add(l);					
 					}
 					return e;
 				});
@@ -295,9 +299,12 @@ public final class Gestionnaire {
 	 */
 	public boolean pause() {
 		if (getCurrentLaunch() != null && this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
-			LauncherIntern l = launchQueue.pop();
+			LauncherIntern l = launchQueue.getLast();
 			boolean b = l.pause();
-			if(b) waitQueue.add(l);
+			if(b) {
+				endQueue.remove(l);
+				waitQueue.add(l);
+			}
 			return b;
 		}
 		return false;
@@ -335,7 +342,7 @@ public final class Gestionnaire {
 			LauncherIntern l = waitQueue.pop();
 			launchQueue.push(l);
 
-			return l.restart().thenApplyAsync((e) -> { if(!e.isEmpty() && launchQueue.remove(l)) { endQueue.add(l); } return e;});
+			return l.restart().thenApplyAsync( e -> { return ending(e,l); });
 		}
 		throw new NullPointerException();
 	}

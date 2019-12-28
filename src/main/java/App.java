@@ -70,14 +70,16 @@ public class App {
     	 }
     	 
     	 CompletableFuture<Optional<Map<Path, String>>> cf = g.getGestionnaire().launch();
-    	 
+    	 CompletableFuture<Boolean> cf2 = g.getGestionnaire().deleteAt(500);
     	 System.out.println("---before pause---");
     	 for(Launcher l:g.getGestionnaire().listOfAll()) {
     		 System.out.println(l.getNom()+" "+l.getEtat());
     	 }
+    	 
     	 Thread.sleep(1000);
     	 System.out.println(g.getGestionnaire().pause());
     	 System.out.println("---after pause---");
+    	 
     	 for(Launcher l:g.getGestionnaire().listOfAll()) {
     		 System.out.println(l.getNom()+" "+l.getEtat());
     	 }
@@ -88,10 +90,19 @@ public class App {
     		 System.out.println(l.getNom()+" "+l.getEtat());
     	 }
     	 System.out.println("---after restart---");
-    	 
-    	 cf.join();
-    	 System.out.println("---after end---");
     	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat());
+    	 }
+    	 cf.join();
+    	 cf2.join();
+    	 
+         System.out.println("---after end---");
+         System.out.println("-with finish-");
+    	 for(Launcher l:g.getGestionnaire().listOfAll()) {
+    		 System.out.println(l.getNom()+" "+l.getEtat());
+    	 }
+    	 System.out.println("-without finish-");
+    	 for(Launcher l:g.getGestionnaire().list()) {
     		 System.out.println(l.getNom()+" "+l.getEtat());
     	 }
     	 

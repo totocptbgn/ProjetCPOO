@@ -264,8 +264,8 @@ public final class LauncherTelechargement implements LauncherIntern {
 				//tous fini mais pas dans les 2 cas précédents -> bug
 				if (inExecution.stream().allMatch(f -> f.isDone())) {
 					//System.out.println("bad one");
-					this.etat = Launcher.state.FAIL;
-					throw new UnsupportedOperationException();
+					return Optional.empty();
+					
 				}
 			
 			}
@@ -297,6 +297,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 				
 					
 					this.notify();
+					this.wait();
 				}
 			} catch (InterruptedException e) {
 				//tache interrompu
@@ -351,20 +352,21 @@ public final class LauncherTelechargement implements LauncherIntern {
 	
 	//met en pause le telechargement
 	public synchronized boolean pause() {
-		System.out.println("pause");
+		//System.out.println("pause");
 		try {
 			this.notify();
 			this.wait();
-			if(this.etat==Launcher.state.WORK) {
+			if(this.etat == Launcher.state.WORK) {
 				//interrons les taches
 				for (ForkJoinTask<Tache> f:inExecution) {
 					f.cancel(true);
 				}
 				//on n'utilise plus le gestionnaire de téléchargement pour l'instant
 				es.shutdownNow();
-				System.out.println("ok");
+				//System.out.println("ok");
 				this.etat = Launcher.state.WAIT;
 				this.notify();
+				this.wait();
 				return true;
 			}
 		} catch (InterruptedException e) {
