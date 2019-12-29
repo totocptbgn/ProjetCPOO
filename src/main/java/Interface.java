@@ -289,7 +289,7 @@ public class Interface {
 		}
 
 		// Launch après un certain temps
-		if (cmd.matches("\\p{Blank}*startat .*")) {
+		if (cmd.matches("\\p{Blank}*startat.*")) {
 			String[] arr = cmd.split(" +");
 			if (arr.length != 3) {
 				print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " startat [seconds] [id | name]");
@@ -343,7 +343,7 @@ public class Interface {
 		}
 
 		// Launch et limite le temps de téléchargement
-		if (cmd.matches("\\p{Blank}*startlimit .*")) {
+		if (cmd.matches("\\p{Blank}*startlimit.*")) {
 			String[] arr = cmd.split(" +");
 			if (arr.length != 3) {
 				print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " launchat [seconds] [id | name]");

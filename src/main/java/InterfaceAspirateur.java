@@ -4,18 +4,18 @@ import java.util.Scanner;
 /**
  * Interface textuelle pour l'aspirateur de sites
  *
- *  list aspi 							-> id et nom de l'aspirateur
- *  create {-i} {-p} URL 				-> creer un aspirateur d'images / pages
- *  limit {-p} {-m} {-f} id/nom int 	-> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
- *  limit id/nom 						-> remet la limite de base
- *  limitless id/nom 					-> enlève la limite de fichier de base (dangereux)
- *  whiteList id/nom 					-> donne la whitelist d'un aspirateur
- *  addWL id/nom [fichier] 				-> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
- *  removeWL id/nom [fichier] 			-> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
- *  list pages id/nom 					-> affiche la liste des pages d'un launcher (et pas aspirateur)
- *  tolauncher [id/nom] 				-> transforme l'aspirateur en launcher
- *  tolaunchers [id/nom] 				-> transforme l'aspirateur en launchers
- *  cancel [id/nom] 					-> suppression de l'aspirateur
+ *  list aspi                           -> id et nom de l'aspirateur
+ *  create {-i} {-p} URL                -> creer un aspirateur d'images / pages
+ *  limit {-p} {-m} {-f} id/nom int     -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
+ *  limit -r id/nom                     -> remet la limite de base
+ *  limitless id/nom                    -> enlève la limite de fichier de base (dangereux)
+ *  whiteList -l id/nom                 -> donne la whitelist d'un aspirateur
+ *  whiteList -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
+ *  whiteList -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
+ *  list pages id/nom                   -> affiche la liste des pages d'un launcher (et pas aspirateur)
+ *  tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
+ *  tolauncher -m [id/nom]               -> transforme l'aspirateur en launchers
+ *  cancel [id/nom]                     -> suppression de l'aspirateur
  */
 
 public class InterfaceAspirateur {
@@ -43,11 +43,14 @@ public class InterfaceAspirateur {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
 				} catch (RuntimeException e) {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
-				} catch (IOException e) {
+				}
+				/*
+				catch (IOException e) {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
 				} catch (InterruptedException e) {
 					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
 				}
+				*/
 			}).start();
 		}
 	}
@@ -56,7 +59,7 @@ public class InterfaceAspirateur {
 	 * Recoit une commande sous forme de String et la traite.
 	 */
 
-	private static void newCommand(String cmd) throws IOException, InterruptedException {
+	private static void newCommand(String cmd) {
 
 		// Ne fais rien quand rien n'est tapé
 		if (cmd.matches("^\\p{Blank}*$")) {
@@ -79,6 +82,125 @@ public class InterfaceAspirateur {
 		// Affiche l'aide
 		if (cmd.matches("\\p{Blank}*help\\p{Blank}*")) {
 			printManPage();
+			return;
+		}
+
+		// Liste les aspis ou les pages d'un aspi
+		if (cmd.matches("list.*")) {
+			String [] s = cmd.split(" +");
+ 			return;
+		}
+
+		// Créer un aspi
+		if (cmd.matches("create.*")) {
+			String [] s = cmd.split(" +");
+			if (s.length != 3) {
+				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "create [-i | -p] [link]");
+				return;
+			}
+			// Récupérer le lien (et le tester)
+			if (s[1].equals("-i")) {
+				// Créer un aspi d'image
+			}
+			if (s[1].equals("-p")) {
+				// Créer un aspi de pages
+			}
+			if (s[1].equals("-ip") || s[1].equals("-pi")) {
+				// Créer un aspi de pages et d'images
+			} else {
+				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "create [-i | -p] [link]");
+				return;
+			}
+			return;
+		}
+
+		// Change les limites d'un aspi
+		if (cmd.matches("limit.*")) {
+			String [] s = cmd.split(" +");
+			// Récupérer l'id ou le nom
+			if (s.length == 4) {
+				// Récupérer l'
+				if (s[1].equals("-p")) {
+					// limite prondeur
+				}
+				if (s[1].equals("-m")) {
+					// limite max
+				}
+				if (s[1].equals("-f")) {
+					// limit le max de fichier
+				}
+				if (s[1].equals("-r")) {
+					// reset le max de fichier
+				} else {
+					print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "limit [-p | -m | -f | -r] [id | name] [int]");
+					return;
+				}
+			} else if (s.length == 3 && s[1].equals("-r")) {
+
+			}
+			print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "limit [-p | -m | -f | -r] [id | name] [int | (none)]");
+			return;
+		}
+
+		if (cmd.matches("limitless.*")) {
+			String [] s = cmd.split(" +");
+			if (s.length != 2) {
+				// Récupérer l'aspi
+				// Enlever la limite de fichier de base (?)
+				return;
+			}
+			print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "limitless [id | nom]");
+			return;
+		}
+
+		if (cmd.matches("whitelist.*")) {
+			String [] s = cmd.split(" +");
+			// Récupérer l'aspi
+			if (s.length == 3) {
+				if (s[1].equals("-l")) {
+					// Afficher la whitelist
+				}
+				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-l | -a | -r] [id | nom] [file | (none)]");
+				return;
+			}
+			if (s.length == 4) {
+				if (s[1].equals("-a")) {
+					// Ajouter une whitelist
+				}
+				if (s[1].equals("-r")) {
+					// Retirer la whitelist
+				}
+				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-l | -a | -r] [id | nom] [file | (none)]");
+				return;
+			}
+			print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-l | -a | -r] [id | nom] [file | (none)]");
+			return;
+		}
+
+		if (cmd.matches("tolauncher.*")) {
+			String [] s = cmd.split(" +");
+			// Récupérer l'aspi
+			if (s.length == 3) {
+				if (s[1].equals("-s")) {
+					// Convertir en un launcher
+				}
+				if (s[1].equals(("-m"))) {
+					// Convertir en plusieurs launchers
+				} else {
+					print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "tolauncher [-s | -m] [id | nom]");
+				}
+				return;
+			} else {
+				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "tolauncher [-s | -m] [id | nom]");
+			}
+			return;
+		}
+
+		if (cmd.matches("cancel.*")) {
+			String [] s = cmd.split(" +");
+			if (s.length == 2) {
+				
+			}
 			return;
 		}
 
