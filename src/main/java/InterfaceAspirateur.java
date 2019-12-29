@@ -72,6 +72,7 @@ public class InterfaceAspirateur {
 		// Clear le terminal
 		if (cmd.matches("\\p{Blank}*clear\\p{Blank}*")) {
 			clearTerminal();
+			System.out.print("> ");
 			return;
 		}
 
@@ -101,23 +102,23 @@ public class InterfaceAspirateur {
 				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
 						" |                                                                                                                         |\n" +
 						" |                                                                                                                         |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗  ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝  ") + "                          |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "           ██╗    ██╗███████╗██████╗ ███████╗██╗████████╗███████╗ ") + "                              |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "           ██║    ██║██╔════╝██╔══██╗██╔════╝██║╚══██╔══╝██╔════╝ ") + "                              |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "           ██║ █╗ ██║█████╗  ██████╔╝███████╗██║   ██║   █████╗   ") + "                              |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "           ██║███╗██║██╔══╝  ██╔══██╗╚════██║██║   ██║   ██╔══╝   ") + "                              |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "           ╚███╔███╔╝███████╗██████╔╝███████║██║   ██║   ███████╗ ") + "                              |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "            ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝   ╚═╝   ╚══════╝ ") + "                              |\n" +
 						" |                                                                                                                         |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗      ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝     ") + "                          |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "    ███╗   ███╗██╗██████╗ ██████╗  ██████╗ ██████╗ ██╗███╗   ██╗ ██████╗   ") + "                     |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "    ████╗ ████║██║██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██║████╗  ██║██╔════╝   ") + "                     |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "    ██╔████╔██║██║██████╔╝██████╔╝██║   ██║██████╔╝██║██╔██╗ ██║██║  ███╗  ") + "                     |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "    ██║╚██╔╝██║██║██╔══██╗██╔══██╗██║   ██║██╔══██╗██║██║╚██╗██║██║   ██║  ") + "                     |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "    ██║ ╚═╝ ██║██║██║  ██║██║  ██║╚██████╔╝██║  ██║██║██║ ╚████║╚██████╔╝  ") + "                     |\n" +
+						" |                         " + ColoredOutput.set(Color.RED, "    ╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝   ") + "                     |\n" +
 						" |                                                                                                                         |\n" +
-						" |                                                                       " + ColoredOutput.set(Color.BLUE, " *    Dao Thauvin & Thomas Copt-Bignon     * ") + "     |\n" +
-						" |                                                                       " + ColoredOutput.set(Color.BLUE, " *             version 1.0.0               * ") + "     |\n" +
-						" |                                                                       " + ColoredOutput.set(Color.BLUE, " *  CPOO | Final project | year 2019-2020  * ") + "     |\n" +
+						" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *    Dao Thauvin & Thomas Copt-Bignon     * ") + "    |\n" +
+						" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *                Part II                  * ") + "    |\n" +
+						" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *  CPOO | Final project | year 2019-2020  * ") + "    |\n" +
 						" |                                                                                                                         |\n" +
 						" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n" +
 						"  Type 'help' to get details.\n" +
@@ -129,7 +130,6 @@ public class InterfaceAspirateur {
 	private static void clearTerminal() {
 		System.out.print("\033[H\033[2J");
 		System.out.flush();
-		System.out.println("> ");
 	}
 
 	// Print n fois le charactère c (utile pour la fonction printListOfLauncher())
@@ -155,6 +155,7 @@ public class InterfaceAspirateur {
 	// Affiche la page d'aide
 	private static void printManPage() {
 		System.out.print(
+				"\r" +
 				"-- " + ColoredOutput.set(Color.YELLOW, "About") + " --\n" +
 						"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n> "
 		);

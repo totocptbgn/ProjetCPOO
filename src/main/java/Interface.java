@@ -53,6 +53,7 @@ public class Interface {
 		// Clear le terminal
 		if (cmd.matches("\\p{Blank}*clear\\p{Blank}*")) {
 			clearTerminal();
+			System.out.print("> ");
 			return;
 		}
 
@@ -436,28 +437,28 @@ public class Interface {
 	// Affiche l'en-tête du programme
 	private static void printHeader() throws IOException {
 		System.out.print(
-				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
-						" |                                                                                                                         |\n" +
-						" |                                                                                                                         |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗  ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝ ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "    ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝  ") + "                          |\n" +
-						" |                                                                                                                         |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗      ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║     ") + "                          |\n" +
-						" |                    " + ColoredOutput.set(Color.YELLOW, "        ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝     ") + "                          |\n" +
-						" |                                                                                                                         |\n" +
-						" |                                                                       " + ColoredOutput.set(Color.BLUE, " *    Dao Thauvin & Thomas Copt-Bignon     * ") + "     |\n" +
-						" |                                                                       " + ColoredOutput.set(Color.BLUE, " *             version 1.0.0               * ") + "     |\n" +
-						" |                                                                       " + ColoredOutput.set(Color.BLUE, " *  CPOO | Final project | year 2019-2020  * ") + "     |\n" +
-						" |                                                                                                                         |\n" +
-						" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n" +
+				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
+						" |                                                                                                                           |\n" +
+						" |                                                                                                                           |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "    ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗  ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "    ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗ ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "    ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║ ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "    ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║ ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "    ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝ ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "    ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝  ") + "                          |\n" +
+						" |                                                                                                                           |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "        ███╗   ███╗ █████╗ ███╗   ██╗ █████╗  ██████╗ ███████╗██████╗      ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "        ████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔════╝██╔══██╗     ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "        ██╔████╔██║███████║██╔██╗ ██║███████║██║  ███╗█████╗  ██████╔╝     ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "        ██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══╝  ██╔══██╗     ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "        ██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║╚██████╔╝███████╗██║  ██║     ") + "                          |\n" +
+						" |                      " + ColoredOutput.set(Color.RED, "        ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝     ") + "                          |\n" +
+						" |                                                                                                                           |\n" +
+						" |                                                                         " + ColoredOutput.set(Color.YELLOW, " *    Dao Thauvin & Thomas Copt-Bignon     * ") + "     |\n" +
+						" |                                                                         " + ColoredOutput.set(Color.YELLOW, " *                 Part I                  * ") + "     |\n" +
+						" |                                                                         " + ColoredOutput.set(Color.YELLOW, " *  CPOO | Final project | year 2019-2020  * ") + "     |\n" +
+						" |                                                                                                                           |\n" +
+						" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n" +
 						"  Type 'help' to get details.\n" +
 						"  The download directory is at " + gstn.pathDownload() + "\n\n"
 		);
@@ -467,7 +468,6 @@ public class Interface {
 	private static void clearTerminal() {
 		System.out.print("\033[H\033[2J");
 		System.out.flush();
-		System.out.println("> ");
 	}
 
 	// Affiche les launcher avec leur id, état, nom et taille
