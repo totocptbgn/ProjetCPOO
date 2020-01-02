@@ -66,7 +66,7 @@ final class AspirateurURL {
 	 * @param s - s doit être sous la forme monsite ou https://...monsite
 	 * Remarque : marche aussi pour les pages
 	 */
-	public void addSitetoWhiteList(String s) {
+	void addSitetoWhiteList(String s) {
 		whiteListed = true;
 	}
 	
@@ -190,7 +190,7 @@ final class AspirateurURL {
 						liste.add(aURL);
 					}
 					catch (java.net.UnknownHostException e) {
-						throw new UnsupportedOperationException();
+						throw new LinkageError();
 					}
 					catch(Exception e) {
 							//pas ajouté
@@ -229,7 +229,7 @@ final class AspirateurURL {
 					liste.add(aURL);
 				}
 				catch (java.net.UnknownHostException e) {
-					throw new UnsupportedOperationException();
+					throw new LinkageError();
 				}
 				catch(Exception e) {
 					//pas ajouté
@@ -275,7 +275,7 @@ final class AspirateurURL {
 		               .timeout(1000*5)
 		               .get();
 		} catch (java.net.UnknownHostException e) {
-			throw new UnsupportedOperationException();
+			throw new LinkageError();
 		}
 		catch (Exception e) {
 			//e.printStackTrace();
@@ -293,7 +293,7 @@ final class AspirateurURL {
 					}
 				} 
 				catch (java.net.UnknownHostException e) {
-					throw new UnsupportedOperationException();
+					throw new LinkageError();
 				}
 				catch (Exception e) {
 					//une erreur est survenu, la page ne sera juste pas téléchargé

@@ -244,7 +244,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 						} catch (InterruptedException | ExecutionException e) {
 							//le fichier n'a pas pu être ajouté au résultat final
 							//isCompletedNormally -> n'arrive pas
-							throw new IllegalStateException();
+							throw new UnsupportedOperationException();
 						}
 					}
 					
@@ -320,7 +320,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 				} catch (InterruptedException | ExecutionException e) {
 					//le fichier n'a pas pu être récupéré
 					//isCompletedNormally -> n'arrive pas
-					throw new IllegalStateException();
+					throw new UnsupportedOperationException();
 				}
 			}
 		}
@@ -391,7 +391,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 					elementsdone.add(t);
 					files.get().put(Path.of(repository.getAbsolutePath()+"/"+t.getPage()),t.getURL());
 				} catch (InterruptedException | ExecutionException e) {
-					throw new IllegalStateException();
+					throw new UnsupportedOperationException();
 					//ne devrait pas arrivé
 					
 				} 
@@ -422,7 +422,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 			try {
 				return e.get();
 			} catch (InterruptedException | ExecutionException e1) {
-				throw new IllegalStateException();
+				throw new UnsupportedOperationException();
 			}
 			
 		}).collect(Collectors.toSet());

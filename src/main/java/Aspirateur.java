@@ -68,6 +68,8 @@ public class Aspirateur {
 	public void whiteList(boolean whitelist) {
 		if(this.etat == state.WAIT)
 			base.setWhiteListed(whitelist);
+		else 
+			throw new IllegalStateException();
 	}
 
 	/**
@@ -77,6 +79,8 @@ public class Aspirateur {
 	public void addWhiteList(String site) {
 		if(this.etat == state.WAIT)
 			base.addSitetoWhiteList(site);
+		else 
+			throw new IllegalStateException();
 	}
 
 	/**
@@ -211,12 +215,14 @@ public class Aspirateur {
 	 * active ou desactive (! dangereux) la limite 
 	 * @param limit - true -> active la limite | false -> desactive la limite
 	 */
-	protected synchronized void setLimit(boolean limit) {
+	public synchronized void setLimit(boolean limit) {
 		if(this.etat == state.WAIT) {
 			this.limit = limit;
 			if(limit) commandes.limit(MAX);
 			else commandes.limit(Integer.MAX_VALUE);
 		}
+		else 
+			throw new IllegalStateException();
 	}
 
 	/**
@@ -227,6 +233,8 @@ public class Aspirateur {
 	private synchronized void addPredicate(Predicate<AspirateurURL> p) {
 		if(this.etat == state.WAIT)
 			commandes = commandes.filter(e -> p.test(e));
+		else 
+			throw new IllegalStateException();
 	}
 
 	/**
@@ -238,18 +246,21 @@ public class Aspirateur {
 	 */
 
 	private <V> void addPredicateWithAccumulator(V start, BiFunction<V, AspirateurURL, V> faccu, Predicate<V> p) {
-		Predicate<AspirateurURL> pwithaccu = new Predicate<AspirateurURL>() {
-			V accumulator = start;
+		if(this.etat == state.WAIT) {
+			Predicate<AspirateurURL> pwithaccu = new Predicate<AspirateurURL>() {
+				V accumulator = start;
 
-			@Override
-			public boolean test(AspirateurURL t) {
+				@Override
+				public boolean test(AspirateurURL t) {
 				accumulator = faccu.apply(accumulator, t);
 				return p.test(accumulator);
-			}
+				}
 
-		};
+			};
 
-		commandes = commandes.takeWhile(pwithaccu);
+			commandes = commandes.takeWhile(pwithaccu);
+		}
+		else throw new IllegalStateException();
 	}
 
 
@@ -260,6 +271,8 @@ public class Aspirateur {
 	public synchronized void limit(long limit) {
 		if(this.etat == state.WAIT)
 			commandes = commandes.limit(limit);
+		else 
+			throw new IllegalStateException();
 	}
 
 	/**
@@ -268,24 +281,25 @@ public class Aspirateur {
 	public synchronized void limitSize(long size) {
 		
 		double deb = 0;
-		if(this.etat == state.WAIT)
-			this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), x -> x < size);
+
+		this.addPredicateWithAccumulator(deb, (x, y) -> x + y.getSize(), x -> x < size);
 	}
 	/**
 	 * limite la taille de chaque fichier
 	 * @param size - taille limite (inclus la taille limite comme acceptable)
 	 */
 	public synchronized void limitMax(long size) {
-		if(this.etat == state.WAIT)
-			this.addPredicate(p -> p.getSize()<=size);
+		this.addPredicate(p -> p.getSize()<=size);
+
 	}
 
 	/**
 	 * @param profondeur - limite de profondeur (ne prend pas en compte image et css)
 	 */
 	 public synchronized void limitProfondeur(long profondeur) {
-		 if(this.etat == state.WAIT)	
-			 this.addPredicate(p -> p.getProfondeur() < profondeur);
+	
+		this.addPredicate(p -> p.getProfondeur() < profondeur);
+
 	 }
 
 	 /**
@@ -295,8 +309,10 @@ public class Aspirateur {
 		 if(this.etat == state.WAIT) {
 			this.etat = state.TAKE;
 		 	future = CompletableFuture.supplyAsync(() -> commandes.map(e->e.getURL()).collect(Collectors.toSet())).thenApplyAsync(this::ending);
+		 	return future;
 		 }
-		 return future;
+		 else 
+			throw new IllegalStateException();
 	 }
 	 
 	 /**

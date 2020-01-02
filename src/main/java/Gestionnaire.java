@@ -9,10 +9,11 @@ import java.util.stream.Collectors;
 /**
  * Gère l'ensemble des téléchargements des launchers <br/>
  * Exceptions : <br/>
- * - IllegalStateException : Erreur inattendu <br/>
+ * - UnsupportedOperationException : Erreur inattendu <br/>
  * - RuntimeException "name has failed" : Erreur de modification de fichier <br/>
- * - UnsupportedOperationException : Erreur de connection
- * - NullPointerException : Launcher inexistant
+ * - LinkageError : Erreur de connection
+ * - NullPointerException : Launcher inexistant <br/>
+ * - IllegalStateException : Launcher avec mauvais état
  */
 public final class Gestionnaire {
 	// Liste des telechargements
@@ -21,6 +22,7 @@ public final class Gestionnaire {
 	private final Deque<LauncherIntern> launchQueue = new ConcurrentLinkedDeque<>(); // La file d'attente des téléchagements en cours de téléchargements
 	private final Deque<LauncherIntern> endQueue = new ConcurrentLinkedDeque<>();    // La file d'attente des téléchagements finis (ou interrompus)
 	private final File f = new File("download");
+	
 	/**
 	 * @return renvoie l'emplacement du fichier download
 	 * @throws IOException - si une I/O exception se produit
@@ -33,21 +35,24 @@ public final class Gestionnaire {
 	 * @result Dernier launcher non lancé
 	 */
 	public LauncherIntern getCurrentNew() {
-		return newQueue.peek();
+		if(newQueue.isEmpty()) throw new NullPointerException();
+		return newQueue.getLast();
 	}
 
 	/**
 	 * @result Dernier launcher en attente
 	 */
 	public LauncherIntern getCurrentWait() {
-		return waitQueue.peek();
+		if(waitQueue.isEmpty()) throw new NullPointerException();
+		return waitQueue.getLast();
 	}
 
 	/**
 	 * @result Dernier launcher lancé
 	 */
 	public LauncherIntern getCurrentLaunch() {
-		return launchQueue.peek();
+		if(launchQueue.isEmpty()) throw new NullPointerException();
+		return launchQueue.getLast();
 	}
 
 	public Gestionnaire() {
@@ -57,7 +62,7 @@ public final class Gestionnaire {
 	/**
 	 * @param id - id d'un launcher
 	 * @param d - Queue où chercher
-	 * @return renvoie le nom associé à l'id dans d
+	 * @return renvoie le nom associé à l'id dans d (si pas trouvé NullPointerException)
 	 */
 	private String nameOf(int id ,Deque<LauncherIntern> d) {
 		for(LauncherIntern l:d) {
@@ -65,22 +70,29 @@ public final class Gestionnaire {
 				return l.getNom();
 			}
 		}
-		return null;
+		throw new NullPointerException();
+	}
+	
+	/**
+	 * @param nom - nom du téléchargement à renvoyer
+	 * @param d - queue de téléchargement
+	 * @return lance l'exception NullPointerException si le téléchargement n'existe pas sinon renvoie le launcher
+	 */
+	private LauncherIntern getAspirateur(String nom,Deque<LauncherIntern> d) {
+		LauncherIntern l = d.stream().reduce(null, (a,e) -> nom.equals(e.getNom())?e:a);
+		if(l==null) throw new NullPointerException();
+		return l;
 	}
 
 	/**
 	 * @param nom - nom du téléchargement à mettre en avant
 	 * @param queue - queue de téléchargement
-	 * @return Renvoie false si le téléchargement n'éxiste pas
 	 */
-	private boolean changeCurrentLauncher(String nom,Deque<LauncherIntern> queue) {
-		LauncherIntern l = queue.stream().reduce(null, (a,e) -> nom.equals(e.getNom())?e:a);
-		if (l != null) {
-			queue.remove(l);
-			queue.push(l);
-			return true;
-		}
-		return false;
+	private void changeCurrentLauncher(String nom,Deque<LauncherIntern> queue) {
+		LauncherIntern l = getAspirateur(nom,queue);
+		queue.remove(l);
+		queue.push(l);
+
 	}
 
 	/**
@@ -100,12 +112,12 @@ public final class Gestionnaire {
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation startAt de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launchAt(int time) {
-		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
-			LauncherIntern currentNew = newQueue.pop();
+		if (this.getCurrentNew().getEtat() == Launcher.state.NEW) {
+			LauncherIntern currentNew = newQueue.removeLast();
 			launchQueue.push(currentNew);
 			return currentNew.startAt(time).thenApplyAsync(e -> { return ending(e,currentNew); });
 		}
-		throw new NullPointerException();
+		throw new IllegalStateException ();
 	}
 
 	/**
@@ -115,9 +127,7 @@ public final class Gestionnaire {
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launchAt(String launcher,int time) {
-		if (!changeCurrentLauncher(launcher,newQueue)) {
-			throw new NullPointerException();
-		}
+		changeCurrentLauncher(launcher,newQueue);
 		return this.launchAt(time);
 
 	}
@@ -152,14 +162,14 @@ public final class Gestionnaire {
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launch() {
-		if (getCurrentNew() != null && this.getCurrentNew().getEtat() == Launcher.state.NEW) {
+		if (this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			LauncherIntern currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
 			
 			return currentNew.start().thenApplyAsync( e -> { return ending(e,currentNew); });
 			
 		}
-		throw new NullPointerException();
+		throw new IllegalStateException();
 	}
 
 
@@ -169,9 +179,7 @@ public final class Gestionnaire {
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation start de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> launch(String launcher) {
-		if (!changeCurrentLauncher(launcher,newQueue)) {
-			throw new NullPointerException();
-		}
+		changeCurrentLauncher(launcher,newQueue);
 		return this.launch();
 
 	}
@@ -191,11 +199,8 @@ public final class Gestionnaire {
 	 *  @return réussite de la suppression
 	 */
 	public boolean delete() {
-		if (getCurrentLaunch() != null) {
-			LauncherIntern l = this.getCurrentLaunch();
-			return l.delete();
-		}
-		return false;
+		LauncherIntern l = this.getCurrentLaunch();
+		return l.delete();
 	}
 	
 	/**
@@ -214,7 +219,7 @@ public final class Gestionnaire {
 				return b;
 			}
 		}
-		return false;
+		throw new NullPointerException();
 	}
 
 	/**
@@ -223,16 +228,13 @@ public final class Gestionnaire {
 	 *  @return réussite de la suppression
 	 */
 	public boolean delete(int id) {
-		String launcher = nameOf(id ,launchQueue);
-		if(launcher == null) {
-			launcher = nameOf(id ,endQueue);
-		}
-		if(launcher == null) {
-			launcher = nameOf(id ,newQueue);
-		}
-		if(launcher == null) {
-			launcher = nameOf(id ,waitQueue);
-		}
+		String launcher;
+		Deque<LauncherIntern> d = new ArrayDeque<>();
+		d.addAll(launchQueue);
+		d.addAll(endQueue);
+		d.addAll(newQueue);
+		d.addAll(waitQueue);
+		launcher = nameOf(id ,d);
 		return this.delete(launcher);
 	}
 	
@@ -242,12 +244,10 @@ public final class Gestionnaire {
 	 *  @return réussite de la suppression
 	 */
 	public CompletableFuture<Boolean> deleteAt(int time) {
-		if (getCurrentLaunch() != null) {
-			LauncherIntern l = launchQueue.getLast();
-			CompletableFuture<Boolean> b = l.deleteAt(time);
-			return b;
-		}
-		throw new NullPointerException();
+		LauncherIntern l = this.getCurrentLaunch();
+		CompletableFuture<Boolean> b = l.deleteAt(time);
+		return b;
+	
 	}
 
 	/**
@@ -280,16 +280,12 @@ public final class Gestionnaire {
 	 */
 	
 	public CompletableFuture<Boolean> deleteAt(int id,int time) {
-		String launcher = nameOf(id ,launchQueue);
-		if(launcher == null) {
-			launcher = nameOf(id ,endQueue);
-		}
-		if(launcher == null) {
-			launcher = nameOf(id ,newQueue);
-		}
-		if(launcher == null) {
-			launcher = nameOf(id ,waitQueue);
-		}
+		Deque<LauncherIntern> d = new ArrayDeque<>();
+		d.addAll(launchQueue);
+		d.addAll(endQueue);
+		d.addAll(newQueue);
+		d.addAll(waitQueue);
+		String launcher = nameOf(id ,d);
 		return this.deleteAt(launcher,time);
 	}
 
@@ -298,7 +294,7 @@ public final class Gestionnaire {
 	 *  @return réussite de la pause
 	 */
 	public boolean pause() {
-		if (getCurrentLaunch() != null && this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
+		if (this.getCurrentLaunch().getEtat() == Launcher.state.WORK) {
 			LauncherIntern l = launchQueue.getLast();
 			boolean b = l.pause();
 			if(b) {
@@ -307,7 +303,7 @@ public final class Gestionnaire {
 			}
 			return b;
 		}
-		return false;
+		throw new IllegalStateException(); 
 	}
 
 	/**
@@ -317,9 +313,7 @@ public final class Gestionnaire {
 	 */
 
 	public boolean pause(String launcher) {
-		if (!changeCurrentLauncher(launcher,launchQueue)) {
-			return false;
-		}
+		changeCurrentLauncher(launcher,launchQueue);
 		return this.pause();
 	}
 
@@ -338,13 +332,13 @@ public final class Gestionnaire {
 	 * @return  renvoie le ComplétableFuture du launcher (voir documentation restart de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> restart() {
-		if (this.getCurrentWait()!= null && this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
+		if (this.getCurrentWait().getEtat() == Launcher.state.WAIT) {
 			LauncherIntern l = waitQueue.pop();
 			launchQueue.push(l);
 
 			return l.restart().thenApplyAsync( e -> { return ending(e,l); });
 		}
-		throw new NullPointerException();
+		throw new IllegalStateException();
 	}
 	
 	/**
@@ -353,9 +347,7 @@ public final class Gestionnaire {
 	 * @return renvoie le ComplétableFuture du launcher (voir documentation restart de launcher)
 	 */
 	public CompletableFuture<Optional<Map<Path,String>>> restart(String launcher) {
-		if (!changeCurrentLauncher(launcher,waitQueue)) {
-			throw new NullPointerException();
-		}
+		changeCurrentLauncher(launcher,waitQueue);
 		return this.restart();
 	}
 

@@ -9,9 +9,11 @@ import java.util.stream.Collectors;
  * Decorateur de Gestionnaire en ajoutant les aspirateurs
  * Gère l'ensemble des téléchargements des launchers 
  * Exceptions : 
- * - IllegalStateException : Erreur inattendu <br/>
+ * - UnsupportedOperationException : Erreur inattendu <br/>
  * - RuntimeException "name has failed" : Erreur de modification de fichier <br/>
- * - UnsupportedOperationException : Erreur de connection
+ * - LinkageError : Erreur de connection
+ * - NullPointerException : Aspirateur inexistant <br/>
+ * - IllegalStateException : Aspirateur avec mauvais état
 
  */
 public class GestionnaireAspirateur {
@@ -32,6 +34,7 @@ public class GestionnaireAspirateur {
 		a.cancel();
 		
 	}
+	
 	/**
 	 * Suppression de l'aspirateur de nom nom
 	 * @param nom - nom de l'aspirateur
@@ -92,7 +95,7 @@ public class GestionnaireAspirateur {
 	/**
 	 * Recupère un Aspirateur d'URL de base URL
 	 * @param URL - URL de base de l'aspirateur
-	 * @return renvoie l'aspirateur trouvé, null sinon
+	 * @return renvoie l'aspirateur trouvé, exception NullPointerException sinon
 	 */
 	public Aspirateur getAspirateur(String URL) {
 		for(Aspirateur a : aspirateurs) {
@@ -100,13 +103,13 @@ public class GestionnaireAspirateur {
 				return a;
 			}
 		}
-		return null;
+		throw new NullPointerException();
 	}
 	
 	/**
 	 * Recupère un Aspirateur d'id id
 	 * @param id - id de l'aspirateur
-	 * @return renvoie l'aspirateur trouvé, null sinon
+	 * @return renvoie l'aspirateur trouvé, exception NullPointerException sinon
 	 */
 	public Aspirateur getAspirateur(int id) {
 		for(Aspirateur a : aspirateurs) {
@@ -114,7 +117,7 @@ public class GestionnaireAspirateur {
 				return a;
 			}
 		}
-		return null;
+		throw new NullPointerException();
 	}
 	
 	/**
@@ -123,6 +126,8 @@ public class GestionnaireAspirateur {
 	public Set<Aspirateur> listAspirateurs() {
 		return aspirateurs.stream().collect(Collectors.toSet());
 	}
+	
+	
 	/**
 	 * transforme un aspirateur d'id id en launcher 
 	 * @param id - id de l'aspirateur
@@ -138,7 +143,7 @@ public class GestionnaireAspirateur {
 					g.addLauncher(a.getBaseURL(),set);
 				}
 			} catch (IOException e1) {
-				throw new IllegalStateException();
+				throw new UnsupportedOperationException();
 			}
 		});
 	}
@@ -158,7 +163,7 @@ public class GestionnaireAspirateur {
 					g.addLauncher(a.getBaseURL(),set);
 				}
 			} catch (IOException e1) {
-				throw new IllegalStateException();
+				throw new UnsupportedOperationException();
 			}
 		});
 	}
@@ -179,7 +184,7 @@ public class GestionnaireAspirateur {
 					aspirateurs.remove(a);
 				}
 			} catch (IOException e1) {
-				throw new IllegalStateException();
+				throw new UnsupportedOperationException();
 			}
 		});
 	}
@@ -200,7 +205,7 @@ public class GestionnaireAspirateur {
 					aspirateurs.remove(a);
 				}
 			} catch (IOException e1) {
-				throw new IllegalStateException();
+				throw new UnsupportedOperationException();
 			}
 		});
 	}

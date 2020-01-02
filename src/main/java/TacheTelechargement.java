@@ -74,13 +74,13 @@ final class TacheTelechargement extends Thread implements Tache {
 			// System.out.print("done\n");
 		} catch (java.net.ConnectException e) {
 			//probleme de connection
-			throw new UnsupportedOperationException();
+			throw new LinkageError();
 		}
 		catch(IOException e) {
 			//e.printStackTrace();
 			//System.out.println(e.getMessage());
 			
-			throw new UnsupportedOperationException();
+			throw new LinkageError();
 		}
 		catch (InterruptedException e) {
 			//interruption -> on ne fait rien de spécial (on observe l'arret grace à cancel car on veut pouvoir connaitre les taches même en cas d'arret)
