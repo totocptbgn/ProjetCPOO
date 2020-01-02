@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 /**
  * Decorateur de Gestionnaire en ajoutant les aspirateurs
- * Gère l'ensemble des téléchargements des launchers 
- * Exceptions : 
+ * Gère l'ensemble des téléchargements des launchers
+ * Exceptions :
  * - UnsupportedOperationException : Erreur inattendu <br/>
  * - RuntimeException "name has failed" : Erreur de modification de fichier <br/>
  * - LinkageError : Erreur de connection
@@ -23,27 +23,27 @@ public class GestionnaireAspirateur {
 	public GestionnaireAspirateur() {
 		g = new Gestionnaire();
 	}
-	
+
 	/**
 	 * Suppression de l'aspirateur d'id id
 	 * @param id - id de l'aspirateur
 	 */
 	public void cancel(int id) {
-		Aspirateur a=this.getAspirateur(id);
+		Aspirateur a = this.getAspirateur(id);
 		aspirateurs.remove(a);
 		a.cancel();
-		
 	}
-	
+
 	/**
 	 * Suppression de l'aspirateur de nom nom
 	 * @param nom - nom de l'aspirateur
 	 */
 	public void cancel(String nom) {
-		Aspirateur a=this.getAspirateur(nom);
+		Aspirateur a = this.getAspirateur(nom);
 		aspirateurs.remove(a);
 		a.cancel();
 	}
+
 	/**
 	 * @param URL de base de l'aspirateur
 	 * @return aspirateur n'aspirant rien
@@ -53,7 +53,7 @@ public class GestionnaireAspirateur {
 		aspirateurs.add(a);
 		return a.getId();
 	}
-	
+
 	/**
 	 * @param URL de base de l'aspirateur
 	 * @return aspirateur aspirant les pages
@@ -63,7 +63,7 @@ public class GestionnaireAspirateur {
 		aspirateurs.add(a);
 		return a.getId();
 	}
-	
+
 	/**
 	 * @param URL de base de l'aspirateur
 	 * @return aspirateur aspirant les images
@@ -73,8 +73,8 @@ public class GestionnaireAspirateur {
 		aspirateurs.add(a);
 		return a.getId();
 	}
-	
-	
+
+
 	/**
 	 * @param URL de base de l'aspirateur
 	 * @return aspirateur aspirant les images et les pages
@@ -84,14 +84,14 @@ public class GestionnaireAspirateur {
 		aspirateurs.add(a);
 		return a.getId();
 	}
-	
+
 	/**
 	 * @return Gestionnaire associé
 	 */
 	public Gestionnaire getGestionnaire() {
 		return g;
 	}
-	
+
 	/**
 	 * Recupère un Aspirateur d'URL de base URL
 	 * @param URL - URL de base de l'aspirateur
@@ -105,7 +105,7 @@ public class GestionnaireAspirateur {
 		}
 		throw new NullPointerException();
 	}
-	
+
 	/**
 	 * Recupère un Aspirateur d'id id
 	 * @param id - id de l'aspirateur
@@ -119,17 +119,17 @@ public class GestionnaireAspirateur {
 		}
 		throw new NullPointerException();
 	}
-	
+
 	/**
 	 * @return Liste des aspirateurs
 	 */
 	public Set<Aspirateur> listAspirateurs() {
 		return aspirateurs.stream().collect(Collectors.toSet());
 	}
-	
-	
+
+
 	/**
-	 * transforme un aspirateur d'id id en launcher 
+	 * transforme un aspirateur d'id id en launcher
 	 * @param id - id de l'aspirateur
 	 * @return renvoie un CompletableFuture de la tache
 	 */
@@ -147,9 +147,9 @@ public class GestionnaireAspirateur {
 			}
 		});
 	}
-	
+
 	/**
-	 * transforme un aspirateur de nom nom en launcher 
+	 * transforme un aspirateur de nom nom en launcher
 	 * @param nom - nom de l'aspirateur
 	 * @return renvoie un CompletableFuture de la tache
 	 */
@@ -167,9 +167,9 @@ public class GestionnaireAspirateur {
 			}
 		});
 	}
-	
+
 	/**
-	 * transforme un aspirateur de nom nom en plusieurs launchers 
+	 * transforme un aspirateur de nom nom en plusieurs launchers
 	 * @param nom - nom de l'aspirateur
 	 * @return CompletableFuture correspondant à la fin de la tache
 	 */
@@ -188,9 +188,9 @@ public class GestionnaireAspirateur {
 			}
 		});
 	}
-	
+
 	/**
-	 * transforme un aspirateur d'id id en plusieurs launchers 
+	 * transforme un aspirateur d'id id en plusieurs launchers
 	 * @param id - id de l'aspirateur
 	 * @return CompletableFuture correspondant à la fin de la tache
 	 */
@@ -209,5 +209,5 @@ public class GestionnaireAspirateur {
 			}
 		});
 	}
-	
+
 }

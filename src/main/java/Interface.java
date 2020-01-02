@@ -1,6 +1,25 @@
 import java.io.IOException;
 import java.util.*;
 
+/**
+ *  Interface textuelle pour le gestionnaire de téléchargement
+ *
+ *  [x] add [link]                          -> Create a launcher, ready to be started.
+ * 	[x] start [id]  [name]                  -> Start the download of the given launcher, or the last created if not specified.
+ * 	[x] list -l [state]                     -> Print launcher, with id, name, state and size.
+ * 	[x] delete [id]  [name]                 -> Delete a launcher, set his state to FAIL. The launcher can't be started.
+ * 	[x] pause [id]  [name]                  -> Pause a launcher, set his state to WAIT. The launcher can be unpaused.
+ * 	[x] restart [id]  [name]                -> Unpause a launcher and continue the download. The laucher's state must be WAIT.
+ * 	[x] exit                                -> Exit the programm.
+ * 	[x] clear                               -> Clear the terminal.
+ * 	[x] help                                -> Print the manual page.
+ * 	[x] startnew [link]                     -> Shortcut to create and start a launcher directly.
+ * 	[x] startall                            -> Shortcut to start all the launchers directly.
+ * 	[x] startat [time] [id  name]           -> Launch but begin to download after the given time (in seconds).
+ * 	[x] startlimit [time] [id  name]        -> Launch and delete the launcher if the download is not done before the given time
+ *
+ */
+
 public class Interface {
 
 	private static Gestionnaire gstn;
@@ -19,15 +38,15 @@ public class Interface {
 				try {
 					newCommand(cmd);
 				} catch (UnsupportedOperationException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
 				} catch (IllegalStateException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
 				} catch (RuntimeException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
 				} catch (IOException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
 				} catch (InterruptedException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
 				}
 			}).start();
 		}
@@ -421,7 +440,7 @@ public class Interface {
 		}
 
 		// Commandes non reconnues
-		print(ColoredOutput.set(Color.YELLOW, "Unknown command : ") + cmd);
+		print(ColoredOutput.set(Color.YELLOW, "[Unknown command] ") + cmd);
 	}
 
 	// Ferme le programme
