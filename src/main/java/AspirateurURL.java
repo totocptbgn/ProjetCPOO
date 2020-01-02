@@ -221,9 +221,8 @@ final class AspirateurURL {
 		Elements links = doc.select("link[href]");
 		for (Element link : links) {  
 		String l = transform(link.attr("href"));
-		if(this.isWell(l))
-			
-			if(!inside.contains(l)) {
+		if (this.isWell(l))
+			if (!inside.contains(l)) {
 				try {
 					AspirateurURL aURL = new AspirateurURL(l,this,true);
 					liste.add(aURL);
@@ -245,9 +244,9 @@ final class AspirateurURL {
 	 * @return l'URL transformé
 	 */
 	private String transform(String s) {
-		if(s.isBlank()) return s;
+		if (s.isBlank()) return s;
 		String[] tab =s.split("#");
-		if(tab.length==0) return s;
+		if (tab.length==0) return s;
 		s = tab[0];
 		tab =s.split("\\?");
 		if(tab.length==0) return s;

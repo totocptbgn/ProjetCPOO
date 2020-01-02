@@ -27,20 +27,21 @@ public class GestionnaireAspirateur {
 	 * @param id - id de l'aspirateur
 	 */
 	public void cancel(int id) {
-		Aspirateur a=this.getAspirateur(id);
+		Aspirateur a = this.getAspirateur(id);
 		aspirateurs.remove(a);
 		a.cancel();
-		
 	}
+
 	/**
 	 * Suppression de l'aspirateur de nom nom
 	 * @param nom - nom de l'aspirateur
 	 */
 	public void cancel(String nom) {
-		Aspirateur a=this.getAspirateur(nom);
+		Aspirateur a = this.getAspirateur(nom);
 		aspirateurs.remove(a);
 		a.cancel();
 	}
+
 	/**
 	 * @param URL de base de l'aspirateur
 	 * @return aspirateur n'aspirant rien
