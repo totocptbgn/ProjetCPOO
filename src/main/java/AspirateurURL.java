@@ -76,6 +76,17 @@ final class AspirateurURL {
 	 */
 	void addSitetoWhiteList(String s) {
 		whiteListed = true;
+		whiteList.add(s);
+	}
+	
+	/**
+	 * enlève le site s à la whiteList
+	 * @param s - s doit être sous la forme monsite ou https://...monsite
+	 * Remarque : marche aussi pour les pages
+	 */
+	void removeSitetoWhiteList(String s) {
+		whiteListed = true;
+		whiteList.remove(s);
 	}
 	
 	/**
