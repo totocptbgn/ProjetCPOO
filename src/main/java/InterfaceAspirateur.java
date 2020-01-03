@@ -11,9 +11,9 @@ import java.util.Set;
  *  [o] limit {-p} {-m} {-f} id/nom int     -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
  *  [x] limit -r id/nom                     -> remet la limite de base
  *  [x] limitless id/nom                    -> enlève la limite de fichier de base (dangereux)
- *  [o] whiteList -l id/nom                 -> donne la whitelist d'un aspirateur
- *  [o] whiteList -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
- *  [o] whiteList -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
+ *  [o] whitelist -l id/nom                 -> donne la whitelist d'un aspirateur
+ *  [o] whitelist -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
+ *  [o] whitelist -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
  *  [ ] list -p id/nom                      -> affiche la liste des pages d'un launcher (et pas aspirateur)
  *  [o] tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
  *  [o] tolauncher -m [id/nom]              -> transforme l'aspirateur en launchers

@@ -82,6 +82,17 @@ public class Aspirateur {
 		else 
 			throw new IllegalStateException();
 	}
+	
+	/**
+	 * 
+	 * @param site - ajoute site à la whiteList
+	 */
+	public void removeWhiteList(String site) {
+		if(this.etat == state.WAIT)
+			base.removeSitetoWhiteList(site);
+		else 
+			throw new IllegalStateException();
+	}
 
 	/**
 	 * 
