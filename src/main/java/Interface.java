@@ -41,12 +41,18 @@ public class Interface {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " LinkageError, a connection ");
 				} catch (IllegalStateException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
-				} catch (RuntimeException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
 				} catch (IOException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
 				} catch (InterruptedException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
+				} catch (NullPointerException e) {
+					print(ColoredOutput.set(Color.RED, "[Error]") + " NullPointerException, you want to use a thing that doesn't exist...");
+				} catch (RuntimeException e) {
+					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
+				} catch (Exception e) {
+					System.out.println("\r");
+					e.printStackTrace();
+					System.out.println("> ");
 				}
 			}).start();
 		}

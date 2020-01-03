@@ -1,19 +1,21 @@
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
 /**
  * Interface textuelle pour l'aspirateur de sites
  *
- *  [ ] list -a                             -> liste tout les id et nom des aspirateurs
+ *  [x] list -a                             -> liste tout les id et nom des aspirateurs
  *  [x] create {-i} {-p} URL                -> creer un aspirateur d'images / pages
- *  [o] limit {-p} {-m} {-f} id/nom int     -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
+ *  [x] limit {-p} {-m} {-f} id/nom int     -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
  *  [x] limit -r id/nom                     -> remet la limite de base
  *  [x] limitless id/nom                    -> enlève la limite de fichier de base (dangereux)
  *  [x] whitelist -l id/nom                 -> donne la whitelist d'un aspirateur
  *  [x] whitelist -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
- *  [o] whitelist -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
+ *  [x] whitelist -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
  *  [ ] list -p id/nom                      -> affiche la liste des pages d'un launcher (et pas aspirateur)
  *  [o] tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
  *  [o] tolauncher -m [id/nom]              -> transforme l'aspirateur en launchers
@@ -61,16 +63,15 @@ public class InterfaceAspirateur {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " LinkageError, a connection ");
 				} catch (IllegalStateException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
+				} catch (NullPointerException e) {
+					print(ColoredOutput.set(Color.RED, "[Error]") + " NullPointerException, you want to use a thing that doesn't exist...");
 				} catch (RuntimeException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
+				} catch (Exception e) {
+					System.out.println("\r");
+					e.printStackTrace();
+					System.out.println("> ");
 				}
-				/*
-				catch (IOException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
-				} catch (InterruptedException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
-				}
-				*/
 			}).start();
 		}
 	}
@@ -115,7 +116,7 @@ public class InterfaceAspirateur {
 					return;
 				}
 				if (s[1].equals("-a")) {
-					// Liste les aspirateur : A FAIRE
+					// Liste les aspirateur
 					printListOfAspi(aspi.listAspirateurs());
 					return;
 				}
@@ -123,7 +124,31 @@ public class InterfaceAspirateur {
 			if (s.length == 3) {
 				if (s[1].equals("-p")) {
 					// Liste les pages d'un launcher : ???
+					Launcher lnchr = null;
+					String name = s[2];
+					Iterator<Launcher> it = aspi.getGestionnaire().listOfAll().iterator();
+					try {
+						int id = Integer.valueOf(name);
+						while (it.hasNext()) {
+							Launcher l = it.next();
+							if (id == l.getId()) {
+								lnchr = l;
+							}
+						}
+					} catch (NumberFormatException e) {
+						while (it.hasNext()) {
+							Launcher l = it.next();
+							if (name.equals(l.getNom())) {
+								lnchr = l;
+							}
+						}
+					}
 
+					Map<Path, String> map =  lnchr.getPages();
+
+
+
+					return;
 				}
 				if (s[1].equals("-l")) {
 					if (s[2].equals("new")) {
@@ -242,7 +267,6 @@ public class InterfaceAspirateur {
 				if (s[1].equals("-f")) {
 					asp.limitSize(limit);
 					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Size limit was set to " + limit + " for aspi with id [" + asp.getId() + "].");
-
 					return;
 				}
 				else {
