@@ -59,18 +59,20 @@ public class InterfaceAspirateur {
 			new Thread(() -> {
 				try {
 					newCommand(cmd);
-				} catch (UnsupportedOperationException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
+				} catch (LinkageError e) {
+					print(ColoredOutput.set(Color.RED, "[Error]") + " LinkageError, a connection ");
 				} catch (IllegalStateException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
 				} catch (RuntimeException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
+					print(e.getLocalizedMessage());
+					e.printStackTrace();
 				}
 				/*
 				catch (IOException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
 				} catch (InterruptedException e) {
-					System.out.println(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
 				}
 				*/
 			}).start();
@@ -118,12 +120,18 @@ public class InterfaceAspirateur {
 				}
 				if (s[1].equals("-a")) {
 					// Liste les aspirateur : A FAIRE
+
 					return;
 				}
 			}
 			if (s.length == 3) {
 				if (s[1].equals("-p")) {
-					// Liste les pages d'un aspirateur : A FAIRE
+					// Liste les pages d'un launcher : A FAIRE
+					Aspirateur asp = getAspi(s[2]);
+					if (asp == null) {
+						print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
+						return;
+					}
 				}
 				if (s[1].equals("-l")) {
 					if (s[2].equals("new")) {
@@ -280,17 +288,23 @@ public class InterfaceAspirateur {
 			if (s.length == 3) {
 				if (s[1].equals("-l")) {
 					// Afficher la whitelist : A FAIRE ???
+					Iterator<String> it = asp.whiteList().iterator();
+					while(it.hasNext()) {
+						print(it.next());
+					}
+					return;
 				}
-
 				if (s[1].equals("-a")) {
 					// Ajoute la whitelist
 					asp.whiteList(true);
 					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "whitelist enabled for aspi with id [" + asp.getId() + "].");
+					return;
 				}
 				if (s[1].equals("-r")) {
 					// Retire la whitelist
 					asp.whiteList(false);
 					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "whitelist disabled for aspi with id [" + asp.getId() + "].");
+					return;
 				}
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r] [id | nom] [file] ");
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r | -l] [id | nom]");
@@ -301,10 +315,11 @@ public class InterfaceAspirateur {
 					// Ajouter une whitelist
 					asp.addWhiteList(s[3]);
 					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "site added to the whitelist of aspi with id [" + asp.getId() + "].");
+					return;
 				}
-
 				if (s[1].equals("-r")) {
 					// Retirer la whitelist ???
+					return;
 				}
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r] [id | nom] [file] ");
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r | -l] [id | nom]");

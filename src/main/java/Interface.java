@@ -37,10 +37,10 @@ public class Interface {
 			new Thread(() -> {
 				try {
 					newCommand(cmd);
-				} catch (UnsupportedOperationException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " UnsupportedOperationException, a connection ");
+				} catch (LinkageError e) {
+					print(ColoredOutput.set(Color.RED, "[Error]") + " LinkageError, a connection ");
 				} catch (IllegalStateException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, an internal error happened...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
 				} catch (RuntimeException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
 				} catch (IOException e) {
@@ -80,7 +80,7 @@ public class Interface {
 		if (cmd.matches("^add .+")) {
 			String link = cmd.substring(4);
 
-			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-zA-Z._\\-/=])+")) {
+			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-z%A-Z._\\-/=])+")) {
 				print(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
 				return;
 			}
@@ -188,7 +188,7 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						print("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "deleted launcher " + l.getNom() + " [" + l.getId() + "]");
 						gstn.delete(l.getId());
 						return;
 					}
@@ -197,7 +197,7 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						print("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "deleted launcher " + l.getNom() + " [" + l.getId() + "]");
 						gstn.delete(l.getNom());
 						return;
 					}
@@ -288,7 +288,7 @@ public class Interface {
 		// Raccourci pour créer et lancer un launcher en une commande
 		if (cmd.matches("^startnew .+")) {
 			String link = cmd.substring(9);
-			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-zA-Z._\\-/=])+")) {
+			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-z%A-Z._\\-/=])+")) {
 				print(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
 				return;
 			}
