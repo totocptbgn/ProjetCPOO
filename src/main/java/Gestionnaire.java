@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * Exceptions : <br/>
  * - UnsupportedOperationException : Erreur inattendu <br/>
  * - RuntimeException "name has failed" : Erreur de modification de fichier <br/>
- * - LinkageError : Erreur de connection
+ * - LinkageError : Erreur de connection <br/>
  * - NullPointerException : Launcher inexistant <br/>
  * - IllegalStateException : Launcher avec mauvais état
  */

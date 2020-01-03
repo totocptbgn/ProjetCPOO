@@ -342,6 +342,13 @@ public class Aspirateur {
 		 this.etat = state.DIE;
 	 }
 	 
+	 /**
+	  * 
+	  * @return la whiteliste de l'aspirateur
+	  */
+	 public Set<String> whiteList() {
+		 return base.whiteList();
+	 }
 	 /*
 	// TO DO : applique une opération sur les résultats obtenu après telechargement
 	private void apply(Consumer<String> consumer) {

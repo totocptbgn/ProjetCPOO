@@ -31,6 +31,14 @@ final class AspirateurURL {
 	private long size;
 	
 	/**
+	 * 
+	 * @return la whiteliste de l'aspirateur d'URL
+	 */
+	public Set<String> whiteList() {
+		return new HashSet<String>(whiteList);
+	}
+	
+	/**
 	 * @return taille de la page ( -1 si non défini )
 	 */
 	public long getSize() {
