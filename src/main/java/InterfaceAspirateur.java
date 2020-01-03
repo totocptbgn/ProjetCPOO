@@ -11,8 +11,8 @@ import java.util.Set;
  *  [o] limit {-p} {-m} {-f} id/nom int     -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
  *  [x] limit -r id/nom                     -> remet la limite de base
  *  [x] limitless id/nom                    -> enlève la limite de fichier de base (dangereux)
- *  [o] whitelist -l id/nom                 -> donne la whitelist d'un aspirateur
- *  [o] whitelist -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
+ *  [x] whitelist -l id/nom                 -> donne la whitelist d'un aspirateur
+ *  [x] whitelist -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
  *  [o] whitelist -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
  *  [ ] list -p id/nom                      -> affiche la liste des pages d'un launcher (et pas aspirateur)
  *  [o] tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
@@ -37,12 +37,11 @@ import java.util.Set;
  * 	[o] pas fini / à modifier
  * 	[x] fini :)
  *
- * 	"???" = problèmes avec GestionnaireAspirateur
+ * 	"???" = problèmes avec GestionnaireAspirateur // A FAIRE
  */
 
 public class InterfaceAspirateur {
 
-	private static Gestionnaire gstn;
 	private static GestionnaireAspirateur aspi;
 
 	public static void main (String [] args) throws IOException {
@@ -50,7 +49,6 @@ public class InterfaceAspirateur {
 		clearTerminal();
 		ColoredOutput.init();
 		aspi = new GestionnaireAspirateur();
-		gstn = aspi.getGestionnaire();
 		printHeader();
 
 		while (true) {
@@ -65,8 +63,6 @@ public class InterfaceAspirateur {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
 				} catch (RuntimeException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " RuntimeException, a file modification error happened...");
-					print(e.getLocalizedMessage());
-					e.printStackTrace();
 				}
 				/*
 				catch (IOException e) {
@@ -114,48 +110,44 @@ public class InterfaceAspirateur {
 			String [] s = cmd.split(" +");
 			if (s.length == 2) {
 				if (s[1].equals("-l")) {
-					Set<Launcher> set = gstn.listOfAll();
+					Set<Launcher> set = aspi.getGestionnaire().listOfAll();
 					printListOfLauncher(set);
 					return;
 				}
 				if (s[1].equals("-a")) {
 					// Liste les aspirateur : A FAIRE
-
+					printListOfAspi(aspi.listAspirateurs());
 					return;
 				}
 			}
 			if (s.length == 3) {
 				if (s[1].equals("-p")) {
-					// Liste les pages d'un launcher : A FAIRE
-					Aspirateur asp = getAspi(s[2]);
-					if (asp == null) {
-						print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
-						return;
-					}
+					// Liste les pages d'un launcher : ???
+
 				}
 				if (s[1].equals("-l")) {
 					if (s[2].equals("new")) {
-						Set<Launcher> set = gstn.listNew();
+						Set<Launcher> set = aspi.getGestionnaire().listNew();
 						printListOfLauncher(set);
 						return;
 					}
 					if (s[2].equals("wait")) {
-						Set<Launcher> set = gstn.listWait();
+						Set<Launcher> set = aspi.getGestionnaire().listWait();
 						printListOfLauncher(set);
 						return;
 					}
 					if (s[2].equals("started")) {
-						Set<Launcher> set = gstn.listLaunch();
+						Set<Launcher> set = aspi.getGestionnaire().listLaunch();
 						printListOfLauncher(set);
 						return;
 					}
 					if (s[2].equals("done")) {
-						Set<Launcher> set = gstn.listEnd();
+						Set<Launcher> set = aspi.getGestionnaire().listEnd();
 						printListOfLauncher(set);
 						return;
 					}
 					if (s[2].equals("all")) {
-						Set<Launcher> set = gstn.listOfAll();
+						Set<Launcher> set = aspi.getGestionnaire().listOfAll();
 						printListOfLauncher(set);
 						return;
 					}
@@ -263,7 +255,8 @@ public class InterfaceAspirateur {
 					print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
 					return;
 				}
-				// Remettre la limite de base ???
+				// Remettre la limite de base
+				asp.setLimit(true);
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "limit was reset to default for aspi with id [" + asp.getId() + "].");
 				return;
 			}
@@ -287,10 +280,11 @@ public class InterfaceAspirateur {
 
 			if (s.length == 3) {
 				if (s[1].equals("-l")) {
-					// Afficher la whitelist : A FAIRE ???
+					// Afficher la whitelist : A FAIRE
 					Iterator<String> it = asp.whiteList().iterator();
+					print("List of whitelisted link from aspi [" + asp.getId() + "] :");
 					while(it.hasNext()) {
-						print(it.next());
+						print( "- " + it.next());
 					}
 					return;
 				}
@@ -318,7 +312,9 @@ public class InterfaceAspirateur {
 					return;
 				}
 				if (s[1].equals("-r")) {
-					// Retirer la whitelist ???
+					// Retirer la whitelist
+					asp.removeWhiteList(s[3]);
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "site remove of the whitelist of aspi with id [" + asp.getId() + "].");
 					return;
 				}
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r] [id | nom] [file] ");
@@ -330,7 +326,7 @@ public class InterfaceAspirateur {
 		// Transforme un aspi en launcher
 		if (cmd.matches("tolauncher.*")) {
 			String [] s = cmd.split(" +");
-			Aspirateur asp = getAspi(s[1]);
+			Aspirateur asp = getAspi(s[2]);
 			if (asp == null) {
 				print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
 				return;
@@ -341,10 +337,15 @@ public class InterfaceAspirateur {
 					aspi.aspirateurToLauncher(asp.getId()).thenRun(() -> {
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " /* + l.getId() */ + "was created from aspi [" + asp.getId() + "].");
 					});
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "The aspi is being transformed to a single launcher.");
+					return;
 				}
 				if (s[1].equals(("-m"))) {
 					// Convertir en plusieurs launchers ???
-					aspi.aspirateurToLaunchers(asp.getId());
+					aspi.aspirateurToLaunchers(asp.getId()).thenRun(() -> {
+						print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " /* + l.getId() */ + "was created from aspi [" + asp.getId() + "].");
+					});
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "The aspi is being transformed to multiple launchers.");
 				} else {
 					print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "tolauncher [-s | -m] [id | nom]");
 				}
@@ -378,13 +379,13 @@ public class InterfaceAspirateur {
 		// Start un launcher par son nom ou son id
 		if (cmd.matches("^start [^\\p{Blank}]+")) {
 			String name = cmd.substring(6);
-			Iterator<Launcher> it = gstn.listNew().iterator();
+			Iterator<Launcher> it = aspi.getGestionnaire().listNew().iterator();
 			try {
 				int id = Integer.valueOf(name);
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launch(l.getId());
+						aspi.getGestionnaire().launch(l.getId());
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += (" of the size of " + humanReadableSize(l.getTotalSize()) + ".");
@@ -399,7 +400,7 @@ public class InterfaceAspirateur {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						gstn.launch(l.getNom());
+						aspi.getGestionnaire().launch(l.getNom());
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".\n";
@@ -419,9 +420,9 @@ public class InterfaceAspirateur {
 		if (cmd.matches("\\p{Blank}*start\\p{Blank}*")) {
 			LauncherIntern t;
 			try {
-				t = gstn.getCurrentNew();
+				t = aspi.getGestionnaire().getCurrentNew();
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
-				gstn.launch();
+				aspi.getGestionnaire().launch();
 			} catch (NullPointerException n) {
 				print(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to start.");
 			}
@@ -431,14 +432,14 @@ public class InterfaceAspirateur {
 		// Delete un launcher par son nom ou son id
 		if (cmd.matches("^delete [^\\p{Blank}]+")) {
 			String name = cmd.substring(7);
-			Iterator<Launcher> it = gstn.listOfAll().iterator();
+			Iterator<Launcher> it = aspi.getGestionnaire().listOfAll().iterator();
 			try {
 				int id = Integer.valueOf(name);
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
 						print("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
-						gstn.delete(l.getId());
+						aspi.getGestionnaire().delete(l.getId());
 						return;
 					}
 				}
@@ -447,7 +448,7 @@ public class InterfaceAspirateur {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
 						print("Deleted launcher " + l.getNom() + " [" + l.getId() + "]");
-						gstn.delete(l.getNom());
+						aspi.getGestionnaire().delete(l.getNom());
 						return;
 					}
 				}
@@ -459,7 +460,7 @@ public class InterfaceAspirateur {
 		// Pause un launcher par son nom ou son id
 		if (cmd.matches("^pause [^\\p{Blank}]+")) {
 			String name = cmd.substring(6);
-			Iterator<Launcher> it = gstn.listOfAll().iterator();
+			Iterator<Launcher> it = aspi.getGestionnaire().listOfAll().iterator();
 			try {
 				int id = Integer.valueOf(name);
 				while (it.hasNext()) {
@@ -470,7 +471,7 @@ public class InterfaceAspirateur {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "stopped launcher " + l.getNom() + " [" + l.getId() + "].");
-						gstn.pause(l.getId());
+						aspi.getGestionnaire().pause(l.getId());
 						return;
 					}
 				}
@@ -483,7 +484,7 @@ public class InterfaceAspirateur {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "stopped launcher " + l.getNom() + " [" + l.getId() + "].");
-						gstn.pause(l.getNom());
+						aspi.getGestionnaire().pause(l.getNom());
 						return;
 					}
 				}
@@ -495,7 +496,7 @@ public class InterfaceAspirateur {
 		// Pause un launcher par son nom ou son id
 		if (cmd.matches("^restart [^\\p{Blank}]+")) {
 			String name = cmd.substring(8);
-			Iterator<Launcher> it = gstn.listOfAll().iterator();
+			Iterator<Launcher> it = aspi.getGestionnaire().listOfAll().iterator();
 			try {
 				int id = Integer.valueOf(name);
 				while (it.hasNext()) {
@@ -506,7 +507,7 @@ public class InterfaceAspirateur {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
-						gstn.restart(l.getId());
+						aspi.getGestionnaire().restart(l.getId());
 						return;
 					}
 				}
@@ -519,7 +520,7 @@ public class InterfaceAspirateur {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
-						gstn.restart(l.getNom());
+						aspi.getGestionnaire().restart(l.getNom());
 						return;
 					}
 				}
@@ -548,9 +549,9 @@ public class InterfaceAspirateur {
 
 		// Launch tous les launchers
 		if (cmd.matches("\\p{Blank}*startall\\p{Blank}*")) {
-			Set<Launcher> set = gstn.listNew();
+			Set<Launcher> set = aspi.getGestionnaire().listNew();
 			set.forEach(l ->  {
-				gstn.launch(l.getId());
+				aspi.getGestionnaire().launch(l.getId());
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]");
 			});
 			return;
@@ -571,13 +572,13 @@ public class InterfaceAspirateur {
 			}
 
 			String name = arr[2];
-			Iterator<Launcher> it = gstn.listNew().iterator();
+			Iterator<Launcher> it = aspi.getGestionnaire().listNew().iterator();
 			try {
 				int id = Integer.valueOf(name);
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launchAt(l.getNom(), time).thenRun(() -> {
+						aspi.getGestionnaire().launchAt(l.getNom(), time).thenRun(() -> {
 							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 							if (l.getTotalSize() != -1L) {
 								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
@@ -593,7 +594,7 @@ public class InterfaceAspirateur {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						gstn.launchAt(l.getNom(), time).thenRun(() -> {
+						aspi.getGestionnaire().launchAt(l.getNom(), time).thenRun(() -> {
 							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 							if (l.getTotalSize() != -1L) {
 								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
@@ -625,13 +626,13 @@ public class InterfaceAspirateur {
 			}
 
 			String name = arr[2];
-			Iterator<Launcher> it = gstn.listNew().iterator();
+			Iterator<Launcher> it = aspi.getGestionnaire().listNew().iterator();
 			try {
 				int id = Integer.valueOf(name);
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launch(l.getId());
+						aspi.getGestionnaire().launch(l.getId());
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
@@ -640,7 +641,7 @@ public class InterfaceAspirateur {
 						}
 						print(s);
 						int finalTime = time;
-						gstn.deleteAt(l.getNom(), time).thenApplyAsync(e -> {
+						aspi.getGestionnaire().deleteAt(l.getNom(), time).thenApplyAsync(e -> {
 							if (e) {
 								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
 							}
@@ -653,7 +654,7 @@ public class InterfaceAspirateur {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						gstn.launch(l.getNom());
+						aspi.getGestionnaire().launch(l.getNom());
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
@@ -661,7 +662,7 @@ public class InterfaceAspirateur {
 							s += ".";
 						}
 						print(s);int finalTime = time;
-						gstn.deleteAt(l.getNom(), time).thenApplyAsync(b -> {
+						aspi.getGestionnaire().deleteAt(l.getNom(), time).thenApplyAsync(b -> {
 							if (b) {
 								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
 							}
@@ -771,6 +772,17 @@ public class InterfaceAspirateur {
 		System.out.print("> ");
 	}
 
+	private static void printListOfAspi(Set<Aspirateur> set) {
+		Iterator<Aspirateur> it = set.iterator();
+		print("List of aspi : [URL |> STATE |> ID]");
+		while (it.hasNext()) {
+			Aspirateur asp = it.next();
+			print("  " + asp.getBaseURL() +  " |> " + asp.getState() + " |> " + asp.getId());
+		}
+
+		// ???
+	}
+
 	// Ferme le programme
 	private static void exit() {
 		clearTerminal();
@@ -807,7 +819,7 @@ public class InterfaceAspirateur {
 						" |                                                                                                                         |\n" +
 						" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n" +
 						"  Type 'help' to get details.\n" +
-						"  The download directory is at " + gstn.pathDownload() + "\n\n"
+						"  The download directory is at " + aspi.getGestionnaire().pathDownload() + "\n\n"
 		);
 	}
 
@@ -858,7 +870,7 @@ public class InterfaceAspirateur {
 	private static void printManPage() {
 		System.out.print(
 				"\r" +
-				"-- " + ColoredOutput.set(Color.YELLOW, "About") + " --\n" +
+						"-- " + ColoredOutput.set(Color.YELLOW, "About") + " --\n" +
 						"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n> "
 		);
 	}
