@@ -1,0 +1,68 @@
+Fonctionnalités pour le gestionnaire de téléchargement : 
+	- création d'une tâche de téléchargement 
+	- lancement d'une tâche de téléchargement
+	- affichage des différentes tâches
+	- suppression d'une tâche de téléchargement
+	- pause d'une tâche de téléchargement
+	- reprise d'une tâche de téléchargement
+	- lancement d'une page de téléchargement avec délai
+	- lancement d'une page de téléchargement avec annulation de la tâche si non fini après un temps donné
+
+Fonctionnalités pour l'aspirateur
+	- affichage des différents aspirateurs
+	- création d'un aspirateur avec images et/ou pages
+    - gestion d'une limite de taille total/taille par fichier/nombre de fichier/profondeur
+    - gestion d'une whitelist de sites
+    - liste des pages d'un aspirateur (après transformation en tache)
+	- transformation en une tache ou plusieurs
+	- annulation d'une aspiration
+
+Contenu
+4 répertoires [ Contenu du code : src/java/nom_repertoire_sans_majuscule, Contenu du jar : build/libs ] :
+	- IU [Interface pour la gestion de téléchargement]
+		Color.java [énumération des couleurs utilisés]
+		ColoredOutput.java [changement de la couleur de l'affichage]
+		Interface.java [Interface textuelle]
+	- IUAspirateur [Interface pour la gestion des aspirateurs]
+		InterfaceAspirateur.java [Interface textuelle]
+	- Aspirateur [Bibliotheque de gestion des aspirateurs] : 
+		Aspirateur.java [Arbre des pages à aspirer], 
+		AspirateurURL.java [Un noeud de l'arbre, aspiration d'une page], 
+		GestionnaireAspirateur.java [Gestion des aspirateurs]
+	- DownloadManager [Bibliotheque de gestion de téléchargement] : 
+		Gestionnaire.java [Gestion des téléchargements], 
+		LauncherTelechargement.java [Launcher permettant de télécharger des pages WEB implémentant Launcher et LauncherIntern], 
+		Launcher.java [Interface pour une vision externe au package du launcher], 
+		LauncherIntern.java [Interface pour une vision interne au package du launcher], 
+		Tache.java [Interface pour une tache de téléchargement]
+		TacheTelechargement [Implémentation de Tache permettant de téléchargement une page WEB]
+Remarque : la totalité des fonctions et classes ont une javadoc
+
+Compilation [non nécessaire]:
+	gradle fatJar dans les 4 répertoires dans l'ordre :
+		- DownloadManager
+		- Aspirateur 
+		- IU
+		- IUAspirateur
+		
+Exécution :
+	Necessite Java 11
+	Depuis la racine :
+		Interface pour le gestionnaire de téléchargement :
+			java -jar  IU\build\libs\DownLoad-1.0.jar
+		Interface pour le gestionnaire des aspirateurs :
+			java -jar  IUAspirateur\build\libs\Aspirateur-1.0.jar
+			
+Syntaxe :
+	Utiliser la commande help après éxécution pour avoir la liste des commandes et de leurs utilisations
+	
+Exemples d'utilisations basiques :
+	Gestionnaire de téléchargement :
+		startnew https://www.irif.fr/~francoisl//l3algo.html
+	
+	Gestionnaire d'aspirateur :
+		create https://www.irif.fr/~francoisl//l3algo.html
+		tolauncher -m 1
+		start 1
+	
+	

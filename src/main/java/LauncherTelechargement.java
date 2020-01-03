@@ -139,7 +139,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 			 
 			for(Path pere:map.keySet()) {
 				
-				if(!pere.toString().endsWith("pdf") && !pere.toString().endsWith("png") && !pere.toString().endsWith("jpg") && !pere.toString().endsWith("jpeg") && !pere.toString().endsWith("gif")) {	
+				if(!pere.toString().endsWith("pdf") && !pere.toString().endsWith("jar") && !pere.toString().endsWith("png") && !pere.toString().endsWith("jpg") && !pere.toString().endsWith("jpeg") && !pere.toString().endsWith("gif")) {	
 					//System.out.println(pere.toString());
 
 					File f = pere.toFile();
