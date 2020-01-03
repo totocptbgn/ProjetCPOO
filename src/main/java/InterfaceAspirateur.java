@@ -326,8 +326,10 @@ public class InterfaceAspirateur {
 		// Transforme un aspi en launcher
 		if (cmd.matches("tolauncher.*")) {
 			String [] s = cmd.split(" +");
-			Aspirateur asp = getAspi(s[2]);
-			if (asp == null) {
+			Aspirateur asp;
+			try {
+				asp = getAspi(s[2]);
+			} catch (NullPointerException e) {
 				print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
 				return;
 			}
@@ -774,13 +776,67 @@ public class InterfaceAspirateur {
 
 	private static void printListOfAspi(Set<Aspirateur> set) {
 		Iterator<Aspirateur> it = set.iterator();
-		print("List of aspi : [URL |> STATE |> ID]");
-		while (it.hasNext()) {
-			Aspirateur asp = it.next();
-			print("  " + asp.getBaseURL() +  " |> " + asp.getState() + " |> " + asp.getId());
+		if (!it.hasNext()) {
+			print(ColoredOutput.set(Color.RED, "[Error]") + " there is no aspirateur to print.");
+			return;
 		}
 
-		// ???
+		int url = 3;
+		int state = 5;
+		int id = 2;
+
+		while (it.hasNext()) {
+			Aspirateur asp = it.next();
+			url = Math.max(asp.getBaseURL().length(), url);
+			state = Math.max(asp.getState().toString().length(), state);
+			id = Math.max(Integer.toString(asp.getId()).length(), id);
+		}
+
+		System.out.print("\r");
+		System.out.print("+-");
+		printChara(url, '-');
+		System.out.print("-+-");
+		printChara(state, '-');
+		System.out.print("-+-");
+		printChara(id, '-');
+		System.out.print("-+\n");
+
+		System.out.print("| URL");
+		printChara(url - 3, ' ');
+		System.out.print(" | STATE");
+		printChara(state - 5, ' ');
+		System.out.print(" | ID");
+		printChara(id - 2, ' ');
+		System.out.print(" |\n");
+
+		System.out.print("+-");
+		printChara(url, '-');
+		System.out.print("-+-");
+		printChara(state, '-');
+		System.out.print("-+-");
+		printChara(id, '-');
+		System.out.print("-+\n");
+
+		it = set.iterator();
+
+		while (it.hasNext()) {
+			Aspirateur asp = it.next();
+			System.out.print("| " + asp.getBaseURL());
+			printChara(url - asp.getBaseURL().length(), ' ');
+			System.out.print(" | " + asp.getState());
+			printChara(state - asp.getState().toString().length(), ' ');
+			System.out.print(" | " + asp.getId());
+			printChara(id - Integer.toString(asp.getId()).length(), ' ');
+			System.out.print(" |\n");
+		}
+		System.out.print("+-");
+		printChara(url, '-');
+		System.out.print("-+-");
+		printChara(state, '-');
+		System.out.print("-+-");
+		printChara(id, '-');
+		System.out.print("-+\n");
+		System.out.print("> ");
 	}
 
 	// Ferme le programme
@@ -789,6 +845,7 @@ public class InterfaceAspirateur {
 		System.exit(0);
 	}
 
+	// Affiche en décalant l'indicateur ">"
 	private static void print(String s) {
 		System.out.print("\r" + s + "\n> ");
 	}
