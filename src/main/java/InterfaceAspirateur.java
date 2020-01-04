@@ -16,10 +16,11 @@ import java.util.Set;
  *  [x] whitelist -l id/nom                 -> donne la whitelist d'un aspirateur
  *  [x] whitelist -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
  *  [x] whitelist -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
- *  [ ] list -p id/nom                      -> affiche la liste des pages d'un launcher (et pas aspirateur)
- *  [o] tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
- *  [o] tolauncher -m [id/nom]              -> transforme l'aspirateur en launchers
+ *  [x] list -p id/nom                      -> affiche la liste des pages d'un launcher (et pas aspirateur)
+ *  [x] tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
+ *  [x] tolauncher -m [id/nom]              -> transforme l'aspirateur en launchers
  *  [x] cancel [id/nom]                     -> suppression de l'aspirateur
+ *  [ ] mirror [link]                       -> aspire un site avec les limites de base et lance le téléchargement (raccourci)
  *
  *  [x] add [link]                          -> Create a launcher, ready to be started.
  * 	[x] start [id]  [name]                  -> Start the download of the given launcher, or the last created if not specified.
@@ -123,7 +124,7 @@ public class InterfaceAspirateur {
 			}
 			if (s.length == 3) {
 				if (s[1].equals("-p")) {
-					// Liste les pages d'un launcher : ???
+					// Liste les pages d'un launcher :
 					Launcher lnchr = null;
 					String name = s[2];
 					Iterator<Launcher> it = aspi.getGestionnaire().listOfAll().iterator();
@@ -143,11 +144,19 @@ public class InterfaceAspirateur {
 							}
 						}
 					}
-
+					if (lnchr == null) {
+						print(ColoredOutput.set(Color.RED, "[Error] ") + " the launcher was not found...");
+						return;
+					}
 					Map<Path, String> map =  lnchr.getPages();
-
-
-
+					if (map.isEmpty()) {
+						print(ColoredOutput.set(Color.RED, "[Error] ") + " there is nothing to print...");
+						return;
+					}
+					print("List of the page : URL > Local Path :");
+					map.forEach((path, string) -> {
+						print( string + " > " + path);
+					});
 					return;
 				}
 				if (s[1].equals("-l")) {
@@ -698,6 +707,30 @@ public class InterfaceAspirateur {
 				}
 			}
 			print(ColoredOutput.set(Color.RED, "[Error]") + " the launcher was not found...");
+			return;
+		}
+
+		// Aspire un site et le télécharge (shortcut)
+		if (cmd.matches("mirror.+")) {
+			String [] s = cmd.split(" +");
+			if (s.length != 2) {
+				print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " mirror [link]");
+				return;
+			}
+			if (!s[1].matches("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&/=]*)")) {
+				print(ColoredOutput.set(Color.RED, "[Error] ") + "The link is not correct.");
+				return;
+			}
+			int id = aspi.addAspirateurPagesWithImages(s[1]);
+			print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images and pages aspi created with id [" + id + "].");
+			Aspirateur asp = getAspi(Integer.toString(id));
+			aspi.aspirateurToLauncher(asp.getId()).thenRun(() -> {
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " /* + l.getId() */ + "was created from aspi [" + asp.getId() + "].");
+				LauncherIntern t = aspi.getGestionnaire().getCurrentNew();
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
+				aspi.getGestionnaire().launch().thenRun(() -> print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "The mirror of " + s[1] + "is over !"));
+				return;
+			});
 			return;
 		}
 
