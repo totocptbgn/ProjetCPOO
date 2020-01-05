@@ -53,7 +53,7 @@ Il y a 4 répertoires :
   
 ## Compilation
   
-   Le jar est déjà compilé mais si vous voulez le faire par vous-même, utilisez `gradle fatJar` dans les 4 répertoires dans l'ordre :  
+   Si vous voulez le faire par vous-même, utilisez `gradle fatJar` dans les 4 répertoires dans l'ordre :  
 - `DownloadManager/`
 - `Aspirateur/`
 - `IU/`
@@ -65,11 +65,11 @@ Le programme nécessite **Java 11**.
 
 Interface pour le gestionnaire de téléchargement :  
 
-    java -jar  IU\build\libs\DownLoad-1.0.jar  
+    java -jar IU/build/libs/DownLoad-1.0.jar  
 
 Interface pour le gestionnaire des aspirateurs :  
 
-    java -jar  IUAspirateur\build\libs\Aspirateur-1.0.jar  
+    java -jar IUAspirateur/build/libs/Aspirateur-1.0.jar  
 
 ## Syntaxe
 
