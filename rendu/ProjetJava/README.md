@@ -53,7 +53,7 @@ Il y a 4 répertoires :
   
 ## Compilation
   
-   Le jar est déjà compilé mais si vous voulez le faire par vous-même, utilisez `gradle fatJar` dans les 4 répertoires dans l'ordre :  
+   Utilisez `gradle fatJar` dans les 4 répertoires dans l'ordre :  
 - `DownloadManager/`
 - `Aspirateur/`
 - `IU/`
@@ -85,5 +85,7 @@ Gestionnaire de téléchargement :
 Gestionnaire d'aspirateur :  
 
     > mirror https://www.irif.fr/~francoisl//l3algo.html  
-      
+
+**Remarque** : les pages sont téléchargé dans un répertoire download
+ 
 > Dao Thauvin & Thomas Bignon - Année 2019-2020

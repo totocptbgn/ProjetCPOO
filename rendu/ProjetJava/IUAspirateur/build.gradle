@@ -25,11 +25,11 @@ compileTestJava.options.encoding = "UTF-8"
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
-	//use java -jar DownLoad-1.0.jar to launch
+	//use java -jar Aspirateur-1.0.jar to launch
 	manifest {
-        attributes 'Implementation-Title': 'URL download service',  
+        attributes 'Implementation-Title': 'Mirroring service',  
         	'Implementation-Version': version,
-        	'Main-Class': 'iu.Interface'
+        	'Main-Class': 'iuaspirateur.InterfaceAspirateur'
     }
     baseName = 'Aspirateur'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
