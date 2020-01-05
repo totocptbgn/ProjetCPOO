@@ -1,8 +1,6 @@
 # Projet CPOO
 
 > Projet de développement d'un gestionnaire de téléchargement & d'un aspirateur de sites web.
-> Année 2019 - 2020
-> Dao Thauvin, Thomas Bignon
 
 ## Fonctionnalités implémentées
 
@@ -19,10 +17,10 @@
 ### Aspirateur de sites
 - Affichage des différents aspirateurs  
 - Création d'un aspirateur avec images et/ou pages  
-- Gestion d'une limite de taille total/taille par fichier/nombre de fichier/profondeur  
+- Gestion d'une limite de taille total, de taille par fichier, de nombre de fichier et de profondeur  
 - Gestion d'une whitelist de sites  
-- Liste des pages d'un aspirateur (après transformation en tache)  
-- Transformation en une tache ou plusieurs  
+- Liste des pages d'un aspirateur, après transformation en launcher
+- Transformation en un launcher ou plusieurs  
 - Annulation d'une aspiration  
   
 ## Contenu  
@@ -88,3 +86,4 @@ Gestionnaire d'aspirateur :
 
     > mirror https://www.irif.fr/~francoisl//l3algo.html  
       
+> Dao Thauvin & Thomas Bignon - Année 2019-2020
