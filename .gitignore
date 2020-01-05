@@ -2,7 +2,6 @@
 .gradle/
 gradlew
 out/
-build.gradle
 gradle/
 bin
 gradlew.bat
@@ -10,7 +9,6 @@ gradlew.bat
 .project
 .settings/org.eclipse.buildship.core.prefs
 .settings/org.eclipse.jdt.core.prefs
-settings.gradle
 build/
 body.html
 stale_outputs_checked
