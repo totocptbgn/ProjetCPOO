@@ -7,36 +7,36 @@
 ## Fonctionnalités implémentées
 
 ### Gestionnaire de téléchargement
-   - création d'une tâche de téléchargement   
-   - lancement d'une tâche de téléchargement  
-   - affichage des différentes tâches  
-   - suppression d'une tâche de téléchargement  
-   - pause d'une tâche de téléchargement  
-   - reprise d'une tâche de téléchargement  
-   - lancement d'une page de téléchargement avec délai  
-   - lancement d'une page de téléchargement avec annulation de la tâche si non fini après un temps donné  
+- Création d'une tâche de téléchargement
+- Lancement d'une tâche de téléchargement  
+- Affichage des différentes tâches  
+- Suppression d'une tâche de téléchargement  
+- Pause d'une tâche de téléchargement  
+- Reprise d'une tâche de téléchargement  
+- Lancement d'une page de téléchargement avec délai  
+- Lancement d'une page de téléchargement avec annulation de la tâche si non fini après un temps donné  
   
 ### Aspirateur de sites
-   - affichage des différents aspirateurs  
-   - création d'un aspirateur avec images et/ou pages  
-   - gestion d'une limite de taille total/taille par fichier/nombre de fichier/profondeur  
-   - gestion d'une whitelist de sites  
-   - liste des pages d'un aspirateur (après transformation en tache)  
-   - transformation en une tache ou plusieurs  
-   - annulation d'une aspiration  
+- Affichage des différents aspirateurs  
+- Création d'un aspirateur avec images et/ou pages  
+- Gestion d'une limite de taille total/taille par fichier/nombre de fichier/profondeur  
+- Gestion d'une whitelist de sites  
+- Liste des pages d'un aspirateur (après transformation en tache)  
+- Transformation en une tache ou plusieurs  
+- Annulation d'une aspiration  
   
 ## Contenu  
 Il y a 4 répertoires : 
 > Contenu du code : `src/java/nom_repertoire_sans_majuscule`
 > Contenu du jar : `build/libs` 
 
-  **IU**  - Interface pour la gestion de téléchargement
-   - `Color.java` - énumération des couleurs utilisées
-   - `ColoredOutput.java` - changement de la couleur de l'affichage 
-   - `Interface.java` - Classe principale de l'interface textuelle
-   
-   **IUAspirateur** - Interface pour la gestion des aspirateurs
-   - `InterfaceAspirateur.java`  - Interface textuelle
+**IU**  - Interface pour la gestion de téléchargement
+- `Color.java` - énumération des couleurs utilisées
+- `ColoredOutput.java` - changement de la couleur de l'affichage 
+- `Interface.java` - Classe principale de l'interface textuelle
+
+**IUAspirateur** - Interface pour la gestion des aspirateurs
+- `InterfaceAspirateur.java`  - Interface textuelle
   
 **Aspirateur**  - Bibliotheque de gestion des aspirateurs  
 - `Aspirateur.java` - Arbre des pages à aspirer
@@ -56,10 +56,10 @@ Il y a 4 répertoires :
 ## Compilation
   
    Le jar est déjà compilé mais si vous voulez le faire par vous-même, utilisez `gradle fatJar` dans les 4 répertoires dans l'ordre :  
-      - `DownloadManager/`
-      - `Aspirateur/`
-      - `IU/`
-      - `IUAspirateur/`
+- `DownloadManager/`
+- `Aspirateur/`
+- `IU/`
+- `IUAspirateur/`
         
 ## Exécution
 
@@ -76,7 +76,7 @@ Interface pour le gestionnaire des aspirateurs :
 ## Syntaxe
 
 ### Description
-La syntaxe est assez simple, elle est inspirée d'interfaces textuelles classiques avec `[commande] [option] [paramêtre]`. La liste des commandes peut être affichée dans le programme avec la commande  `help`. Leurs utilisations y sont détaillées.
+La syntaxe est assez simple et rédigée en *anglais*, elle est inspirée d'interfaces textuelles classiques avec `[commande] [option] [paramêtre]`. La liste des commandes peut être affichée dans le programme avec la commande  `help`. Leurs utilisations y sont détaillées.
 
 ### Exemples
 Voici des exemples d'utilisations de raccourcis basiques pour télécharger ou aspirer des fichiers sans paramettrage.
