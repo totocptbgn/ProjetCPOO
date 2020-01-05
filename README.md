@@ -11,8 +11,8 @@
 - Suppression d'une tâche de téléchargement  
 - Pause d'une tâche de téléchargement  
 - Reprise d'une tâche de téléchargement  
-- Lancement d'une page de téléchargement avec délai  
-- Lancement d'une page de téléchargement avec annulation de la tâche si non fini après un temps donné  
+- Lancement d'un téléchargement avec délai  
+- Lancement d'un téléchargement avec limmite de temps, le téléchargement est supprimé si non fini.  
   
 ### Aspirateur de sites
 - Affichage des différents aspirateurs  
