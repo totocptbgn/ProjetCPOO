@@ -8,39 +8,37 @@ import java.util.Set;
 /**
  * Interface textuelle pour l'aspirateur de sites
  *
- *  [x] list -a                             -> liste tout les id et nom des aspirateurs
- *  [x] create {-i} {-p} URL                -> creer un aspirateur d'images / pages
- *  [x] limit {-p} {-m} {-f} id/nom int     -> change la limite (max/profondeur/max pour un fichier) de l'aspirateur
- *  [x] limit -r id/nom                     -> remet la limite de base
- *  [x] limitless id/nom                    -> enlève la limite de fichier de base (dangereux)
- *  [x] whitelist -l id/nom                 -> donne la whitelist d'un aspirateur
- *  [x] whitelist -a id/nom [fichier]       -> ajoute un fichier à la whiteList de l'aspirateur (sans argument activera juste la whiteList sur l'aspirateur)
- *  [x] whitelist -r id/nom [fichier]       -> enlève un fichier à la whiteList de l'aspirateur (sans argument desactivera juste la whiteList sur l'aspirateur)
- *  [x] list -p id/nom                      -> affiche la liste des pages d'un launcher (et pas aspirateur)
- *  [x] tolauncher -s [id/nom]              -> transforme l'aspirateur en launcher
- *  [x] tolauncher -m [id/nom]              -> transforme l'aspirateur en launchers
- *  [x] cancel [id/nom]                     -> suppression de l'aspirateur
- *  [ ] mirror [link]                       -> aspire un site avec les limites de base et lance le téléchargement (raccourci)
- *
- *  [x] add [link]                          -> Create a launcher, ready to be started.
- * 	[x] start [id]  [name]                  -> Start the download of the given launcher, or the last created if not specified.
- * 	[x] list -l [state]                     -> Print launcher, with id, name, state and size.
- * 	[x] delete [id]  [name]                 -> Delete a launcher, set his state to FAIL. The launcher can't be started.
- * 	[x] pause [id]  [name]                  -> Pause a launcher, set his state to WAIT. The launcher can be unpaused.
- * 	[x] restart [id]  [name]                -> Unpause a launcher and continue the download. The laucher's state must be WAIT.
- * 	[x] exit                                -> Exit the programm.
- * 	[x] clear                               -> Clear the terminal.
- * 	[x] help                                -> Print the manual page.
- * 	[x] startnew [link]                     -> Shortcut to create and start a launcher directly.
- * 	[x] startall                            -> Shortcut to start all the launchers directly.
- * 	[x] startat [time] [id  name]           -> Launch but begin to download after the given time (in seconds).
- * 	[x] startlimit [time] [id  name]        -> Launch and delete the launcher if the download is not done before the given time
- *
- *	[ ] pas fait
- * 	[o] pas fini / à modifier
- * 	[x] fini :)
- *
- * 	"???" = problèmes avec GestionnaireAspirateur // A FAIRE
+ *  create -i URL                       -> Create an image vacuum from an URL.
+ *  create -p URL                       -> Create an HTML pages vacuum from an URL.
+ *  create -ip URL                      -> Create an image and pages vacuum from an URL.
+ *  cancel [id/nom]                     -> Delete a vacuum.
+ *  limit -p [id/name] [int]            -> Change depth limit of a vacuum.
+ *  limit -m [id/name] [int]            -> Change max number of sites of a vacuum.
+ *  limit -f [id/name] [int]            -> Change the file limit of a vacuum.
+ *  limit -r [id/name]                  -> Reset the limits of a vacuum.
+ *  limitless [id/name]                 -> Remove the base file limit. (Could be dangerous.)
+ *  whitelist -l [id/name]              -> List the files in the whitelist of a vacuum.
+ *  whitelist -a [id/name] [file]       -> Add a file to the whitelist of a vacuum.
+ *  whitelist -a [id/name]              -> Activate the whitelist of a vacuum.
+ *  whitelist -r [id/name] [file]       -> Add a file to the whitelist of a vacuum.
+ *  whitelist -r [id/name]              -> Deactivate the whitelist of a vacuum.
+ *  tolauncher -s [id/name]             -> Turn a vacuum into a single launcher.
+ *  tolauncher -m [id/name]             -> Turn a vacuum into multiple launchers.
+ *  start [id/name]                     -> Start the download of the given launcher, or the last created if not specified.
+ *  delete [id/name]                    -> Delete a launcher, set his state to FAIL. The launcher can't be started.
+ *  pause [id/name]                     -> Pause a launcher, set his state to WAIT. The launcher can be unpaused.
+ *  restart [id/name]                   -> Unpause a launcher and continue the download. The launcher's state must be WAIT.
+ *  startall                            -> Shortcut to start all the launchers directly.
+ *  startat [time] [id/name]            -> Launch but begin to download after the given time (in seconds).
+ *  startlimit [time] [id/name]         -> Launch and delete the launcher if the download is not done before the given time.
+ *  list -l [state]                     -> List launchers, with id, name, state and size.
+ *  list -a                             -> List vacuum, with id and name.
+ *  list -p [id/name]                   -> List every files of a launcher.
+ *  exit                                -> Exit the program.
+ *  clear                               -> Clear the terminal.
+ *  help                                -> Print the manual page.
+ *  mirror [link]                       -> Shortcut to vacuum, transform into a launcher and start downloading directly.
+ *  
  */
 
 public class InterfaceAspirateur {
@@ -154,9 +152,7 @@ public class InterfaceAspirateur {
 						return;
 					}
 					print("List of the page : URL > Local Path :");
-					map.forEach((path, string) -> {
-						print( string + " > " + path);
-					});
+					map.forEach((path, string) -> print( string + " > " + path));
 					return;
 				}
 				if (s[1].equals("-l")) {
@@ -200,7 +196,7 @@ public class InterfaceAspirateur {
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "create [-i | -p | -pi] [link]");
 				return;
 			}
-			if (!s[2].matches("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&/=]*)")) {
+			if (!s[2].matches("https?:\\//(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&/=]*)")) {
 				print(ColoredOutput.set(Color.RED, "[Error] ") + "The link is not correct.");
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "create [-i | -p | -pi] [link]");
 				return;
@@ -209,19 +205,19 @@ public class InterfaceAspirateur {
 			if (s[1].equals("-i")) {
 				// Créer un aspi d'image
 				int id = aspi.addAspirateurImages(s[2]);
-				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images aspi created with id [" + id + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images vacuum created with id [" + id + "].");
 				return;
 			}
 			if (s[1].equals("-p")) {
 				// Créer un aspi de pages
 				int id = aspi.addAspirateurPages(s[2]);
-				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Pages aspi created with id [" + id + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Pages vacuum created with id [" + id + "].");
 				return;
 			}
 			if (s[1].equals("-ip") || s[1].equals("-pi")) {
 				// Créer un aspi de pages et d'images
 				int id = aspi.addAspirateurPagesWithImages(s[2]);
-				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images and pages aspi created with id [" + id + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images and pages vacuum created with id [" + id + "].");
 				return;
 			}
 			print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "create [-i | -p | -pi] [link]");
@@ -232,13 +228,13 @@ public class InterfaceAspirateur {
 		if (cmd.matches("limitless.*")) {
 			String [] s = cmd.split(" +");
 			if (s.length == 2) {
-				Aspirateur asp = getAspi(s[2]);
+				Aspirateur asp = getAspi(s[1]);
 				if (asp == null) {
-					print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
+					print(ColoredOutput.set(Color.RED, "[Error] ") + "The vacuum was not found.");
 					return;
 				}
 				asp.setLimit(false);
-				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Limits was removed for aspi with id [" + asp.getId() + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Limits was removed for vacuum with id [" + asp.getId() + "].");
 				return;
 			}
 			print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "limitless [id | nom]");
@@ -251,11 +247,11 @@ public class InterfaceAspirateur {
 			if (s.length == 4) {
 				Aspirateur asp = getAspi(s[2]);
 				if (asp == null) {
-					print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
+					print(ColoredOutput.set(Color.RED, "[Error] ") + "The vacuum was not found.");
 					return;
 				}
 
-				long limit = 0;
+				long limit;
 				try {
 					limit = Long.valueOf(s[3]);
 				} catch (NumberFormatException e) {
@@ -265,17 +261,17 @@ public class InterfaceAspirateur {
 				}
 				if (s[1].equals("-p")) {
 					asp.limitProfondeur(limit);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Depth limit was set to " + limit + " for aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Depth limit was set to " + limit + " for vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				if (s[1].equals("-m")) {
 					asp.limitMax(limit);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Max limit was set to " + limit + " for aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Max limit was set to " + limit + " for vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				if (s[1].equals("-f")) {
 					asp.limitSize(limit);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Size limit was set to " + limit + " for aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Size limit was set to " + limit + " for vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				else {
@@ -285,12 +281,12 @@ public class InterfaceAspirateur {
 			} else if (s.length == 3 && s[1].equals("-r")) {
 				Aspirateur asp = getAspi(s[2]);
 				if (asp == null) {
-					print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
+					print(ColoredOutput.set(Color.RED, "[Error] ") + "The vacuum was not found.");
 					return;
 				}
 				// Remettre la limite de base
 				asp.setLimit(true);
-				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "limit was reset to default for aspi with id [" + asp.getId() + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "limit was reset to default for vacuum with id [" + asp.getId() + "].");
 				return;
 			}
 			print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "limit [-p | -m | -f | -r] [id | name] [int | (none)]");
@@ -307,7 +303,7 @@ public class InterfaceAspirateur {
 
 			Aspirateur asp = getAspi(s[2]);
 			if (asp == null) {
-				print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
+				print(ColoredOutput.set(Color.RED, "[Error] ") + "The vacuum was not found.");
 				return;
 			}
 
@@ -315,7 +311,7 @@ public class InterfaceAspirateur {
 				if (s[1].equals("-l")) {
 					// Afficher la whitelist : A FAIRE
 					Iterator<String> it = asp.whiteList().iterator();
-					print("List of whitelisted link from aspi [" + asp.getId() + "] :");
+					print("List of whitelisted link from vacuum [" + asp.getId() + "] :");
 					while(it.hasNext()) {
 						print( "- " + it.next());
 					}
@@ -324,13 +320,13 @@ public class InterfaceAspirateur {
 				if (s[1].equals("-a")) {
 					// Ajoute la whitelist
 					asp.whiteList(true);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "whitelist enabled for aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "whitelist enabled for vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				if (s[1].equals("-r")) {
 					// Retire la whitelist
 					asp.whiteList(false);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "whitelist disabled for aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "whitelist disabled for vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r] [id | nom] [file] ");
@@ -341,13 +337,13 @@ public class InterfaceAspirateur {
 				if (s[1].equals("-a")) {
 					// Ajouter une whitelist
 					asp.addWhiteList(s[3]);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "site added to the whitelist of aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "site added to the whitelist of vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				if (s[1].equals("-r")) {
 					// Retirer la whitelist
 					asp.removeWhiteList(s[3]);
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "site remove of the whitelist of aspi with id [" + asp.getId() + "].");
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "site remove of the whitelist of vacuum with id [" + asp.getId() + "].");
 					return;
 				}
 				print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "whitelist [-a | -r] [id | nom] [file] ");
@@ -363,24 +359,20 @@ public class InterfaceAspirateur {
 			try {
 				asp = getAspi(s[2]);
 			} catch (NullPointerException e) {
-				print(ColoredOutput.set(Color.RED, "[Error] ") + "The aspi was not found.");
+				print(ColoredOutput.set(Color.RED, "[Error] ") + "The vacuum was not found.");
 				return;
 			}
 			if (s.length == 3) {
 				if (s[1].equals("-s")) {
-					// Convertir en un launcher ???
-					aspi.aspirateurToLauncher(asp.getId()).thenRun(() -> {
-						print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " /* + l.getId() */ + "was created from aspi [" + asp.getId() + "].");
-					});
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "The aspi is being transformed to a single launcher.");
+					// Convertir en un launcher
+					aspi.aspirateurToLauncher(asp.getId()).thenRun(() -> print(ColoredOutput.set(Color.GREEN, "[Info] ") + "a launcher was created from vacuum [" + asp.getId() + "]."));
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the vacuum is being transformed to a single launcher.");
 					return;
 				}
 				if (s[1].equals(("-m"))) {
-					// Convertir en plusieurs launchers ???
-					aspi.aspirateurToLaunchers(asp.getId()).thenRun(() -> {
-						print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " /* + l.getId() */ + "was created from aspi [" + asp.getId() + "].");
-					});
-					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "The aspi is being transformed to multiple launchers.");
+					// Convertir en plusieurs launchers
+					aspi.aspirateurToLaunchers(asp.getId()).thenRun(() -> print(ColoredOutput.set(Color.GREEN, "[Info] ") + "launchers was created from vacuum [" + asp.getId() + "]."));
+					print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the vacuum is being transformed to multiple launchers.");
 				} else {
 					print(ColoredOutput.set(Color.YELLOW, "[Usage] ") + "tolauncher [-s | -m] [id | nom]");
 				}
@@ -399,15 +391,15 @@ public class InterfaceAspirateur {
 			}
 			Aspirateur asp = getAspi(s[1]);
 			if (asp == null) {
-				print(ColoredOutput.set(Color.RED, "[Error] ") + "the aspi was not found.");
+				print(ColoredOutput.set(Color.RED, "[Error] ") + "the vacuum was not found.");
 				return;
 			}
 			if (asp.getState() == Aspirateur.state.DIE) {
-				print(ColoredOutput.set(Color.RED, "[Error] ") + "the aspi was already canceled.");
+				print(ColoredOutput.set(Color.RED, "[Error] ") + "the vacuum was already canceled.");
 				return;
 			}
 			asp.cancel();
-			print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the aspi with id [" + asp.getId() + "] was cancelled.");
+			print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the vacuum with id [" + asp.getId() + "] was cancelled.");
 			return;
 		}
 
@@ -564,24 +556,6 @@ public class InterfaceAspirateur {
 			return;
 		}
 
-		// Affiche l'aide
-		if (cmd.matches("\\p{Blank}*help\\p{Blank}*")) {
-			printManPage();
-			return;
-		}
-
-		// Raccourci pour créer et lancer un launcher en une commande
-		if (cmd.matches("^startnew .+")) {
-			String link = cmd.substring(9);
-			if (!link.matches("(http(s)?://.)(www\\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\\.[a-z]{2,6}/([~*0-9a-zA-Z._\\-/=])+")) {
-				print(ColoredOutput.set(Color.RED, "[Error]") + " This is not a correct link.");
-				return;
-			}
-			newCommand("add " + link);
-			newCommand("start");
-			return;
-		}
-
 		// Launch tous les launchers
 		if (cmd.matches("\\p{Blank}*startall\\p{Blank}*")) {
 			Set<Launcher> set = aspi.getGestionnaire().listNew();
@@ -722,23 +696,17 @@ public class InterfaceAspirateur {
 				return;
 			}
 			int id = aspi.addAspirateurPagesWithImages(s[1]);
-			print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images and pages aspi created with id [" + id + "].");
+			print(ColoredOutput.set(Color.GREEN, "[Info] ") + "Images and pages vacuum created with id [" + id + "].");
 			Aspirateur asp = getAspi(Integer.toString(id));
 			aspi.aspirateurToLauncher(asp.getId()).thenRun(() -> {
-				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " /* + l.getId() */ + "was created from aspi [" + asp.getId() + "].");
+				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "a launcher was created from vacuum [" + asp.getId() + "].");
 				LauncherIntern t = aspi.getGestionnaire().getCurrentNew();
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
 				aspi.getGestionnaire().launch().thenRun(() -> print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "The mirror of " + s[1] + "is over !"));
-				return;
 			});
 			return;
 		}
 
-		// Commandes mal utilisées
-		if (cmd.matches("\\p{Blank}*add\\p{Blank}*")) {
-			print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " add [link]");
-			return;
-		}
 		if (cmd.matches("\\p{Blank}*delete\\p{Blank}*")) {
 			print(ColoredOutput.set(Color.YELLOW, "[Usage]") + " delete [id | name]");
 			return;
@@ -834,7 +802,7 @@ public class InterfaceAspirateur {
 	private static void printListOfAspi(Set<Aspirateur> set) {
 		Iterator<Aspirateur> it = set.iterator();
 		if (!it.hasNext()) {
-			print(ColoredOutput.set(Color.RED, "[Error]") + " there is no aspirateur to print.");
+			print(ColoredOutput.set(Color.RED, "[Error]") + " there is no vacuum to print.");
 			return;
 		}
 
@@ -910,30 +878,30 @@ public class InterfaceAspirateur {
 	// Affiche l'en-tête du programme
 	private static void printHeader() throws IOException {
 		System.out.print(
-				" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
-						" |                                                                                                                         |\n" +
-						" |                                                                                                                         |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "           ██╗    ██╗███████╗██████╗ ███████╗██╗████████╗███████╗ ") + "                              |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "           ██║    ██║██╔════╝██╔══██╗██╔════╝██║╚══██╔══╝██╔════╝ ") + "                              |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "           ██║ █╗ ██║█████╗  ██████╔╝███████╗██║   ██║   █████╗   ") + "                              |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "           ██║███╗██║██╔══╝  ██╔══██╗╚════██║██║   ██║   ██╔══╝   ") + "                              |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "           ╚███╔███╔╝███████╗██████╔╝███████║██║   ██║   ███████╗ ") + "                              |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "            ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝   ╚═╝   ╚══════╝ ") + "                              |\n" +
-						" |                                                                                                                         |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "    ███╗   ███╗██╗██████╗ ██████╗  ██████╗ ██████╗ ██╗███╗   ██╗ ██████╗   ") + "                     |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "    ████╗ ████║██║██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██║████╗  ██║██╔════╝   ") + "                     |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "    ██╔████╔██║██║██████╔╝██████╔╝██║   ██║██████╔╝██║██╔██╗ ██║██║  ███╗  ") + "                     |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "    ██║╚██╔╝██║██║██╔══██╗██╔══██╗██║   ██║██╔══██╗██║██║╚██╗██║██║   ██║  ") + "                     |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "    ██║ ╚═╝ ██║██║██║  ██║██║  ██║╚██████╔╝██║  ██║██║██║ ╚████║╚██████╔╝  ") + "                     |\n" +
-						" |                         " + ColoredOutput.set(Color.RED, "    ╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝   ") + "                     |\n" +
-						" |                                                                                                                         |\n" +
-						" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *    Dao Thauvin & Thomas Copt-Bignon     * ") + "    |\n" +
-						" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *                Part II                  * ") + "    |\n" +
-						" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *  CPOO | Final project | year 2019-2020  * ") + "    |\n" +
-						" |                                                                                                                         |\n" +
-						" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n" +
-						"  Type 'help' to get details.\n" +
-						"  The download directory is at " + aspi.getGestionnaire().pathDownload() + "\n\n"
+			" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n" +
+			" |                                                                                                                         |\n" +
+			" |                                                                                                                         |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "           ██╗    ██╗███████╗██████╗ ███████╗██╗████████╗███████╗ ") + "                              |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "           ██║    ██║██╔════╝██╔══██╗██╔════╝██║╚══██╔══╝██╔════╝ ") + "                              |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "           ██║ █╗ ██║█████╗  ██████╔╝███████╗██║   ██║   █████╗   ") + "                              |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "           ██║███╗██║██╔══╝  ██╔══██╗╚════██║██║   ██║   ██╔══╝   ") + "                              |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "           ╚███╔███╔╝███████╗██████╔╝███████║██║   ██║   ███████╗ ") + "                              |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "            ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚═╝   ╚═╝   ╚══════╝ ") + "                              |\n" +
+			" |                                                                                                                         |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "    ███╗   ███╗██╗██████╗ ██████╗  ██████╗ ██████╗ ██╗███╗   ██╗ ██████╗   ") + "                     |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "    ████╗ ████║██║██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██║████╗  ██║██╔════╝   ") + "                     |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "    ██╔████╔██║██║██████╔╝██████╔╝██║   ██║██████╔╝██║██╔██╗ ██║██║  ███╗  ") + "                     |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "    ██║╚██╔╝██║██║██╔══██╗██╔══██╗██║   ██║██╔══██╗██║██║╚██╗██║██║   ██║  ") + "                     |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "    ██║ ╚═╝ ██║██║██║  ██║██║  ██║╚██████╔╝██║  ██║██║██║ ╚████║╚██████╔╝  ") + "                     |\n" +
+			" |                         " + ColoredOutput.set(Color.RED, "    ╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝   ") + "                     |\n" +
+			" |                                                                                                                         |\n" +
+			" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *    Dao Thauvin & Thomas Copt-Bignon     * ") + "    |\n" +
+			" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *                Part II                  * ") + "    |\n" +
+			" |                                                                        " + ColoredOutput.set(Color.YELLOW, " *  CPOO | Final project | year 2019-2020  * ") + "    |\n" +
+			" |                                                                                                                         |\n" +
+			" + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +\n\n" +
+			"  Type 'help' to get details.\n" +
+			"  The download directory is at " + aspi.getGestionnaire().pathDownload() + "\n\n"
 		);
 	}
 
@@ -983,12 +951,84 @@ public class InterfaceAspirateur {
 	// Affiche la page d'aide
 	private static void printManPage() {
 		System.out.print(
-				"\r" +
-						"-- " + ColoredOutput.set(Color.YELLOW, "About") + " --\n" +
-						"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n> "
+			"\r-- " + ColoredOutput.set(Color.YELLOW, "Manual Page") + " --\n" +
+			"\n" +
+			"To mirror a website with this tool there is 4 steps :\n" +
+			"  - create a vacuum from an URL\n" +
+			"  - set up the vacuum if needed\n" +
+			"  - transform the vacuum into a launcher\n" +
+			"  - download the files with the launcher\n" +
+			"\n" +
+			"You can find what you have download in a directory 'download/id_nameofwebsite/'.\n" +
+			"You can use the 'mirror' command to easily download a website.\n" +
+			"\n" +
+			"Command to create a vacuum :\n" +
+			"\n" +
+			" create -i URL                       -> Create an image vacuum from an URL.\n" +
+			" create -p URL                       -> Create an HTML pages vacuum from an URL.\n" +
+			" create -ip URL                      -> Create an image and pages vacuum from an URL.\n" +
+			" cancel [id/name]                    -> Delete a vacuum.\n" +
+			"\n" +
+			"Command to set up a vacuum :\n" +
+			"\n" +
+			" limit -p [id/name] [int]            -> Change depth limit of a vacuum.\n" +
+			" limit -m [id/name] [int]            -> Change max number of sites of a vacuum.\n" +
+			" limit -f [id/name] [int]            -> Change the file limit of a vacuum.\n" +
+			" limit -r [id/name]                  -> Reset the limits of a vacuum.\n" +
+			" limitless [id/name]                 -> Remove the base file limit. (Could be dangerous.)\n" +
+			"\n" +
+			" whitelist -l [id/name]              -> List the files in the whitelist of a vacuum.\n" +
+			" whitelist -a [id/name] [file]       -> Add a file to the whitelist of a vacuum.\n" +
+			" whitelist -a [id/name]              -> Activate the whitelist of a vacuum.\n" +
+			" whitelist -r [id/name] [file]       -> Add a file to the whitelist of a vacuum.\n" +
+			" whitelist -r [id/name]              -> Deactivate the whitelist of a vacuum.\n" +
+			"\n" +
+			"Command to transform a vacuum into a launcher : \n" +
+			"\n" +
+			" tolauncher -s [id/name]             -> Turn a vacuum into a single launcher.\n" +
+			" tolauncher -m [id/name]             -> Turn a vacuum into multiple launchers.\n" +
+			"\n" +
+			"Command to use the launchers :\n" +
+			"\n" +
+			" start [id/name]                     -> Start the download of the given launcher, or the last created if not specified.\n" +
+			" delete [id/name]                    -> Delete a launcher, set his state to FAIL. The launcher can't be started.\n" +
+			" pause [id/name]                     -> Pause a launcher, set his state to WAIT. The launcher can be unpaused.\n" +
+			" restart [id/name]                   -> Unpause a launcher and continue the download. The launcher's state must be WAIT.\n" +
+			" startall                            -> Shortcut to start all the launchers directly.\n" +
+			" startat [time] [id/name]            -> Launch but begin to download after the given time (in seconds).\n" +
+			" startlimit [time] [id/name]         -> Launch and delete the launcher if the download is not done before the given time.\n" +
+			"\n" +
+			"Command to list different objects :\n" +
+			"\n" +
+			" list -l [state]                     -> List launchers, with id, name, state and size.\n" +
+			" list -a                             -> List vacuum, with id and name.\n" +
+			" list -p [id/name]                   -> List every files of a launcher.\n" +
+			"\n" +
+			"Other command :\n" +
+			"\n" +
+			" exit                                -> Exit the program.\n" +
+			" clear                               -> Clear the terminal.\n" +
+			" help                                -> Print the manual page.\n" +
+			" mirror [link]                       -> Shortcut to vacuum, transform into a launcher and start downloading directly. \n" +
+			"\n" +
+			"List of the states of launchers :\n" +
+			"\n" +
+			" WORK     : Downloading launcher.                       \n" +
+			" WAIT     : Paused launcher, ready to be continued.     \n" +
+			" NEW      : Just created launcher, ready to be started. \n" +
+			" FAIL     : Stopped launcher, failed to download.       \n" +
+			" SUCCESS  : Stopped launcher with download finished. \n" +
+			"\n" +
+			"List of the states of vacuum :\n" +
+			"\n" +
+			" WAIT     : Waiting to be turned into a launcher.\n" +
+			" TAKE     : Currently being turned into a launcher.\n" +
+			" DIE      : Turned into a launcher.\n" +
+			"    \n" +
+			"-- " + ColoredOutput.set(Color.YELLOW, "About") + " --\n" +
+			"Programm created by Dao Thauvin & Thomas Copt-Bignon for CPOO Final project.\n> "
 		);
 	}
-
 
 	private static Aspirateur getAspi(String name) {
 		Aspirateur asp;

@@ -43,8 +43,6 @@ public class Interface {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
 				} catch (IOException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " IOException, an unexepected error happened...");
-				} catch (InterruptedException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " InterruptedException, an unexepected error happened...");
 				} catch (NullPointerException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " NullPointerException, you want to use a thing that doesn't exist...");
 				} catch (RuntimeException e) {
@@ -62,7 +60,7 @@ public class Interface {
 	 * Recoit une commande sous forme de String et la traite.
 	 */
 
-	private static void newCommand(String cmd) throws IOException, InterruptedException {
+	private static void newCommand(String cmd) throws IOException {
 
 		// Ne fais rien quand rien n'est tapé
 		if (cmd.matches("^\\p{Blank}*$")) {

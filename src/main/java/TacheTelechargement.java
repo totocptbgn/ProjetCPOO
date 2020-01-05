@@ -5,9 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -85,9 +83,6 @@ final class TacheTelechargement extends Thread implements Tache {
 		catch (InterruptedException e) {
 			//interruption -> on ne fait rien de spécial (on observe l'arret grace à cancel car on veut pouvoir connaitre les taches même en cas d'arret)
 			//System.out.print("stopped\n");
-		
-				
-			
 		}
 	}
 }
