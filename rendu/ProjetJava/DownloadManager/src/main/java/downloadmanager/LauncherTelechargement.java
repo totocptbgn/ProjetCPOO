@@ -418,7 +418,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 		if (this.etat == state.SUCCESS) return 0;
 		if (this.etat == state.NEW || this.etat == state.FAIL) return getTotalSize();
 		long res = 0;
-		Set<Tache> finished = inExecution.stream().filter((e) -> e.isCompletedAbnormally() && !e.isCancelled() && e.isDone()).map(e -> {
+		Set<Tache> finished = inExecution.stream().filter((e) -> e.isDone() && !e.isCancelled() && e.isCompletedNormally()).map(e -> {
 			try {
 				return e.get();
 			} catch (InterruptedException | ExecutionException e1) {
@@ -426,6 +426,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 			}
 			
 		}).collect(Collectors.toSet());
+		//System.out.println(finished.size());
 		Set<Tache> notfinished = elements.stream().filter(e -> !finished.contains(e)).collect(Collectors.toSet());
 		for(Tache t:notfinished) {
 			res+=t.getSize();
