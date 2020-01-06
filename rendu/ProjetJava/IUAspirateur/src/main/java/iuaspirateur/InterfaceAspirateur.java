@@ -67,7 +67,7 @@ public class InterfaceAspirateur {
 				} catch (LinkageError e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " LinkageError, a connection ");
 				} catch (IllegalStateException e) {
-					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher...");
+					print(ColoredOutput.set(Color.RED, "[Error]") + " IllegalStateException, bad state launcher/vacuum...");
 				} catch (NullPointerException e) {
 					print(ColoredOutput.set(Color.RED, "[Error]") + " NullPointerException, you want to use a thing that doesn't exist...");
 				} catch (RuntimeException e) {
@@ -424,7 +424,12 @@ public class InterfaceAspirateur {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						aspi.getGestionnaire().launch(l.getId());
+						aspi.getGestionnaire().launch(l.getId()).thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						}
+						);
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += (" of the size of " + humanReadableSize(l.getTotalSize()) + ".");
@@ -461,7 +466,12 @@ public class InterfaceAspirateur {
 			try {
 				t = aspi.getGestionnaire().getCurrentNew();
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
-				aspi.getGestionnaire().launch();
+				aspi.getGestionnaire().launch().thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + t.getNom() + " [" + t.getId() + "] download ended.");
+							}
+						}
+						);
 			} catch (NullPointerException n) {
 				print(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to start.");
 			}
@@ -546,7 +556,12 @@ public class InterfaceAspirateur {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
-						aspi.getGestionnaire().restart(l.getId());
+						aspi.getGestionnaire().restart(l.getId()).thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						}
+						);
 						return;
 					}
 				}
@@ -559,7 +574,12 @@ public class InterfaceAspirateur {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
-						aspi.getGestionnaire().restart(l.getNom());
+						aspi.getGestionnaire().restart(l.getNom()).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						}
+						);
 						return;
 					}
 				}
@@ -572,7 +592,12 @@ public class InterfaceAspirateur {
 		if (cmd.matches("\\p{Blank}*startall\\p{Blank}*")) {
 			Set<Launcher> set = aspi.getGestionnaire().listNew();
 			set.forEach(l ->  {
-				aspi.getGestionnaire().launch(l.getId());
+				aspi.getGestionnaire().launch(l.getId()).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						}
+						);
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]");
 			});
 			return;
@@ -599,15 +624,12 @@ public class InterfaceAspirateur {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						aspi.getGestionnaire().launchAt(l.getNom(), time).thenRun(() -> {
-							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
-							if (l.getTotalSize() != -1L) {
-								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
-							} else {
-								s += ".";
+						aspi.getGestionnaire().launchAt(l.getNom(), time).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
 							}
-							print(s);
-						});
+						}
+						);
 						return;
 					}
 				}
@@ -615,15 +637,12 @@ public class InterfaceAspirateur {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						aspi.getGestionnaire().launchAt(l.getNom(), time).thenRun(() -> {
-							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
-							if (l.getTotalSize() != -1L) {
-								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
-							} else {
-								s += ".";
+						aspi.getGestionnaire().launchAt(l.getNom(), time).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
 							}
-							print(s);
-						});
+						}
+						);
 						return;
 					}
 				}
@@ -662,7 +681,7 @@ public class InterfaceAspirateur {
 						}
 						print(s);
 						int finalTime = time;
-						aspi.getGestionnaire().deleteAt(l.getNom(), time).thenApplyAsync(e -> {
+						aspi.getGestionnaire().deleteAt(l.getNom(), time).thenApply(e -> {
 							if (e) {
 								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
 							}
@@ -683,7 +702,7 @@ public class InterfaceAspirateur {
 							s += ".";
 						}
 						print(s);int finalTime = time;
-						aspi.getGestionnaire().deleteAt(l.getNom(), time).thenApplyAsync(b -> {
+						aspi.getGestionnaire().deleteAt(l.getNom(), time).thenApply(b -> {
 							if (b) {
 								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
 							}
@@ -714,7 +733,7 @@ public class InterfaceAspirateur {
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") + "a launcher was created from vacuum [" + asp.getId() + "].");
 				Launcher t = aspi.getGestionnaire().getCurrentNew();
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
-				aspi.getGestionnaire().launch().thenRun(() -> print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "The mirror of " + s[1] + "is over !"));
+				aspi.getGestionnaire().launch().thenAccept((e) -> { if(!e.isPresent()) print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "The mirror of " + s[1] + " stopped !"); else print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "The mirror of " + s[1] + "is over !"); });
 			});
 			return;
 		}
@@ -1033,7 +1052,7 @@ public class InterfaceAspirateur {
 			"\n" +
 			"List of the states of vacuum :\n" +
 			"\n" +
-			" WAIT     : Waiting to be turned into a launcher.\n" +
+			" NEW     : Waiting to be turned into a launcher.\n" +
 			" TAKE     : Currently being turned into a launcher.\n" +
 			" DIE      : Turned into a launcher.\n" +
 			"    \n" +

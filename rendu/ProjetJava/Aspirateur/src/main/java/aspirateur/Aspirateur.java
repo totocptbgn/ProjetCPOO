@@ -14,23 +14,23 @@ import java.util.stream.Stream;
 /**
  * Aspirateur de pages internets
  */
-public class Aspirateur {
+public final class Aspirateur {
 
 	/**
-	 * WAIT -> en attente de transformation en launcher <br/>
+	 * NEW -> en attente de transformation en launcher <br/>
 	 * TAKE -> en train de se transformer
 	 * DIE -> l'aspiration est fini
 	 */
 	 
 	public enum state {
-		WAIT,TAKE,DIE;
+		NEW,TAKE,DIE;
 	}
 	
 	//le future permettant de récupéré la tache
 	private CompletableFuture<Optional<Set<String>>> future;
 	
 	//etat du thread
-	private state etat = state.WAIT;
+	private state etat = state.NEW;
 
 	// Limite de nombre de fichier
 	private final static long MAX = 100;
@@ -49,7 +49,7 @@ public class Aspirateur {
 	private AspirateurURL base;
 
 	/**
-	 * Donne l'état de l'aspirateur (WAIT -> en attente de transformation, TAKE -> En attente de transformation
+	 * Donne l'état de l'aspirateur (NEW -> en attente de transformation, TAKE -> En attente de transformation
 	 */
 	public synchronized state getState() {
 		return this.etat;
@@ -68,7 +68,7 @@ public class Aspirateur {
 	 * @param whitelist - active ou désactive la whiteList
 	 */
 	public void whiteList(boolean whitelist) {
-		if(this.etat == state.WAIT)
+		if(this.etat == state.NEW)
 			base.setWhiteListed(whitelist);
 		else 
 			throw new IllegalStateException();
@@ -79,7 +79,7 @@ public class Aspirateur {
 	 * @param site - ajoute site à la whiteList
 	 */
 	public void addWhiteList(String site) {
-		if(this.etat == state.WAIT)
+		if(this.etat == state.NEW)
 			base.addSitetoWhiteList(site);
 		else 
 			throw new IllegalStateException();
@@ -90,7 +90,7 @@ public class Aspirateur {
 	 * @param site - ajoute site à la whiteList
 	 */
 	public void removeWhiteList(String site) {
-		if(this.etat == state.WAIT)
+		if(this.etat == state.NEW)
 			base.removeSitetoWhiteList(site);
 		else 
 			throw new IllegalStateException();
@@ -229,7 +229,7 @@ public class Aspirateur {
 	 * @param limit - true -> active la limite | false -> desactive la limite
 	 */
 	public synchronized void setLimit(boolean limit) {
-		if(this.etat == state.WAIT) {
+		if(this.etat == state.NEW) {
 			this.limit = limit;
 			if(limit) commandes.limit(MAX);
 			else commandes.limit(Integer.MAX_VALUE);
@@ -244,7 +244,7 @@ public class Aspirateur {
 	 */
 
 	private synchronized void addPredicate(Predicate<AspirateurURL> p) {
-		if(this.etat == state.WAIT)
+		if(this.etat == state.NEW)
 			commandes = commandes.filter(e -> p.test(e));
 		else 
 			throw new IllegalStateException();
@@ -259,7 +259,7 @@ public class Aspirateur {
 	 */
 
 	private <V> void addPredicateWithAccumulator(V start, BiFunction<V, AspirateurURL, V> faccu, Predicate<V> p) {
-		if(this.etat == state.WAIT) {
+		if(this.etat == state.NEW) {
 			Predicate<AspirateurURL> pwithaccu = new Predicate<AspirateurURL>() {
 				V accumulator = start;
 
@@ -282,7 +282,7 @@ public class Aspirateur {
 	 * @param limit - limite en nombre de fichier
 	 */
 	public synchronized void limit(long limit) {
-		if(this.etat == state.WAIT)
+		if(this.etat == state.NEW)
 			commandes = commandes.limit(limit);
 		else 
 			throw new IllegalStateException();
@@ -319,7 +319,7 @@ public class Aspirateur {
 	  * @return URLs récupérés par l'aspirateur
 	  */
 	 synchronized CompletableFuture<Optional<Set<String>>> getContent() {
-		 if(this.etat == state.WAIT) {
+		 if(this.etat == state.NEW) {
 			this.etat = state.TAKE;
 		 	future = CompletableFuture.supplyAsync(() -> commandes.map(e->e.getURL()).collect(Collectors.toSet())).thenApplyAsync(this::ending);
 		 	return future;

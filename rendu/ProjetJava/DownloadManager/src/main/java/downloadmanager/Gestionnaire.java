@@ -117,7 +117,7 @@ public final class Gestionnaire {
 		if (this.getCurrentNew().getEtat() == Launcher.state.NEW) {
 			LauncherIntern currentNew = newQueue.removeLast();
 			launchQueue.push(currentNew);
-			return currentNew.startAt(time).thenApplyAsync(e -> { return ending(e,currentNew); });
+			return currentNew.startAt(time).thenApply(e -> { return ending(e,currentNew); });
 		}
 		throw new IllegalStateException ();
 	}
@@ -168,7 +168,7 @@ public final class Gestionnaire {
 			LauncherIntern currentNew = newQueue.pop();
 			launchQueue.push(currentNew);
 			
-			return currentNew.start().thenApplyAsync( e -> { return ending(e,currentNew); });
+			return currentNew.start().thenApply( e -> { return ending(e,currentNew); });
 			
 		}
 		throw new IllegalStateException();
@@ -264,7 +264,7 @@ public final class Gestionnaire {
 		for(LauncherIntern l:listOfAllInside()) {
 			if(l.getNom().equals(launcher)) {
 				CompletableFuture<Boolean> b = l.deleteAt(time);
-				return b.thenApplyAsync(e -> {
+				return b.thenApply(e -> {
 					if (e) {
 						if(launchQueue.remove(l) || newQueue.remove(l) || waitQueue.remove(l))
 								endQueue.add(l);					
@@ -340,7 +340,7 @@ public final class Gestionnaire {
 			LauncherIntern l = waitQueue.pop();
 			launchQueue.push(l);
 
-			return l.restart().thenApplyAsync( e -> { return ending(e,l); });
+			return l.restart().thenApply( e -> { return ending(e,l); });
 		}
 		throw new IllegalStateException();
 	}

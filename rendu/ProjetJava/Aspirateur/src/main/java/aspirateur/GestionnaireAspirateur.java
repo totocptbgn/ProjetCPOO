@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * - IllegalStateException : Aspirateur avec mauvais état
 
  */
-public class GestionnaireAspirateur {
+public final class GestionnaireAspirateur {
 	private final Gestionnaire g;
 	private final Deque<Aspirateur> aspirateurs = new ConcurrentLinkedDeque<>();
 

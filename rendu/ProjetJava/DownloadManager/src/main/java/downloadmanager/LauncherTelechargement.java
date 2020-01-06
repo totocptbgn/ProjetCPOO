@@ -129,7 +129,7 @@ public final class LauncherTelechargement implements LauncherIntern {
 	}
 
 	public synchronized CompletableFuture<Optional<Map<Path,String>>> start() {
-		return CompletableFuture.supplyAsync(this::run).thenApplyAsync(e ->
+		return CompletableFuture.supplyAsync(this::run).thenApply(e ->
 		 {
 			 //System.out.println("ok");
 			 if(e.isEmpty()) return e;

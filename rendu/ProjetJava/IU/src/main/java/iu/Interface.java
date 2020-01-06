@@ -105,7 +105,11 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launch(l.getId());
+						gstn.launch(l.getId()).thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						});
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += (" of the size of " + humanReadableSize(l.getTotalSize()) + ".");
@@ -120,7 +124,11 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						gstn.launch(l.getNom());
+						gstn.launch(l.getNom()).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						});
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".\n";
@@ -142,7 +150,11 @@ public class Interface {
 			try {
 				t = gstn.getCurrentNew();
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading [" + t.getId() + "].");
-				gstn.launch();
+				gstn.launch().thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + t.getNom() + " [" + t.getId() + "] download ended.");
+							}
+						});
 			} catch (NullPointerException n) {
 				print(ColoredOutput.set(Color.RED, "[Error]") + " there is no launcher to start.");
 			}
@@ -277,7 +289,11 @@ public class Interface {
 							return;
 						}
 						print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "restarted launcher " + l.getNom() + " [" + l.getId() + "].");
-						gstn.restart(l.getNom());
+						gstn.restart(l.getNom()).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						});
 						return;
 					}
 				}
@@ -308,7 +324,11 @@ public class Interface {
 		if (cmd.matches("\\p{Blank}*startall\\p{Blank}*")) {
 			Set<Launcher> set = gstn.listNew();
 			set.forEach(l ->  {
-				gstn.launch(l.getId());
+				gstn.launch(l.getId()).thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						});
 				print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]");
 			});
 			return;
@@ -335,14 +355,10 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launchAt(l.getNom(), time).thenRun(() -> {
-							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
-							if (l.getTotalSize() != -1L) {
-								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
-							} else {
-								s += ".";
+						gstn.launchAt(l.getNom(), time).thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
 							}
-							print(s);
 						});
 						return;
 					}
@@ -351,14 +367,10 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						gstn.launchAt(l.getNom(), time).thenRun(() -> {
-							String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
-							if (l.getTotalSize() != -1L) {
-								s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
-							} else {
-								s += ".";
+						gstn.launchAt(l.getNom(), time).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
 							}
-							print(s);
 						});
 						return;
 					}
@@ -389,7 +401,11 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (id == l.getId()) {
-						gstn.launch(l.getId());
+						gstn.launch(l.getId()).thenAccept((e) -> {
+							if(e.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						});
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
@@ -398,7 +414,7 @@ public class Interface {
 						}
 						print(s);
 						int finalTime = time;
-						gstn.deleteAt(l.getNom(), time).thenApplyAsync(e -> {
+						gstn.deleteAt(l.getNom(), time).thenApply(e -> {
 							if (e) {
 								print(ColoredOutput.set(Color.GREEN, "[Info] ") + "the launcher " + l.getNom() + " was delete because not done after " + finalTime + "seconds.");
 							}
@@ -411,7 +427,11 @@ public class Interface {
 				while (it.hasNext()) {
 					Launcher l = it.next();
 					if (name.equals(l.getNom())) {
-						gstn.launch(l.getNom());
+						gstn.launch(l.getNom()).thenAccept((el) -> {
+							if(el.isPresent()) {
+								print(ColoredOutput.set(Color.GREEN, "[Info] ") +  "launcher " + l.getNom() + " [" + l.getId() + "] download ended.");
+							}
+						});
 						String s = ColoredOutput.set(Color.GREEN, "[Info] ") +  "started downloading " + l.getNom() + " [" + l.getId() + "]";
 						if (l.getTotalSize() != -1L) {
 							s += " of the size of " + humanReadableSize(l.getTotalSize()) + ".";
