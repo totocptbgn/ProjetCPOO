@@ -58,6 +58,10 @@ Il y a 4 répertoires :
 - `Aspirateur/`
 - `IU/`
 - `IUAspirateur/`
+
+Vous pouver aussi utiliser le `Makefile` qui va faire tout ça tout seul en utilisant la commande :
+    
+    $ make
         
 ## Exécution
 
@@ -65,11 +69,11 @@ Le programme nécessite **Java 11**.
 
 Interface pour le gestionnaire de téléchargement :  
 
-    java -jar IU/build/libs/DownLoad-1.0.jar  
+    $ java -jar IU/build/libs/DownLoad-1.0.jar  
 
 Interface pour le gestionnaire des aspirateurs :  
 
-    java -jar IUAspirateur/build/libs/Aspirateur-1.0.jar  
+    $ java -jar IUAspirateur/build/libs/Aspirateur-1.0.jar  
 
 ## Syntaxe
 
